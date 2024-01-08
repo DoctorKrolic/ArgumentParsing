@@ -26,13 +26,11 @@ internal sealed record DiagnosticInfo(
 
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxToken token, params object[] args)
     {
-        var location = token.GetLocation();
-        return new(descriptor, location.SourceTree, location.SourceSpan, args.Select(static arg => arg.ToString()).ToImmutableArray());
+        return new(descriptor, token.SyntaxTree, token.Span, args.Select(static arg => arg.ToString()).ToImmutableArray());
     }
 
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, params object[] args)
     {
-        var location = node.GetLocation();
-        return new(descriptor, location.SourceTree, location.SourceSpan, args.Select(static arg => arg.ToString()).ToImmutableArray());
+        return new(descriptor, node.SyntaxTree, node.Span, args.Select(static arg => arg.ToString()).ToImmutableArray());
     }
 }
