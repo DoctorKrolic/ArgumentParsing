@@ -302,6 +302,154 @@ public sealed class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
+    [Fact]
+    public async Task OptionsType_UnannotatedRequiredProperty_NoSetter_NoCustomDiagnostics()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                public required int {|CS9034:A|} { get; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Theory]
+    [InlineData("public", "private")]
+    [InlineData("public", "protected")]
+    [InlineData("public", "internal")]
+    [InlineData("public", "private protected")]
+    [InlineData("public", "protected internal")]
+    [InlineData("internal", "private")]
+    [InlineData("internal", "protected")]
+    [InlineData("internal", "private protected")]
+    [InlineData("", "private")]
+    [InlineData("", "protected")]
+    [InlineData("", "private protected")]
+    public async Task OptionsType_UnannotatedRequiredProperty_TooLowPropertyAccessibility_NoCustomDiagnostics(string optionsTypeAccessibility, string propertyAccessibility)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            {{optionsTypeAccessibility}} class MyOptions
+            {
+                {{propertyAccessibility}} required int {|CS9032:A|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Theory]
+    [InlineData("public", "private")]
+    [InlineData("public", "protected")]
+    [InlineData("public", "internal")]
+    [InlineData("public", "private protected")]
+    [InlineData("public", "protected internal")]
+    [InlineData("internal", "private")]
+    [InlineData("internal", "protected")]
+    [InlineData("internal", "private protected")]
+    [InlineData("", "private")]
+    [InlineData("", "protected")]
+    [InlineData("", "private protected")]
+    public async Task OptionsType_UnannotatedRequiredProperty_TooLowSetterAccessibility_NoCustomDiagnostics(string optionsTypeAccessibility, string setterAccessibility)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            {{optionsTypeAccessibility}} class MyOptions
+            {
+                public required int {|CS9032:A|} { get; {{setterAccessibility}} set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Theory]
+    [InlineData("public", "public")]
+    [InlineData("internal", "public")]
+    [InlineData("internal", "internal")]
+    [InlineData("internal", "protected internal")]
+    [InlineData("", "internal")]
+    [InlineData("", "protected internal")]
+    public async Task OptionsType_UnannotatedRequiredProperty_ValidPropertyAccessibility(string optionsTypeAccessibility, string propertyAccessibility)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            {{optionsTypeAccessibility}} class MyOptions
+            {
+                {{propertyAccessibility}} required int {|ARGP0008:A|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Theory]
+    [InlineData("internal", "internal")]
+    [InlineData("internal", "protected internal")]
+    [InlineData("", "internal")]
+    [InlineData("", "protected internal")]
+    public async Task OptionsType_UnannotatedRequiredProperty_ValidSetterAccessibility(string optionsTypeAccessibility, string setterAccessibility)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            {{optionsTypeAccessibility}} class MyOptions
+            {
+                public required int {|ARGP0008:A|} { get; {{setterAccessibility}} set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Theory]
+    [InlineData("public", "public")]
+    [InlineData("internal", "public")]
+    public async Task OptionsType_UnannotatedRequiredProperty_SetterIsMoreAccessibleThanProperty(string optionsTypeAccessibility, string setterAccessibility)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            {{optionsTypeAccessibility}} class MyOptions
+            {
+                public required int {|ARGP0008:A|} { get; {{setterAccessibility}} {|CS0273:set|}; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     private static async Task VerifyGeneratorAsync(string source, params (string Hint, string Content)[] generatedDocuments)
     {
         var test = new CSharpSourceGeneratorTest<ArgumentParserGenerator>()

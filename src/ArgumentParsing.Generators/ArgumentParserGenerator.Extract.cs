@@ -150,6 +150,70 @@ public partial class ArgumentParserGenerator
                     diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredFieldInOptionsTypeIsNotAllowed, member));
                 }
             }
+
+            if (member is not IPropertySymbol property)
+            {
+                continue;
+            }
+
+            var hasOptionAttribute = false;
+
+            var hasShortNameFromAttribute = false;
+            char? shortNameFromAttribute = null;
+
+            var hasLongNameFromAttribute = false;
+            string? longNameFromAttribute = null;
+
+            var optionAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.OptionAttribute")!;
+
+            foreach (var attr in property.GetAttributes())
+            {
+                if (attr.AttributeClass?.Equals(optionAttributeType, SymbolEqualityComparer.Default) != true)
+                {
+                    continue;
+                }
+
+                hasOptionAttribute = true;
+
+                foreach (var constructorArg in attr.ConstructorArguments)
+                {
+                    var argType = constructorArg.Type;
+                    var argValue = constructorArg.Value;
+
+                    if (argType is null)
+                    {
+                        continue;
+                    }
+
+                    if (argType is INamedTypeSymbol { MetadataName: "Nullable`1", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true }, TypeArguments: [{ SpecialType: SpecialType.System_Char }] })
+                    {
+                        hasShortNameFromAttribute = true;
+                        shortNameFromAttribute = (char?)argValue;
+                    }
+                    else if (argType.SpecialType == SpecialType.System_String)
+                    {
+                        hasLongNameFromAttribute = true;
+                        longNameFromAttribute = (string?)argValue;
+                    }
+                }
+            }
+
+            if (!hasOptionAttribute)
+            {
+                if (property.IsRequired)
+                {
+                    hasErrors = true;
+
+                    if (property.SetMethod is not null &&
+                        property.DeclaredAccessibility >= optionsType.DeclaredAccessibility &&
+                        property.SetMethod.DeclaredAccessibility >= optionsType.DeclaredAccessibility)
+                    {
+                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredPropertyMustBeOptionOrValue, property));
+                    }
+                }
+
+                continue;
+            }
         }
 
         if (hasErrors)

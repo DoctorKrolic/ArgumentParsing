@@ -61,4 +61,12 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor RequiredPropertyMustBeOptionOrValue = new(
+        id: "ARGP0008",
+        title: "Required property must be option or value",
+        messageFormat: "Required property must be marked wither with 'Option' or 'Value' attribute",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
