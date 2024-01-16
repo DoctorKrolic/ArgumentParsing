@@ -2,6 +2,7 @@ using ArgumentParsing.Generators;
 using ArgumentParsing.Tests.Unit.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Testing;
 
 namespace ArgumentParsing.Tests.Unit;
 
@@ -246,6 +247,61 @@ public sealed class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
+    [Theory]
+    [InlineData("public", "public")]
+    [InlineData("internal", "public")]
+    [InlineData("internal", "internal")]
+    [InlineData("internal", "protected internal")]
+    [InlineData("", "internal")]
+    [InlineData("", "protected internal")]
+    public async Task OptionsType_RequiredField(string optionsTypeAccessibility, string fieldAccessibility)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            {{optionsTypeAccessibility}} class MyOptions
+            {
+                {{fieldAccessibility}} required int {|ARGP0007:a|};
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Theory]
+    [InlineData("public", "private")]
+    [InlineData("public", "protected")]
+    [InlineData("public", "internal")]
+    [InlineData("public", "private protected")]
+    [InlineData("public", "protected internal")]
+    [InlineData("internal", "private")]
+    [InlineData("internal", "protected")]
+    [InlineData("internal", "private protected")]
+    [InlineData("", "private")]
+    [InlineData("", "protected")]
+    [InlineData("", "private protected")]
+    public async Task OptionsType_RequiredField_TooLowFieldAccessibility_NoCustomDiagnostic(string optionsTypeAccessibility, string fieldAccessibility)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            {{optionsTypeAccessibility}} class MyOptions
+            {
+                {{fieldAccessibility}} required int {|CS9032:a|};
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     private static async Task VerifyGeneratorAsync(string source, params (string Hint, string Content)[] generatedDocuments)
     {
         var test = new CSharpSourceGeneratorTest<ArgumentParserGenerator>()
@@ -267,7 +323,8 @@ public sealed class ArgumentParserGeneratorTests
                     MetadataReference.CreateFromFile(typeof(GeneratedArgumentParserAttribute).Assembly.Location),
                 }
             },
-            LanguageVersion = LanguageVersion.Latest
+            LanguageVersion = LanguageVersion.Latest,
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net80
         };
 
         foreach (var (hint, content) in generatedDocuments)

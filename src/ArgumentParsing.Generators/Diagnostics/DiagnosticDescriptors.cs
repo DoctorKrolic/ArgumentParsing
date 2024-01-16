@@ -53,4 +53,12 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor RequiredFieldInOptionsTypeIsNotAllowed = new(
+        id: "ARGP0007",
+        title: "Required field is not allowed",
+        messageFormat: "Required fields are not allowed in options type",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

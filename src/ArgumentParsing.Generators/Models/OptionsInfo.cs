@@ -1,3 +1,5 @@
-﻿namespace ArgumentParsing.Generators.Models;
+﻿using ArgumentParsing.Generators.Utils;
 
-internal sealed record OptionsInfo(string QualifiedTypeName);
+namespace ArgumentParsing.Generators.Models;
+
+internal sealed record OptionsInfo(string QualifiedTypeName, ImmutableEquatableArray<OptionInfo> OptionInfos);

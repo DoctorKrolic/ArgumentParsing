@@ -104,16 +104,16 @@ public partial class ArgumentParserGenerator
 
         if (validOptionsType is null)
         {
-            var diagnosticsArr = diagnosticsBuilder.ToImmutable();
-            return (null, ImmutableEquatableArray.AsEquatableArray(diagnosticsArr));
+            return (null, diagnosticsBuilder.ToImmutable());
         }
 
-        // TODO: analyze and extract information from options type
+        var (optionsInfo, optionsDiagnostics) = AnalyzeOptionsType(validOptionsType, context.SemanticModel.Compilation);
+        hasErrors |= optionsInfo is null;
+        diagnosticsBuilder.AddRange(optionsDiagnostics);
 
         if (hasErrors)
         {
-            var diagnosticsArr = diagnosticsBuilder.ToImmutable();
-            return (null, ImmutableEquatableArray.AsEquatableArray(diagnosticsArr));
+            return (null, diagnosticsBuilder.ToImmutable());
         }
 
         Debug.Assert(parameterInfo is not null);
@@ -127,8 +127,40 @@ public partial class ArgumentParserGenerator
         var argumentParserInfo = new ArgumentParserInfo(
             HierarchyInfo.From(argumentParserMethodSymbol.ContainingType),
             methodInfo,
-            new(validOptionsType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted))));
+            optionsInfo!);
 
-        return (argumentParserInfo, ImmutableEquatableArray<DiagnosticInfo>.Empty);
+        return (argumentParserInfo, diagnosticsBuilder.ToImmutable());
+    }
+
+    private static (OptionsInfo? OptionsInfo, ImmutableArray<DiagnosticInfo> Diagnostics) AnalyzeOptionsType(INamedTypeSymbol optionsType, Compilation compilation)
+    {
+        var optionsBuilder = ImmutableArray.CreateBuilder<OptionInfo>();
+        var diagnosticsBuilder = ImmutableArray.CreateBuilder<DiagnosticInfo>();
+
+        var hasErrors = false;
+
+        foreach (var member in optionsType.GetMembers())
+        {
+            if (member is IFieldSymbol { IsRequired: true })
+            {
+                hasErrors = true;
+
+                if (member.DeclaredAccessibility >= optionsType.DeclaredAccessibility)
+                {
+                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredFieldInOptionsTypeIsNotAllowed, member));
+                }
+            }
+        }
+
+        if (hasErrors)
+        {
+            return (null, diagnosticsBuilder.ToImmutable());
+        }
+
+        var optionsInfo = new OptionsInfo(
+            optionsType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)),
+            optionsBuilder.ToImmutable());
+
+        return (optionsInfo, diagnosticsBuilder.ToImmutable());
     }
 }

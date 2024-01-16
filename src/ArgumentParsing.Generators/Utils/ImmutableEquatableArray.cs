@@ -79,7 +79,7 @@ internal readonly struct ImmutableEquatableArray<T>(ImmutableArray<T> array) : I
         }
         else
         {
-            foreach (T item in array)
+            foreach (var item in array)
             {
                 hashCode.Add(item);
             }
