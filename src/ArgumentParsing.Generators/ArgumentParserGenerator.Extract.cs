@@ -220,6 +220,11 @@ public partial class ArgumentParserGenerator
                 hasErrors = true;
                 diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.PropertyIsNotAccessible, property));
             }
+            else if (property is not { SetMethod.DeclaredAccessibility: > Accessibility.Internal })
+            {
+                hasErrors = true;
+                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.PropertyMustHaveAccessibleSetter, (ISymbol?)property.SetMethod ?? property));
+            }
         }
 
         if (hasErrors)

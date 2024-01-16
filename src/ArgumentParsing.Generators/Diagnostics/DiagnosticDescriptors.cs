@@ -77,4 +77,14 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor PropertyMustHaveAccessibleSetter = new(
+        id: "ARGP0010",
+        title: "Property must have accessible setter",
+        messageFormat: "In order for the property to be used in argument parsing it must have a setter with at least 'internal' accessibility",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    // Reserve ARGP0011 to suggest to use `init` for option property if possible (will be implemented as an analyzer)
 }
