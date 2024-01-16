@@ -450,6 +450,29 @@ public sealed class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
+    [Theory]
+    [InlineData("private")]
+    [InlineData("protected")]
+    [InlineData("private protected")]
+    public async Task OptionsType_TooLowAccessibilityOfOptionProperty(string accessibility)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option]
+                {{accessibility}} int {|ARGP0009:A|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     private static async Task VerifyGeneratorAsync(string source, params (string Hint, string Content)[] generatedDocuments)
     {
         var test = new CSharpSourceGeneratorTest<ArgumentParserGenerator>()

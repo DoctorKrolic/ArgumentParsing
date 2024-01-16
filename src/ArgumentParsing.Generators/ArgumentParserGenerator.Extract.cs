@@ -214,6 +214,12 @@ public partial class ArgumentParserGenerator
 
                 continue;
             }
+
+            if (property.DeclaredAccessibility < Accessibility.Internal)
+            {
+                hasErrors = true;
+                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.PropertyIsNotAccessible, property));
+            }
         }
 
         if (hasErrors)

@@ -69,4 +69,12 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor PropertyIsNotAccessible = new(
+        id: "ARGP0009",
+        title: "Property is not accessible",
+        messageFormat: "In order for the property to be used in argument parsing it must have at least 'internal' accessibility",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
