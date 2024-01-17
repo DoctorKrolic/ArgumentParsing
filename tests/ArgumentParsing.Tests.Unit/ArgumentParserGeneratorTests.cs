@@ -466,7 +466,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option]
-                {{accessibility}} int {|ARGP0009:A|} { get; set; }
+                {{accessibility}} string {|ARGP0009:A|} { get; set; }
             }
             """;
 
@@ -486,7 +486,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option]
-                public int {|ARGP0010:A|} { get; }
+                public string {|ARGP0010:A|} { get; }
             }
             """;
 
@@ -509,7 +509,127 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option]
-                public int A { get; {{accessibility}} {|ARGP0010:set|}; }
+                public string A { get; {{accessibility}} {|ARGP0010:set|}; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidShortName_FromPropertyName()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option("a")]
+                public string {|ARGP0012:_A|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidShortName_FromAttribute()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option('%')]
+                public string {|ARGP0012:A|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidLongName_FromPropertyName()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option('a')]
+                public string {|ARGP0013:_A|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidLongName_FromAttribute()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option("my-long-$name$")]
+                public string {|ARGP0013:A|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidShortAndLongName_FromPropertyName()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option]
+                public string {|ARGP0012:{|ARGP0013:_A|}|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidShortAndLongName_FromAttribute()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option('^', "my-long-$name$")]
+                public string {|ARGP0012:{|ARGP0013:A|}|} { get; set; }
             }
             """;
 

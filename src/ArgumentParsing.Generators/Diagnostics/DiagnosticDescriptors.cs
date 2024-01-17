@@ -87,4 +87,20 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true);
 
     // Reserve ARGP0011 to suggest to use `init` for option property if possible (will be implemented as an analyzer)
+
+    public static readonly DiagnosticDescriptor InvalidShortName = new(
+        id: "ARGP0012",
+        title: "Invalid short name of an option",
+        messageFormat: "Short name '{0}' is invalid. Short name of an option must be either empty (null) or a letter",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidLongName = new(
+        id: "ARGP0013",
+        title: "Invalid long name of an option",
+        messageFormat: "Long name '{0}' is invalid. Long name of an option must be either empty (null) or start with a letter and contain only letters, digits and possibly '-' as separators",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

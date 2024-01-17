@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using ArgumentParsing.Generators.Diagnostics;
+using ArgumentParsing.Generators.Extensions;
 using ArgumentParsing.Generators.Models;
 using ArgumentParsing.Generators.Utils;
 using Microsoft.CodeAnalysis;
@@ -159,10 +160,10 @@ public partial class ArgumentParserGenerator
             var hasOptionAttribute = false;
 
             var hasShortNameFromAttribute = false;
-            char? shortNameFromAttribute = null;
-
             var hasLongNameFromAttribute = false;
-            string? longNameFromAttribute = null;
+
+            char? shortName = null;
+            string? longName = null;
 
             var optionAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.OptionAttribute")!;
 
@@ -185,15 +186,15 @@ public partial class ArgumentParserGenerator
                         continue;
                     }
 
-                    if (argType is INamedTypeSymbol { MetadataName: "Nullable`1", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true }, TypeArguments: [{ SpecialType: SpecialType.System_Char }] })
+                    if (argType.SpecialType == SpecialType.System_Char)
                     {
                         hasShortNameFromAttribute = true;
-                        shortNameFromAttribute = (char?)argValue;
+                        shortName = (char)argValue!;
                     }
                     else if (argType.SpecialType == SpecialType.System_String)
                     {
                         hasLongNameFromAttribute = true;
-                        longNameFromAttribute = (string?)argValue;
+                        longName = (string?)argValue;
                     }
                 }
             }
@@ -224,6 +225,39 @@ public partial class ArgumentParserGenerator
             {
                 hasErrors = true;
                 diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.PropertyMustHaveAccessibleSetter, (ISymbol?)property.SetMethod ?? property));
+            }
+
+            var propertyName = property.Name;
+
+            if (!hasShortNameFromAttribute)
+            {
+                shortName = char.ToLowerInvariant(propertyName[0]);
+            }
+
+            if (shortName.HasValue && !char.IsLetter(shortName.Value))
+            {
+                hasErrors = true;
+                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidShortName, property, shortName!.Value));
+            }
+            else
+            {
+                // Analyze for short name duplicates
+            }
+
+            if (!hasLongNameFromAttribute)
+            {
+                longName = propertyName.ToKebabCase();
+            }
+
+            if (longName is not null &&
+                !(char.IsLetter(longName[0]) && longName.Replace("-", string.Empty).All(char.IsLetterOrDigit)))
+            {
+                hasErrors = true;
+                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidLongName, property, longName!));
+            }
+            else
+            {
+                // Analyze for long name duplicates
             }
         }
 

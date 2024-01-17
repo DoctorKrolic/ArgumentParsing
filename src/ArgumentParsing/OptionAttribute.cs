@@ -21,7 +21,7 @@ public sealed class OptionAttribute : Attribute
         LongName = longName;
     }
 
-    public OptionAttribute(char? shortName, string? longName)
+    public OptionAttribute(char shortName, string? longName)
     {
         ShortName = shortName;
         LongName = longName;
