@@ -140,6 +140,12 @@ public partial class ArgumentParserGenerator
 
         var hasErrors = false;
 
+        var seenShortNames = new HashSet<char>();
+        var seenLongNames = new HashSet<string>();
+
+        var firstPropertyOfShortNameWithNoError = new Dictionary<char, IPropertySymbol>();
+        var firstPropertyOfLongNameWithNoError = new Dictionary<string, IPropertySymbol>();
+
         foreach (var member in optionsType.GetMembers())
         {
             if (member is IFieldSymbol { IsRequired: true })
@@ -239,9 +245,26 @@ public partial class ArgumentParserGenerator
                 hasErrors = true;
                 diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidShortName, property, shortName!.Value));
             }
-            else
+            else if (shortName.HasValue)
             {
-                // Analyze for short name duplicates
+                var sn = shortName.Value;
+
+                if (seenShortNames.Add(sn))
+                {
+                    firstPropertyOfShortNameWithNoError.Add(sn, property);
+                }
+                else
+                {
+                    hasErrors = true;
+
+                    if (firstPropertyOfShortNameWithNoError.TryGetValue(sn, out var previousProperty))
+                    {
+                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateShortName, previousProperty, sn.ToString()));
+                        firstPropertyOfShortNameWithNoError.Remove(sn);
+                    }
+
+                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateShortName, property, sn.ToString()));
+                }
             }
 
             if (!hasLongNameFromAttribute)
@@ -255,9 +278,24 @@ public partial class ArgumentParserGenerator
                 hasErrors = true;
                 diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidLongName, property, longName!));
             }
-            else
+            else if (longName is not null)
             {
-                // Analyze for long name duplicates
+                if (seenLongNames.Add(longName))
+                {
+                    firstPropertyOfLongNameWithNoError.Add(longName, property);
+                }
+                else
+                {
+                    hasErrors = true;
+
+                    if (firstPropertyOfLongNameWithNoError.TryGetValue(longName, out var previousProperty))
+                    {
+                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateLongName, previousProperty, longName));
+                        firstPropertyOfLongNameWithNoError.Remove(longName);
+                    }
+
+                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateLongName, property, longName));
+                }
             }
         }
 

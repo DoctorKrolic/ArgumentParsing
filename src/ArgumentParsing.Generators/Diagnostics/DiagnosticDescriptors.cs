@@ -103,4 +103,20 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor DuplicateShortName = new(
+        id: "ARGP0014",
+        title: "Option with such short name is already defined",
+        messageFormat: "Option with short name '{0}' is already defined",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor DuplicateLongName = new(
+        id: "ARGP0015",
+        title: "Option with such long name is already defined",
+        messageFormat: "Option with long name '{0}' is already defined",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

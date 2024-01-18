@@ -636,6 +636,156 @@ public sealed class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
+    [Fact]
+    public async Task OptionsType_DuplicateShortName()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option]
+                public string {|ARGP0014:OptionA|} { get; set; }
+
+                [Option]
+                public string {|ARGP0014:OptionB|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateShortName_DuplicatesInDifferentPartialDeclarations()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            partial class MyOptions
+            {
+                [Option]
+                public string {|ARGP0014:OptionA|} { get; set; }
+            }
+
+            partial class MyOptions
+            {
+                [Option]
+                public string {|ARGP0014:OptionB|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateShortName_ThreeDuplicates()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option]
+                public string {|ARGP0014:OptionA|} { get; set; }
+
+                [Option]
+                public string {|ARGP0014:OptionB|} { get; set; }
+
+                [Option]
+                public string {|ARGP0014:OptionC|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateLongName()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option("option")]
+                public string {|ARGP0015:A|} { get; set; }
+
+                [Option("option")]
+                public string {|ARGP0015:B|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateLongName_DuplicatesInDifferentPartialDeclarations()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            partial class MyOptions
+            {
+                [Option("option")]
+                public string {|ARGP0015:A|} { get; set; }
+            }
+
+            partial class MyOptions
+            {
+                [Option("option")]
+                public string {|ARGP0015:B|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateLongName_ThreeDuplicates()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option("option")]
+                public string {|ARGP0015:A|} { get; set; }
+
+                [Option("option")]
+                public string {|ARGP0015:B|} { get; set; }
+
+                [Option("option")]
+                public string {|ARGP0015:C|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     private static async Task VerifyGeneratorAsync(string source, params (string Hint, string Content)[] generatedDocuments)
     {
         var test = new CSharpSourceGeneratorTest<ArgumentParserGenerator>()
