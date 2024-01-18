@@ -119,4 +119,12 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidPropertyType = new(
+        id: "ARGP0016",
+        title: "Invalid property type",
+        messageFormat: "Type '{0}' is invalid for property used in argument parsing",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

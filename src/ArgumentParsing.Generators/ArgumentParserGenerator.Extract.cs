@@ -297,6 +297,30 @@ public partial class ArgumentParserGenerator
                     diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateLongName, property, longName));
                 }
             }
+
+            ParseStrategy? parseStrategy = property.Type.SpecialType switch
+            {
+                SpecialType.System_String => ParseStrategy.String,
+                _ => null,
+            };
+
+            if (!parseStrategy.HasValue)
+            {
+                hasErrors = true;
+
+                var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
+                var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
+
+                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidPropertyType, diagnosticLocation, property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                continue;
+            }
+
+            optionsBuilder.Add(new(
+                property.Name,
+                property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                shortName,
+                longName,
+                parseStrategy.Value));
         }
 
         if (hasErrors)

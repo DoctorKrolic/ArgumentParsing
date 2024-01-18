@@ -18,6 +18,11 @@ internal sealed record DiagnosticInfo(
             : Diagnostic.Create(Descriptor, null, Arguments.ToArray());
     }
 
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location, params object[] args)
+    {
+        return new(descriptor, location.SourceTree, location.SourceSpan, args.Select(static arg => arg.ToString()).ToImmutableArray());
+    }
+
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, ISymbol symbol, params object[] args)
     {
         var location = symbol.Locations.First();
