@@ -557,6 +557,26 @@ public sealed class ArgumentParserGeneratorTests
     }
 
     [Fact]
+    public async Task OptionsType_InvalidShortName_FromAttribute_EmptyChar_NoCustomDiagnostics()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option({|CS1011:|}'')]
+                public string A { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
     public async Task OptionsType_InvalidLongName_FromPropertyName()
     {
         var source = """

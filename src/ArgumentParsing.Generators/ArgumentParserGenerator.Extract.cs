@@ -243,7 +243,13 @@ public partial class ArgumentParserGenerator
             if (shortName.HasValue && !char.IsLetter(shortName.Value))
             {
                 hasErrors = true;
-                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidShortName, property, shortName!.Value));
+
+                // '\uffff' is a special value which is produced when user doesn't specify any char ('').
+                // This will be errored by the C# compiler, so we don't want to add our custom diagnostic
+                if (shortName.Value != '\uffff')
+                {
+                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidShortName, property, shortName!.Value));
+                }
             }
             else if (shortName.HasValue)
             {
