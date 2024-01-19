@@ -24,9 +24,11 @@ internal sealed class CodeWriter
         _textWriter.Write(s);
     }
 
-    public void WriteLine(string s)
+    public void WriteLine(string s, int identDelta = 0)
     {
+        _textWriter.Indent += identDelta;
         _textWriter.WriteLine(s);
+        _textWriter.Indent -= identDelta;
     }
 
     public void WriteLine()
