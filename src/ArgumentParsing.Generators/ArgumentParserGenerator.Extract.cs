@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using ArgumentParsing.Generators.Diagnostics;
 using ArgumentParsing.Generators.Extensions;

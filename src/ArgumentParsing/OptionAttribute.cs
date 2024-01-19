@@ -1,4 +1,4 @@
-﻿namespace ArgumentParsing;
+namespace ArgumentParsing;
 
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class OptionAttribute : Attribute

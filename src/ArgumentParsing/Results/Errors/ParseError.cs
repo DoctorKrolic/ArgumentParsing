@@ -1,4 +1,4 @@
-﻿namespace ArgumentParsing.Results.Errors;
+namespace ArgumentParsing.Results.Errors;
 
 public abstract class ParseError(string messageFormat) : IEquatable<ParseError>
 {

@@ -1,4 +1,4 @@
-﻿using ArgumentParsing.Generators.Utils;
+using ArgumentParsing.Generators.Utils;
 
 namespace ArgumentParsing.Generators.Models;
 

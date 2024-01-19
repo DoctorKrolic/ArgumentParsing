@@ -1,4 +1,4 @@
-﻿using ArgumentParsing.Generators.Extensions;
+using ArgumentParsing.Generators.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 

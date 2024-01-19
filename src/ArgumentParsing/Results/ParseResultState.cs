@@ -1,4 +1,4 @@
-﻿namespace ArgumentParsing.Results;
+namespace ArgumentParsing.Results;
 
 public enum ParseResultState : byte
 {

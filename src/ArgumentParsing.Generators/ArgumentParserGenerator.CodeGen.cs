@@ -1,4 +1,4 @@
-﻿using ArgumentParsing.Generators.CodeGen;
+using ArgumentParsing.Generators.CodeGen;
 using ArgumentParsing.Generators.Models;
 using Microsoft.CodeAnalysis;
 

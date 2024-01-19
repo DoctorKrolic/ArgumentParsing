@@ -1,4 +1,4 @@
-﻿namespace ArgumentParsing.Generators.Extensions;
+namespace ArgumentParsing.Generators.Extensions;
 
 internal static class StringExtensions
 {

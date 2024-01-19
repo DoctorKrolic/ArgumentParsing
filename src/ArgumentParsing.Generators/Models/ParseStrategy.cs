@@ -1,4 +1,4 @@
-﻿namespace ArgumentParsing.Generators.Models;
+namespace ArgumentParsing.Generators.Models;
 
 internal enum ParseStrategy : byte
 {

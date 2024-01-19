@@ -1,10 +1,10 @@
-﻿using System.CodeDom.Compiler;
+using System.CodeDom.Compiler;
 
 namespace ArgumentParsing.Generators.CodeGen;
 
 internal sealed class CodeWriter
 {
-    private readonly StringWriter _sw; 
+    private readonly StringWriter _sw;
     private readonly IndentedTextWriter _textWriter;
 
     public int Ident

@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Text;
 using ArgumentParsing.Generators.Utils;
 using Microsoft.CodeAnalysis;

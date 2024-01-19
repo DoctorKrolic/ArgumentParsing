@@ -1,4 +1,4 @@
-﻿using ArgumentParsing.Results.Errors;
+using ArgumentParsing.Results.Errors;
 
 namespace ArgumentParsing.Results;
 
