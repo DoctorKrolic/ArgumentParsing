@@ -1,8 +1,11 @@
 using System.Collections;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace ArgumentParsing.Results.Errors;
 
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(DebugView))]
 public sealed class ParseErrorCollection : IReadOnlyCollection<ParseError>
 {
     private readonly HashSet<ParseError> _errors;
@@ -24,9 +27,9 @@ public sealed class ParseErrorCollection : IReadOnlyCollection<ParseError>
     public static ParseErrorCollection AsErrorCollection(HashSet<ParseError> errors)
         => new(errors);
 
-    public readonly struct Enumerator : IEnumerator<ParseError>
+    public struct Enumerator : IEnumerator<ParseError>
     {
-        private readonly HashSet<ParseError>.Enumerator _enumerator;
+        private HashSet<ParseError>.Enumerator _enumerator;
 
         public ParseError Current => _enumerator.Current;
 
@@ -42,5 +45,11 @@ public sealed class ParseErrorCollection : IReadOnlyCollection<ParseError>
         object IEnumerator.Current => Current;
 
         void IEnumerator.Reset() => ((IEnumerator)_enumerator).Reset();
+    }
+
+    private class DebugView(ParseErrorCollection errors)
+    {
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public ParseError[] Items => errors.ToArray();
     }
 }

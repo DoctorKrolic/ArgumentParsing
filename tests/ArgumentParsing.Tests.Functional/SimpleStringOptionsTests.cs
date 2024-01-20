@@ -1,4 +1,5 @@
 using ArgumentParsing.Results;
+using ArgumentParsing.Results.Errors;
 
 namespace ArgumentParsing.Tests.Functional;
 
@@ -44,5 +45,30 @@ public sealed partial class SimpleStringOptionsTests
         Assert.Equal("c", options.OptionC);
 
         Assert.Null(result.Errors);
+    }
+
+    [Theory]
+    [InlineData("-a a -b b -c c -d e", "d", "-d")]
+    [InlineData("-a a -b b -de -c c", "d", "-de")]
+    [InlineData("-dabc -a a -b b -c c", "d", "-dabc")]
+    [InlineData("-a a --option-d e -b b -c c", "option-d", "--option-d")]
+    [InlineData("-a a --option-d=e -b b -c c", "option-d", "--option-d=e")]
+    public void UnknownOptionError(string argsString, string unknownOptionName, string unknownOptionArgument)
+    {
+        var args = argsString.Split(' ');
+        var result = ParseArguments(args);
+
+        Assert.Equal(ParseResultState.ParsedWithErrors, result.State);
+
+        Assert.Null(result.Options);
+
+        var errors = result.Errors;
+        Assert.NotNull(errors);
+
+        var error = Assert.Single(errors);
+        var unknownOptionError = Assert.IsType<UnknownOptionError>(error);
+
+        Assert.Equal(unknownOptionName, unknownOptionError.OptionName);
+        Assert.Equal(unknownOptionArgument, unknownOptionError.ContainingArgument);
     }
 }

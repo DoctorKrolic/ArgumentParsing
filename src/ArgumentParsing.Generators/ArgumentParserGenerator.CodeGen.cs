@@ -41,6 +41,7 @@ public partial class ArgumentParserGenerator
 
         writer.WriteLine();
         writer.WriteLine("int state = 0;");
+        writer.WriteLine("global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;");
         writer.WriteLine("global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];");
         writer.WriteLine();
 
@@ -53,7 +54,8 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg).Slice(2);");
         writer.WriteLine("int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');");
         writer.WriteLine();
-        writer.WriteLine("switch (slice[longArgSplit[0]])");
+        writer.WriteLine("global::System.ReadOnlySpan<char> longOptionName = slice[longArgSplit[0]];");
+        writer.WriteLine("switch (longOptionName)");
         writer.OpenBlock();
 
         for (var i = 0; i < optionInfos.Length; i++)
@@ -66,6 +68,13 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("break;");
             writer.Ident--;
         }
+
+        writer.WriteLine("default:");
+        writer.Ident++;
+        writer.WriteLine("errors ??= new();");
+        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(longOptionName.ToString(), arg));");
+        writer.WriteLine("break;");
+        writer.Ident--;
 
         writer.CloseBlock();
 
@@ -92,7 +101,8 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("goto decodeValue;");
         writer.CloseBlock();
         writer.WriteLine();
-        writer.WriteLine("switch (slice[i])");
+        writer.WriteLine("char shortOptionName = slice[i];");
+        writer.WriteLine("switch (shortOptionName)");
         writer.OpenBlock();
 
         for (var i = 0; i < optionInfos.Length; i++)
@@ -105,6 +115,13 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("break;");
             writer.Ident--;
         }
+
+        writer.WriteLine("default:");
+        writer.Ident++;
+        writer.WriteLine("errors ??= new();");
+        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(shortOptionName.ToString(), arg));");
+        writer.WriteLine("goto continueMainLoop;");
+        writer.Ident--;
 
         writer.CloseBlock();
         writer.CloseBlock();
@@ -133,6 +150,16 @@ public partial class ArgumentParserGenerator
 
         writer.WriteLine();
         writer.WriteLine("state = 0;");
+
+        writer.WriteLine();
+        writer.WriteLine("continueMainLoop:", identDelta: -1);
+        writer.WriteLine(";");
+        writer.CloseBlock();
+
+        writer.WriteLine();
+        writer.WriteLine("if (errors != null)");
+        writer.OpenBlock();
+        writer.WriteLine($"return new {method.ReturnType}(global::ArgumentParsing.Results.Errors.ParseErrorCollection.AsErrorCollection(errors));");
         writer.CloseBlock();
 
         var optionsType = $"global::{qualifiedName}";
