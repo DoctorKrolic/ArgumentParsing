@@ -73,7 +73,11 @@ public partial class ArgumentParserGenerator
         writer.Ident++;
         writer.WriteLine("errors ??= new();");
         writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(longOptionName.ToString(), arg));");
-        writer.WriteLine("break;");
+        writer.WriteLine("if (written == 1)");
+        writer.OpenBlock();
+        writer.WriteLine("state = -1;");
+        writer.CloseBlock();
+        writer.WriteLine("continue;");
         writer.Ident--;
 
         writer.CloseBlock();
@@ -120,6 +124,7 @@ public partial class ArgumentParserGenerator
         writer.Ident++;
         writer.WriteLine("errors ??= new();");
         writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(shortOptionName.ToString(), arg));");
+        writer.WriteLine("state = -1;");
         writer.WriteLine("goto continueMainLoop;");
         writer.Ident--;
 
@@ -136,6 +141,10 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("decodeValue:", identDelta: -1);
         writer.WriteLine("switch (state)");
         writer.OpenBlock();
+        writer.WriteLine("case -1:");
+        writer.Ident++;
+        writer.WriteLine("break;");
+        writer.Ident--;
 
         for (var i = 0; i < optionInfos.Length; i++)
         {
@@ -145,6 +154,13 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("break;");
             writer.Ident--;
         }
+
+        writer.WriteLine("default:");
+        writer.Ident++;
+        writer.WriteLine("errors ??= new();");
+        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+        writer.WriteLine("break;");
+        writer.Ident--;
 
         writer.CloseBlock();
 

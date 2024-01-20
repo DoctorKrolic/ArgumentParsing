@@ -71,4 +71,47 @@ public sealed partial class SimpleStringOptionsTests
         Assert.Equal(unknownOptionName, unknownOptionError.OptionName);
         Assert.Equal(unknownOptionArgument, unknownOptionError.ContainingArgument);
     }
+
+    [Theory]
+    [InlineData("-c c d", "d")]
+    [InlineData("-b b de", "de")]
+    [InlineData("d=e -a a", "d=e")]
+    [InlineData("--option-a a d -b b", "d")]
+    [InlineData("--option-b=b d", "d")]
+    public void UnrecognizedArgumentError(string argsString, string unrecognizedArgument)
+    {
+        var args = argsString.Split(' ');
+        var result = ParseArguments(args);
+
+        Assert.Equal(ParseResultState.ParsedWithErrors, result.State);
+
+        Assert.Null(result.Options);
+
+        var errors = result.Errors;
+        Assert.NotNull(errors);
+
+        var error = Assert.Single(errors);
+        var unrecognizedArgumentError = Assert.IsType<UnrecognizedArgumentError>(error);
+
+        Assert.Equal(unrecognizedArgument, unrecognizedArgumentError.Argument);
+    }
+
+    [Theory]
+    [InlineData("-d e")]
+    [InlineData("--option-d f")]
+    public void NoUnrecognizedArgumentErrorAfterUnknownOption(string argsString)
+    {
+        var args = argsString.Split(' ');
+        var result = ParseArguments(args);
+
+        Assert.Equal(ParseResultState.ParsedWithErrors, result.State);
+
+        Assert.Null(result.Options);
+
+        var errors = result.Errors;
+        Assert.NotNull(errors);
+
+        var error = Assert.Single(errors);
+        Assert.IsType<UnknownOptionError>(error);
+    }
 }
