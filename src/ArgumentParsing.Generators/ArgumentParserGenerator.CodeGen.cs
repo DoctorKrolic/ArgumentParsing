@@ -43,11 +43,21 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("int state = 0;");
         writer.WriteLine("global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;");
         writer.WriteLine("global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];");
+        writer.WriteLine("string previousArgument = null;");
         writer.WriteLine();
 
         writer.WriteLine($"foreach (string arg in {method.ArgsParameterInfo.Name})");
         writer.OpenBlock();
         writer.WriteLine("global::System.ReadOnlySpan<char> val;");
+        writer.WriteLine();
+        writer.WriteLine("bool startsOption = arg.StartsWith('-');");
+        writer.WriteLine();
+        writer.WriteLine("if (state > 0 && startsOption)");
+        writer.OpenBlock();
+        writer.WriteLine("errors ??= new();");
+        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));");
+        writer.WriteLine("state = 0;");
+        writer.CloseBlock();
         writer.WriteLine();
         writer.WriteLine("if (arg.StartsWith(\"--\"))");
         writer.OpenBlock();
@@ -77,7 +87,7 @@ public partial class ArgumentParserGenerator
         writer.OpenBlock();
         writer.WriteLine("state = -1;");
         writer.CloseBlock();
-        writer.WriteLine("continue;");
+        writer.WriteLine("goto continueMainLoop;");
         writer.Ident--;
 
         writer.CloseBlock();
@@ -89,11 +99,11 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("goto decodeValue;");
         writer.CloseBlock();
         writer.WriteLine();
-        writer.WriteLine("continue;");
+        writer.WriteLine("goto continueMainLoop;");
         writer.CloseBlock();
 
         writer.WriteLine();
-        writer.WriteLine("if (arg.StartsWith('-'))");
+        writer.WriteLine("if (startsOption)");
         writer.OpenBlock();
         writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg).Slice(1);");
         writer.WriteLine();
@@ -131,7 +141,7 @@ public partial class ArgumentParserGenerator
         writer.CloseBlock();
         writer.CloseBlock();
         writer.WriteLine();
-        writer.WriteLine("continue;");
+        writer.WriteLine("goto continueMainLoop;");
         writer.CloseBlock();
 
         writer.WriteLine();
@@ -169,7 +179,14 @@ public partial class ArgumentParserGenerator
 
         writer.WriteLine();
         writer.WriteLine("continueMainLoop:", identDelta: -1);
-        writer.WriteLine(";");
+        writer.WriteLine("previousArgument = arg;");
+        writer.CloseBlock();
+
+        writer.WriteLine();
+        writer.WriteLine("if (state > 0)");
+        writer.OpenBlock();
+        writer.WriteLine("errors ??= new();");
+        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));");
         writer.CloseBlock();
 
         writer.WriteLine();

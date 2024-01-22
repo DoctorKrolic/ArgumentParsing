@@ -114,4 +114,29 @@ public sealed partial class SimpleStringOptionsTests
         var error = Assert.Single(errors);
         Assert.IsType<UnknownOptionError>(error);
     }
+
+    [Theory]
+    [InlineData("-a -b b -c c", "-a")]
+    [InlineData("-a a -b -c c", "-b")]
+    [InlineData("-a a -b b -c", "-c")]
+    [InlineData("--option-a --option-b b --option-c c", "--option-a")]
+    [InlineData("--option-a a --option-b --option-c c", "--option-b")]
+    [InlineData("--option-a a --option-b b --option-c", "--option-c")]
+    public void OptionValueIsNotProvidedError(string argsString, string precedingArgument)
+    {
+        var args = argsString.Split(' ');
+        var result = ParseArguments(args);
+
+        Assert.Equal(ParseResultState.ParsedWithErrors, result.State);
+
+        Assert.Null(result.Options);
+
+        var errors = result.Errors;
+        Assert.NotNull(errors);
+
+        var error = Assert.Single(errors);
+        var optionValueIsNotProvidedError = Assert.IsType<OptionValueIsNotProvidedError>(error);
+
+        Assert.Equal(precedingArgument, optionValueIsNotProvidedError.PrecedingArgument);
+    }
 }
