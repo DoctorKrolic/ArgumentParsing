@@ -204,4 +204,29 @@ public sealed partial class SimpleStringOptionsTests
                 Assert.Equal("a", dupError.OptionName);
             });
     }
+
+    [Fact]
+    public void OptionValueIsNotProvidedAndDuplicateOptionErrors()
+    {
+        var result = ParseArguments(["--option-b", "-a", "a", "-b", "b"]);
+
+        Assert.Equal(ParseResultState.ParsedWithErrors, result.State);
+
+        Assert.Null(result.Options);
+
+        var errors = result.Errors;
+        Assert.NotNull(errors);
+
+        Assert.Collection(errors,
+            e =>
+            {
+                var optValNotProvidedError = Assert.IsType<OptionValueIsNotProvidedError>(e);
+                Assert.Equal("--option-b", optValNotProvidedError.PrecedingArgument);
+            },
+            e =>
+            {
+                var dupError = Assert.IsType<DuplicateOptionError>(e);
+                Assert.Equal("b", dupError.OptionName);
+            });
+    }
 }

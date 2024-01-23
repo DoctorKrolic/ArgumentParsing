@@ -90,6 +90,7 @@ public partial class ArgumentParserGenerator
             writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError(\"{info.LongName}\"));");
             writer.CloseBlock();
             writer.WriteLine($"state = {i + 1};");
+            writer.WriteLine($"seenOptions |= 0b{usageCode.ToString()};");
             writer.WriteLine("break;");
             writer.Ident--;
         }
@@ -153,6 +154,7 @@ public partial class ArgumentParserGenerator
             writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError(\"{info.ShortName}\"));");
             writer.CloseBlock();
             writer.WriteLine($"state = {i + 1};");
+            writer.WriteLine($"seenOptions |= 0b{usageCode.ToString()};");
             writer.WriteLine("break;");
             writer.Ident--;
         }
@@ -188,9 +190,6 @@ public partial class ArgumentParserGenerator
             writer.WriteLine($"case {i + 1}:");
             writer.Ident++;
             writer.WriteLine($"{optionInfos[i].PropertyName}_val = val.ToString();");
-            usageCode.Fill('0');
-            usageCode[^(i + 1)] = '1';
-            writer.WriteLine($"seenOptions |= 0b{usageCode.ToString()};");
             writer.WriteLine("break;");
             writer.Ident--;
         }
