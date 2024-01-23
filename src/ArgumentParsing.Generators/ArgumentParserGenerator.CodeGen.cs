@@ -75,6 +75,11 @@ public partial class ArgumentParserGenerator
         {
             var info = optionInfos[i];
 
+            if (info.LongName is null)
+            {
+                continue;
+            }
+
             writer.WriteLine($"case \"{info.LongName}\":");
             writer.Ident++;
             usageCode.Fill('0');
@@ -132,6 +137,11 @@ public partial class ArgumentParserGenerator
         for (var i = 0; i < optionInfos.Length; i++)
         {
             var info = optionInfos[i];
+
+            if (!info.ShortName.HasValue)
+            {
+                continue;
+            }
 
             writer.WriteLine($"case '{info.ShortName}':");
             writer.Ident++;
