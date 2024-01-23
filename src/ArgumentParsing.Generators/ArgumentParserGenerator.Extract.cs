@@ -164,8 +164,6 @@ public partial class ArgumentParserGenerator
             }
 
             var hasOptionAttribute = false;
-
-            var hasShortNameFromAttribute = false;
             var hasLongNameFromAttribute = false;
 
             char? shortName = null;
@@ -194,7 +192,6 @@ public partial class ArgumentParserGenerator
 
                     if (argType.SpecialType == SpecialType.System_Char)
                     {
-                        hasShortNameFromAttribute = true;
                         shortName = (char)argValue!;
                     }
                     else if (argType.SpecialType == SpecialType.System_String)
@@ -234,11 +231,6 @@ public partial class ArgumentParserGenerator
             }
 
             var propertyName = property.Name;
-
-            if (!hasShortNameFromAttribute)
-            {
-                shortName = char.ToLowerInvariant(propertyName[0]);
-            }
 
             if (shortName.HasValue && !char.IsLetter(shortName.Value))
             {

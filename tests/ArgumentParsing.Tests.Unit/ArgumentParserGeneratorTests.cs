@@ -517,27 +517,7 @@ public sealed class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidShortName_FromPropertyName()
-    {
-        var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
-            class MyOptions
-            {
-                [Option("a")]
-                public string {|ARGP0012:_A|} { get; set; }
-            }
-            """;
-
-        await VerifyGeneratorAsync(source);
-    }
-
-    [Fact]
-    public async Task OptionsType_InvalidShortName_FromAttribute()
+    public async Task OptionsType_InvalidShortName()
     {
         var source = """
             partial class C
@@ -628,7 +608,7 @@ public sealed class ArgumentParserGeneratorTests
 
             class MyOptions
             {
-                [Option]
+                [Option('&')]
                 public string {|ARGP0012:{|ARGP0013:_A|}|} { get; set; }
             }
             """;
@@ -668,10 +648,10 @@ public sealed class ArgumentParserGeneratorTests
 
             class MyOptions
             {
-                [Option]
+                [Option('o')]
                 public string {|ARGP0014:OptionA|} { get; set; }
 
-                [Option]
+                [Option('o')]
                 public string {|ARGP0014:OptionB|} { get; set; }
             }
             """;
@@ -691,13 +671,13 @@ public sealed class ArgumentParserGeneratorTests
 
             partial class MyOptions
             {
-                [Option]
+                [Option('o')]
                 public string {|ARGP0014:OptionA|} { get; set; }
             }
 
             partial class MyOptions
             {
-                [Option]
+                [Option('o')]
                 public string {|ARGP0014:OptionB|} { get; set; }
             }
             """;
@@ -717,13 +697,13 @@ public sealed class ArgumentParserGeneratorTests
 
             class MyOptions
             {
-                [Option]
+                [Option('o')]
                 public string {|ARGP0014:OptionA|} { get; set; }
 
-                [Option]
+                [Option('o')]
                 public string {|ARGP0014:OptionB|} { get; set; }
 
-                [Option]
+                [Option('o')]
                 public string {|ARGP0014:OptionC|} { get; set; }
             }
             """;
