@@ -62,7 +62,7 @@ public partial class ArgumentParserGenerator
         writer.WriteLine();
         writer.WriteLine("if (arg.StartsWith(\"--\"))");
         writer.OpenBlock();
-        writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg).Slice(2);");
+        writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);");
         writer.WriteLine("int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');");
         writer.WriteLine();
         writer.WriteLine("global::System.ReadOnlySpan<char> longOptionName = slice[longArgSplit[0]];");
@@ -120,7 +120,7 @@ public partial class ArgumentParserGenerator
         writer.WriteLine();
         writer.WriteLine("if (startsOption)");
         writer.OpenBlock();
-        writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg).Slice(1);");
+        writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);");
         writer.WriteLine();
         writer.WriteLine("for (int i = 0; i < slice.Length; i++)");
         writer.OpenBlock();
