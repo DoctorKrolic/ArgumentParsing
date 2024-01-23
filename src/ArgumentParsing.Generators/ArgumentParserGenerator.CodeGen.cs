@@ -51,7 +51,7 @@ public partial class ArgumentParserGenerator
         writer.OpenBlock();
         writer.WriteLine("global::System.ReadOnlySpan<char> val;");
         writer.WriteLine();
-        writer.WriteLine("bool startsOption = arg.StartsWith('-');");
+        writer.WriteLine("bool startsOption = arg.StartsWith('-') && arg.Length > 1;");
         writer.WriteLine();
         writer.WriteLine("if (state > 0 && startsOption)");
         writer.OpenBlock();

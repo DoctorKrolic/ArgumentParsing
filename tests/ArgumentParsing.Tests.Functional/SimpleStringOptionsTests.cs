@@ -47,6 +47,23 @@ public sealed partial class SimpleStringOptionsTests
         Assert.Null(result.Errors);
     }
 
+    [Fact]
+    public void ParseSingleHyphenAsOptionValue()
+    {
+        var result = ParseArguments(["-a", "-", "--option-b", "-", "-c-"]);
+
+        Assert.Equal(ParseResultState.ParsedOptions, result.State);
+
+        var options = result.Options;
+        Assert.NotNull(options);
+
+        Assert.Equal("-", options.OptionA);
+        Assert.Equal("-", options.OptionB);
+        Assert.Equal("-", options.OptionC);
+
+        Assert.Null(result.Errors);
+    }
+
     [Theory]
     [InlineData("-a a -b b -c c -d e", "d", "-d")]
     [InlineData("-a a -b b -de -c c", "d", "-de")]
