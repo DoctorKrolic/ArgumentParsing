@@ -41,6 +41,7 @@ public partial class ArgumentParserGenerator
 
         writer.WriteLine();
         writer.WriteLine("int state = 0;");
+        writer.WriteLine("int seenOptions = 0;");
         writer.WriteLine("global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;");
         writer.WriteLine("global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];");
         writer.WriteLine("string previousArgument = null;");
@@ -68,12 +69,21 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("switch (longOptionName)");
         writer.OpenBlock();
 
+        Span<char> usageCode = stackalloc char[optionInfos.Length];
+
         for (var i = 0; i < optionInfos.Length; i++)
         {
             var info = optionInfos[i];
 
             writer.WriteLine($"case \"{info.LongName}\":");
             writer.Ident++;
+            usageCode.Fill('0');
+            usageCode[^(i + 1)] = '1';
+            writer.WriteLine($"if ((seenOptions & 0b{usageCode.ToString()}) > 0)");
+            writer.OpenBlock();
+            writer.WriteLine("errors ??= new();");
+            writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError(\"{info.LongName}\"));");
+            writer.CloseBlock();
             writer.WriteLine($"state = {i + 1};");
             writer.WriteLine("break;");
             writer.Ident--;
@@ -125,6 +135,13 @@ public partial class ArgumentParserGenerator
 
             writer.WriteLine($"case '{info.ShortName}':");
             writer.Ident++;
+            usageCode.Fill('0');
+            usageCode[^(i + 1)] = '1';
+            writer.WriteLine($"if ((seenOptions & 0b{usageCode.ToString()}) > 0)");
+            writer.OpenBlock();
+            writer.WriteLine("errors ??= new();");
+            writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError(\"{info.ShortName}\"));");
+            writer.CloseBlock();
             writer.WriteLine($"state = {i + 1};");
             writer.WriteLine("break;");
             writer.Ident--;
@@ -161,6 +178,9 @@ public partial class ArgumentParserGenerator
             writer.WriteLine($"case {i + 1}:");
             writer.Ident++;
             writer.WriteLine($"{optionInfos[i].PropertyName}_val = val.ToString();");
+            usageCode.Fill('0');
+            usageCode[^(i + 1)] = '1';
+            writer.WriteLine($"seenOptions |= 0b{usageCode.ToString()};");
             writer.WriteLine("break;");
             writer.Ident--;
         }

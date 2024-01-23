@@ -139,4 +139,27 @@ public sealed partial class SimpleStringOptionsTests
 
         Assert.Equal(precedingArgument, optionValueIsNotProvidedError.PrecedingArgument);
     }
+
+    [Theory]
+    [InlineData("-a a -b b -c c -a a", "a")]
+    [InlineData("--option-b b -a a -b b -c c", "b")]
+    [InlineData("-a a -b b -c c --option-c c", "option-c")]
+    [InlineData("-a a -c c -b b --option-c c", "option-c")]
+    public void DuplicateOptionError(string argsString, string optionName)
+    {
+        var args = argsString.Split(' ');
+        var result = ParseArguments(args);
+
+        Assert.Equal(ParseResultState.ParsedWithErrors, result.State);
+
+        Assert.Null(result.Options);
+
+        var errors = result.Errors;
+        Assert.NotNull(errors);
+
+        var error = Assert.Single(errors);
+        var duplicateOptionError = Assert.IsType<DuplicateOptionError>(error);
+
+        Assert.Equal(optionName, duplicateOptionError.OptionName);
+    }
 }
