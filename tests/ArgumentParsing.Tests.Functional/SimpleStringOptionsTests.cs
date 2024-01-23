@@ -179,4 +179,29 @@ public sealed partial class SimpleStringOptionsTests
 
         Assert.Equal(optionName, duplicateOptionError.OptionName);
     }
+
+    [Fact]
+    public void TwoDuplicateOptionErrors()
+    {
+        var result = ParseArguments(["-a", "a", "--option-a", "b", "-a", "c"]);
+
+        Assert.Equal(ParseResultState.ParsedWithErrors, result.State);
+
+        Assert.Null(result.Options);
+
+        var errors = result.Errors;
+        Assert.NotNull(errors);
+
+        Assert.Collection(errors,
+            e =>
+            {
+                var dupError = Assert.IsType<DuplicateOptionError>(e);
+                Assert.Equal("option-a", dupError.OptionName);
+            },
+            e =>
+            {
+                var dupError = Assert.IsType<DuplicateOptionError>(e);
+                Assert.Equal("a", dupError.OptionName);
+            });
+    }
 }
