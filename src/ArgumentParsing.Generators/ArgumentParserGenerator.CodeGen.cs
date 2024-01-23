@@ -244,6 +244,6 @@ public partial class ArgumentParserGenerator
 
         writer.CloseRemainingBlocks();
 
-        context.AddSource($"{optionsInfo.QualifiedTypeName}.g.cs", writer.ToString());
+        context.AddSource($"{optionsInfo.QualifiedTypeName}.g.cs", writer.ToString().Trim());
     }
 }

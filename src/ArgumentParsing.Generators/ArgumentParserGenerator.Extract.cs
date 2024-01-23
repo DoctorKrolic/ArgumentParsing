@@ -62,14 +62,36 @@ public partial class ArgumentParserGenerator
 
             static bool IsEnumerableCollectionOfStrings(ITypeSymbol type)
             {
-                return type is IArrayTypeSymbol { Rank: 1, ElementType.SpecialType: SpecialType.System_String } ||
-                       type.GetMembers("GetEnumerator").Any(e => e is IMethodSymbol { Parameters.Length: 0 } getEnumeratorMethod && IsValidStringEnumerator(getEnumeratorMethod.ReturnType));
+                return HasMember(type, "GetEnumerator", static e => e is IMethodSymbol { Parameters.Length: 0 } getEnumeratorMethod && IsValidStringEnumerator(getEnumeratorMethod.ReturnType));
             }
 
             static bool IsValidStringEnumerator(ITypeSymbol type)
             {
-                return type.GetMembers("MoveNext").Any(m => m is IMethodSymbol { Parameters.Length: 0, ReturnType.SpecialType: SpecialType.System_Boolean }) &&
-                       type.GetMembers("Current").Any(c => c is IPropertySymbol { Type.SpecialType: SpecialType.System_String, GetMethod: not null });
+                return HasMember(type, "MoveNext", static m => m is IMethodSymbol { Parameters.Length: 0, ReturnType.SpecialType: SpecialType.System_Boolean }) &&
+                       HasMember(type, "Current", static c => c is IPropertySymbol { Type.SpecialType: SpecialType.System_String, GetMethod: not null });
+            }
+
+            static bool HasMember(ITypeSymbol type, string memberName, Func<ISymbol, bool> predicate)
+            {
+                if (type.GetMembers(memberName).Any(predicate))
+                {
+                    return true;
+                }
+
+                if (type.BaseType is { } baseType && HasMember(baseType, memberName, predicate))
+                {
+                    return true;
+                }
+
+                foreach (var @interface in type.AllInterfaces)
+                {
+                    if (HasMember(@interface, memberName, predicate))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
         }
 
