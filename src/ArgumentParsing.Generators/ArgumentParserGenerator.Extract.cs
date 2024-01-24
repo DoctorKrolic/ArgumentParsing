@@ -186,16 +186,31 @@ public partial class ArgumentParserGenerator
             }
 
             var hasOptionAttribute = false;
+            var hasRequiredAttribute = false;
             var hasLongNameFromAttribute = false;
 
             char? shortName = null;
             string? longName = null;
 
             var optionAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.OptionAttribute")!;
+            var requiredAttributeType = compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.RequiredAttribute")!;
 
             foreach (var attr in property.GetAttributes())
             {
-                if (attr.AttributeClass?.Equals(optionAttributeType, SymbolEqualityComparer.Default) != true)
+                var attributeClass = attr.AttributeClass;
+
+                if (attributeClass is null)
+                {
+                    continue;
+                }
+
+                if (attributeClass.Equals(requiredAttributeType, SymbolEqualityComparer.Default))
+                {
+                    hasRequiredAttribute = true;
+                    continue;
+                }
+
+                if (!attributeClass.Equals(optionAttributeType, SymbolEqualityComparer.Default))
                 {
                     continue;
                 }
@@ -340,7 +355,8 @@ public partial class ArgumentParserGenerator
                 property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 shortName,
                 longName,
-                parseStrategy.Value));
+                parseStrategy.Value,
+                hasRequiredAttribute || property.IsRequired));
         }
 
         if (hasErrors)

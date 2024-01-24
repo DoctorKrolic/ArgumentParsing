@@ -218,6 +218,29 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));");
         writer.CloseBlock();
 
+        for (var i = 0; i < optionInfos.Length; i++)
+        {
+            var info = optionInfos[i];
+
+            if (info.IsRequired)
+            {
+                writer.WriteLine();
+                usageCode.Fill('0');
+                usageCode[^(i + 1)] = '1';
+                writer.WriteLine($"if ((seenOptions & 0b{usageCode.ToString()}) == 0)");
+                writer.OpenBlock();
+                writer.WriteLine("errors ??= new();");
+                writer.WriteLine((info.ShortName, info.LongName) switch
+                {
+                    (not null, null) => $"errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError('{info.ShortName.Value}'));",
+                    (null, not null) => $"errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError(\"{info.LongName}\"));",
+                    (not null, not null) => $"errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError('{info.ShortName.Value}', \"{info.LongName}\"));",
+                    _ => throw new InvalidOperationException("Unreachable"),
+                });
+                writer.CloseBlock();
+            }
+        }
+
         writer.WriteLine();
         writer.WriteLine("if (errors != null)");
         writer.OpenBlock();
