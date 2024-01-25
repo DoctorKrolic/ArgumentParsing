@@ -2,5 +2,7 @@ namespace ArgumentParsing.Generators.Models;
 
 internal enum ParseStrategy : byte
 {
-    String
+    String,
+    Integer,
+    Float
 }

@@ -333,9 +333,20 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            ParseStrategy? parseStrategy = property.Type.SpecialType switch
+            ParseStrategy? parseStrategy = property.Type switch
             {
-                SpecialType.System_String => ParseStrategy.String,
+                { SpecialType: SpecialType.System_String } => ParseStrategy.String,
+                {
+                    SpecialType: SpecialType.System_Byte or
+                                 SpecialType.System_SByte or
+                                 SpecialType.System_Int16 or
+                                 SpecialType.System_UInt16 or
+                                 SpecialType.System_Int32 or
+                                 SpecialType.System_UInt32 or
+                                 SpecialType.System_Int64 or
+                                 SpecialType.System_UInt64
+                } or { Name: "BigInteger", ContainingNamespace: { Name: "Numerics", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } => ParseStrategy.Integer,
+                { SpecialType: SpecialType.System_Single or SpecialType.System_Double } => ParseStrategy.Float,
                 _ => null,
             };
 

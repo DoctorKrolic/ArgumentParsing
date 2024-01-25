@@ -44,6 +44,7 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("int seenOptions = 0;");
         writer.WriteLine("global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;");
         writer.WriteLine("global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];");
+        writer.WriteLine("global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;");
         writer.WriteLine("string previousArgument = null;");
         writer.WriteLine();
 
@@ -51,7 +52,8 @@ public partial class ArgumentParserGenerator
         writer.OpenBlock();
         writer.WriteLine("global::System.ReadOnlySpan<char> val;");
         writer.WriteLine();
-        writer.WriteLine("bool startsOption = arg.StartsWith('-') && arg.Length > 1;");
+        writer.WriteLine("bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);");
+        writer.WriteLine("bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');");
         writer.WriteLine();
         writer.WriteLine("if (state > 0 && startsOption)");
         writer.OpenBlock();
@@ -60,13 +62,13 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("state = 0;");
         writer.CloseBlock();
         writer.WriteLine();
-        writer.WriteLine("if (arg.StartsWith(\"--\"))");
+        writer.WriteLine("if (hasLetters && arg.StartsWith(\"--\"))");
         writer.OpenBlock();
         writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);");
         writer.WriteLine("int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');");
         writer.WriteLine();
-        writer.WriteLine("global::System.ReadOnlySpan<char> longOptionName = slice[longArgSplit[0]];");
-        writer.WriteLine("switch (longOptionName)");
+        writer.WriteLine("latestOptionName = slice[longArgSplit[0]];");
+        writer.WriteLine("switch (latestOptionName)");
         writer.OpenBlock();
 
         Span<char> usageCode = stackalloc char[optionInfos.Length];
@@ -98,7 +100,7 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("default:");
         writer.Ident++;
         writer.WriteLine("errors ??= new();");
-        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(longOptionName.ToString(), arg));");
+        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(latestOptionName.ToString(), arg));");
         writer.WriteLine("if (written == 1)");
         writer.OpenBlock();
         writer.WriteLine("state = -1;");
@@ -132,6 +134,7 @@ public partial class ArgumentParserGenerator
         writer.CloseBlock();
         writer.WriteLine();
         writer.WriteLine("char shortOptionName = slice[i];");
+        writer.WriteLine("latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);");
         writer.WriteLine("switch (shortOptionName)");
         writer.OpenBlock();
 
@@ -187,9 +190,26 @@ public partial class ArgumentParserGenerator
 
         for (var i = 0; i < optionInfos.Length; i++)
         {
+            var info = optionInfos[i];
+
             writer.WriteLine($"case {i + 1}:");
             writer.Ident++;
-            writer.WriteLine($"{optionInfos[i].PropertyName}_val = val.ToString();");
+            var parseStrategy = info.ParseStrategy;
+            switch (parseStrategy)
+            {
+                case ParseStrategy.String:
+                    writer.WriteLine($"{info.PropertyName}_val = val.ToString();");
+                    break;
+                case ParseStrategy.Integer:
+                case ParseStrategy.Float:
+                    var numberStyles = parseStrategy == ParseStrategy.Integer ? "global::System.Globalization.NumberStyles.Integer" : "global::System.Globalization.NumberStyles.Float | global::System.Globalization.NumberStyles.AllowThousands";
+                    writer.WriteLine($"if (!{info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {info.PropertyName}_val))");
+                    writer.OpenBlock();
+                    writer.WriteLine("errors ??= new();");
+                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
+                    writer.CloseBlock();
+                    break;
+            }
             writer.WriteLine("break;");
             writer.Ident--;
         }
