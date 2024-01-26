@@ -5,5 +5,6 @@ internal enum ParseStrategy : byte
     String,
     Integer,
     Float,
-    Flag
+    Flag,
+    Enum
 }

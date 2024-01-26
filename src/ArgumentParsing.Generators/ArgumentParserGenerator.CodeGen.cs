@@ -249,6 +249,13 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
                     writer.CloseBlock();
                     break;
+                case ParseStrategy.Enum:
+                    writer.WriteLine($"if (!global::System.Enum.TryParse<{info.Type}>(val, out {info.PropertyName}_val))");
+                    writer.OpenBlock();
+                    writer.WriteLine("errors ??= new();");
+                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
+                    writer.CloseBlock();
+                    break;
             }
             writer.WriteLine("break;");
             writer.Ident--;

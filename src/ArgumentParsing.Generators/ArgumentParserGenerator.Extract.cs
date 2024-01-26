@@ -333,23 +333,7 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            ParseStrategy? possibleParseStrategy = property.Type switch
-            {
-                { SpecialType: SpecialType.System_String } => ParseStrategy.String,
-                {
-                    SpecialType: SpecialType.System_Byte or
-                                 SpecialType.System_SByte or
-                                 SpecialType.System_Int16 or
-                                 SpecialType.System_UInt16 or
-                                 SpecialType.System_Int32 or
-                                 SpecialType.System_UInt32 or
-                                 SpecialType.System_Int64 or
-                                 SpecialType.System_UInt64
-                } or { Name: "BigInteger", ContainingNamespace: { Name: "Numerics", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } => ParseStrategy.Integer,
-                { SpecialType: SpecialType.System_Single or SpecialType.System_Double } => ParseStrategy.Float,
-                { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
-                _ => null,
-            };
+            var possibleParseStrategy = GetPotentialParseStrategy(property.Type);
 
             if (!possibleParseStrategy.HasValue)
             {
@@ -390,5 +374,28 @@ public partial class ArgumentParserGenerator
             optionsBuilder.ToImmutable());
 
         return (optionsInfo, diagnosticsBuilder.ToImmutable());
+
+        static ParseStrategy? GetPotentialParseStrategy(ITypeSymbol type)
+        {
+            return type.TypeKind == TypeKind.Enum
+                ? ParseStrategy.Enum
+                : type switch
+            {
+                { SpecialType: SpecialType.System_String } => ParseStrategy.String,
+                {
+                    SpecialType: SpecialType.System_Byte or
+                                 SpecialType.System_SByte or
+                                 SpecialType.System_Int16 or
+                                 SpecialType.System_UInt16 or
+                                 SpecialType.System_Int32 or
+                                 SpecialType.System_UInt32 or
+                                 SpecialType.System_Int64 or
+                                 SpecialType.System_UInt64
+                } or { Name: "BigInteger", ContainingNamespace: { Name: "Numerics", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } => ParseStrategy.Integer,
+                { SpecialType: SpecialType.System_Single or SpecialType.System_Double } => ParseStrategy.Float,
+                { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
+                _ => null,
+            };
+        }
     }
 }
