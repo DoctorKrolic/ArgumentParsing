@@ -392,7 +392,7 @@ public partial class ArgumentParserGenerator
                                  SpecialType.System_Int64 or
                                  SpecialType.System_UInt64
                 } or { Name: "BigInteger", ContainingNamespace: { Name: "Numerics", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } => ParseStrategy.Integer,
-                { SpecialType: SpecialType.System_Single or SpecialType.System_Double } => ParseStrategy.Float,
+                { SpecialType: SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal } => ParseStrategy.Float,
                 { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
                 _ => null,
             };

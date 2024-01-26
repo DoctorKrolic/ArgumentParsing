@@ -1127,6 +1127,7 @@ public sealed class ArgumentParserGeneratorTests
     [Theory]
     [InlineData("float")]
     [InlineData("double")]
+    [InlineData("decimal")]
     public async Task EnsureEquivalentCodeGenForFloatTypes(string floatType)
     {
         var source = $$"""
