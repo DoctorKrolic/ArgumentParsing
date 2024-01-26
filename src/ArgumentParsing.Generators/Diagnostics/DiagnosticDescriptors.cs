@@ -120,10 +120,10 @@ internal static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static readonly DiagnosticDescriptor InvalidPropertyType = new(
+    public static readonly DiagnosticDescriptor InvalidOptionPropertyType = new(
         id: "ARGP0016",
-        title: "Invalid property type",
-        messageFormat: "Type '{0}' is invalid for property used in argument parsing",
+        title: "Invalid type of option property",
+        messageFormat: "Type '{0}' is invalid for option property",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);

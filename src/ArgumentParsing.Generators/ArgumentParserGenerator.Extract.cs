@@ -342,7 +342,7 @@ public partial class ArgumentParserGenerator
                 var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
                 var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
 
-                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidPropertyType, diagnosticLocation, property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidOptionPropertyType, diagnosticLocation, property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                 continue;
             }
 
