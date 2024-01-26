@@ -23,16 +23,18 @@ public sealed partial class SimpleStringOptionsTests
     #endregion
 
     [Theory]
-    [InlineData("-a a -b b -c c")]
-    [InlineData("-aa -bb -cc")]
-    [InlineData("--option-a a --option-b b --option-c c")]
-    [InlineData("--option-a=a --option-b=b --option-c=c")]
-    [InlineData("--option-a=a -b b --option-c=c")]
-    [InlineData("-b b --option-a=a -cc")]
-    [InlineData("-cc --option-b b --option-a=a")]
-    public void ParseCorrectArguments(string argsString)
+    [InlineData("", null, null, null)]
+    [InlineData("-a a", "a", null, null)]
+    [InlineData("-b b -c c", null, "b", "c")]
+    [InlineData("-aa -bb -cc", "a", "b", "c")]
+    [InlineData("--option-a a --option-b b --option-c c", "a", "b", "c")]
+    [InlineData("--option-a=a --option-b=b --option-c=c", "a", "b", "c")]
+    [InlineData("--option-a=a -b b --option-c=c", "a", "b", "c")]
+    [InlineData("-b b --option-a=a -cc", "a", "b", "c")]
+    [InlineData("-cc --option-b b --option-a=a", "a", "b", "c")]
+    public void ParseCorrectArguments(string argsString, string? a, string? b, string? c)
     {
-        var args = argsString.Split(' ');
+        var args = string.IsNullOrEmpty(argsString) ? [] : argsString.Split(' ');
         var result = ParseArguments(args);
 
         Assert.Equal(ParseResultState.ParsedOptions, result.State);
@@ -40,9 +42,9 @@ public sealed partial class SimpleStringOptionsTests
         var options = result.Options;
         Assert.NotNull(options);
 
-        Assert.Equal("a", options.OptionA);
-        Assert.Equal("b", options.OptionB);
-        Assert.Equal("c", options.OptionC);
+        Assert.Equal(a, options.OptionA);
+        Assert.Equal(b, options.OptionB);
+        Assert.Equal(c, options.OptionC);
 
         Assert.Null(result.Errors);
     }
