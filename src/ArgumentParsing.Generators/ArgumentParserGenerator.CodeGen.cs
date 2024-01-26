@@ -91,7 +91,15 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("errors ??= new();");
             writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError(\"{info.LongName}\"));");
             writer.CloseBlock();
-            writer.WriteLine($"state = {i + 1};");
+            if (info.ParseStrategy == ParseStrategy.Flag)
+            {
+                writer.WriteLine($"{info.PropertyName}_val = true;");
+                writer.WriteLine("state = -2;");
+            }
+            else
+            {
+                writer.WriteLine($"state = {i + 1};");
+            }
             writer.WriteLine($"seenOptions |= 0b{usageCode.ToString()};");
             writer.WriteLine("break;");
             writer.Ident--;
@@ -156,14 +164,32 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("errors ??= new();");
             writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError(\"{info.ShortName}\"));");
             writer.CloseBlock();
-            writer.WriteLine($"state = {i + 1};");
+            if (info.ParseStrategy == ParseStrategy.Flag)
+            {
+                writer.WriteLine($"{info.PropertyName}_val = true;");
+                writer.WriteLine("state = -2;");
+            }
+            else
+            {
+                writer.WriteLine($"state = {i + 1};");
+            }
             writer.WriteLine($"seenOptions |= 0b{usageCode.ToString()};");
             writer.WriteLine("break;");
             writer.Ident--;
         }
 
+        var hasFlagOptions = optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag);
+        
         writer.WriteLine("default:");
         writer.Ident++;
+        if (hasFlagOptions)
+        {
+            writer.WriteLine("if (state == -2)");
+            writer.OpenBlock();
+            writer.WriteLine("latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i - 1]);");
+            writer.WriteLine("goto decodeValue;");
+            writer.CloseBlock();
+        }
         writer.WriteLine("errors ??= new();");
         writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(shortOptionName.ToString(), arg));");
         writer.WriteLine("state = -1;");
@@ -183,6 +209,15 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("decodeValue:", identDelta: -1);
         writer.WriteLine("switch (state)");
         writer.OpenBlock();
+        if (hasFlagOptions)
+        {
+            writer.WriteLine("case -2:");
+            writer.Ident++;
+            writer.WriteLine("errors ??= new();");
+            writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(latestOptionName.ToString()));");
+            writer.WriteLine("break;");
+            writer.Ident--;
+        }
         writer.WriteLine("case -1:");
         writer.Ident++;
         writer.WriteLine("break;");
@@ -191,6 +226,11 @@ public partial class ArgumentParserGenerator
         for (var i = 0; i < optionInfos.Length; i++)
         {
             var info = optionInfos[i];
+
+            if (info.ParseStrategy == ParseStrategy.Flag)
+            {
+                continue;
+            }
 
             writer.WriteLine($"case {i + 1}:");
             writer.Ident++;

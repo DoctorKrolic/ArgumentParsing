@@ -131,4 +131,13 @@ internal static class DiagnosticDescriptors
     // Implement as an analyzer:
     // ARGP0017 - suggest changing `[Required]` attribute to `required` property in case it is an option
     // ARGP0018 - fade out `[Required]` attribute if already a `required` property
+
+    public static readonly DiagnosticDescriptor RequiredBoolOption = new(
+        id: "ARGP0019",
+        title: "Invalid required boolean option",
+        messageFormat: "Having a required boolean option doesn't make sense",
+        description: "Since boolean option is either set or not, making it required results in the only valid way, where the value of an option is always true, so it doesn't make sense to declare such option then",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

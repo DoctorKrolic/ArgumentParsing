@@ -4,5 +4,6 @@ internal enum ParseStrategy : byte
 {
     String,
     Integer,
-    Float
+    Float,
+    Flag
 }

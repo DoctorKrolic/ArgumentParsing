@@ -333,7 +333,7 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            ParseStrategy? parseStrategy = property.Type switch
+            ParseStrategy? possibleParseStrategy = property.Type switch
             {
                 { SpecialType: SpecialType.System_String } => ParseStrategy.String,
                 {
@@ -347,10 +347,11 @@ public partial class ArgumentParserGenerator
                                  SpecialType.System_UInt64
                 } or { Name: "BigInteger", ContainingNamespace: { Name: "Numerics", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } => ParseStrategy.Integer,
                 { SpecialType: SpecialType.System_Single or SpecialType.System_Double } => ParseStrategy.Float,
+                { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
                 _ => null,
             };
 
-            if (!parseStrategy.HasValue)
+            if (!possibleParseStrategy.HasValue)
             {
                 hasErrors = true;
 
@@ -361,13 +362,22 @@ public partial class ArgumentParserGenerator
                 continue;
             }
 
+            var parseStrategy = possibleParseStrategy.Value;
+            var isRequired = hasRequiredAttribute || property.IsRequired;
+
+            if (isRequired && parseStrategy == ParseStrategy.Flag)
+            {
+                hasErrors = true;
+                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredBoolOption, property));
+            }
+
             optionsBuilder.Add(new(
                 property.Name,
                 property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 shortName,
                 longName,
-                parseStrategy.Value,
-                hasRequiredAttribute || property.IsRequired));
+                parseStrategy,
+                isRequired));
         }
 
         if (hasErrors)
