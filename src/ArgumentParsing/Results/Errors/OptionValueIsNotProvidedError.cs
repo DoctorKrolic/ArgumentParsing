@@ -10,8 +10,8 @@ public sealed class OptionValueIsNotProvidedError(string messageFormat, string p
     }
 
     public override bool Equals(ParseError? other)
-        => base.Equals(other) &&
-            other is OptionValueIsNotProvidedError optionValueIsNotProvidedError &&
+        => other is OptionValueIsNotProvidedError optionValueIsNotProvidedError &&
+            MessageFormat == optionValueIsNotProvidedError.MessageFormat &&
             PrecedingArgument == optionValueIsNotProvidedError.PrecedingArgument;
 
     public override int GetHashCode()

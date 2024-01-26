@@ -22,8 +22,8 @@ public sealed class MissingRequiredOptionError(string messageFormat, char? short
     }
 
     public override bool Equals(ParseError? other)
-        => base.Equals(other) &&
-            other is MissingRequiredOptionError missingRequiredOptionError &&
+        => other is MissingRequiredOptionError missingRequiredOptionError &&
+            MessageFormat == missingRequiredOptionError.MessageFormat &&
             ShortOptionName == missingRequiredOptionError.ShortOptionName &&
             LongOptionName == missingRequiredOptionError.LongOptionName;
 

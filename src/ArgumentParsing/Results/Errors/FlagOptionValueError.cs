@@ -11,8 +11,8 @@ public sealed class FlagOptionValueError(string messageFormat, string optionName
     }
 
     public override bool Equals(ParseError? other)
-        => base.Equals(other) &&
-            other is FlagOptionValueError flagOptionValueError &&
+        => other is FlagOptionValueError flagOptionValueError &&
+            MessageFormat == flagOptionValueError.MessageFormat &&
             OptionName == flagOptionValueError.OptionName;
 
     public override int GetHashCode()

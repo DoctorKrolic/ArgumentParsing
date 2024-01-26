@@ -12,8 +12,8 @@ public sealed class BadOptionValueFormatError(string messageFormat, string value
     }
 
     public override bool Equals(ParseError? other)
-        => base.Equals(other) &&
-            other is BadOptionValueFormatError badOptionValueFormatError &&
+        => other is BadOptionValueFormatError badOptionValueFormatError &&
+            MessageFormat == badOptionValueFormatError.MessageFormat &&
             Value == badOptionValueFormatError.Value &&
             OptionName == badOptionValueFormatError.OptionName;
 

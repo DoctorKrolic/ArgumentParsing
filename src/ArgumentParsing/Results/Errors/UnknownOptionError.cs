@@ -12,8 +12,8 @@ public sealed class UnknownOptionError(string messageFormat, string optionName, 
     }
 
     public override bool Equals(ParseError? other)
-        => base.Equals(other) &&
-            other is UnknownOptionError unknownOptionError &&
+        => other is UnknownOptionError unknownOptionError && 
+            MessageFormat == unknownOptionError.MessageFormat &&
             OptionName == unknownOptionError.OptionName &&
             ContainingArgument == unknownOptionError.ContainingArgument;
 

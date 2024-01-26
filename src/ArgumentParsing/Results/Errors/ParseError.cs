@@ -9,7 +9,7 @@ public abstract class ParseError(string messageFormat) : IEquatable<ParseError>
 
     public abstract string GetMessage();
 
-    public virtual bool Equals(ParseError? other) => MessageFormat == other?.MessageFormat;
+    public abstract bool Equals(ParseError? other);
 
     public sealed override bool Equals(object? obj)
         => obj is ParseError error && Equals(error);

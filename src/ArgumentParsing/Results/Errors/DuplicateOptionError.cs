@@ -11,8 +11,8 @@ public sealed class DuplicateOptionError(string messageFormat, string optionName
     }
 
     public override bool Equals(ParseError? other)
-        => base.Equals(other) &&
-            other is DuplicateOptionError duplicateOptionError &&
+        => other is DuplicateOptionError duplicateOptionError &&
+            MessageFormat == duplicateOptionError.MessageFormat &&
             OptionName == duplicateOptionError.OptionName;
 
     public override int GetHashCode()

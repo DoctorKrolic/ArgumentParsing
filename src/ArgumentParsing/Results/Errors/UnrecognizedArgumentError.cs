@@ -10,8 +10,8 @@ public sealed class UnrecognizedArgumentError(string messageFormat, string argum
     }
 
     public override bool Equals(ParseError? other)
-        => base.Equals(other) &&
-            other is UnrecognizedArgumentError unrecognizedArgumentError &&
+        => other is UnrecognizedArgumentError unrecognizedArgumentError &&
+            MessageFormat == unrecognizedArgumentError.MessageFormat &&
             Argument == unrecognizedArgumentError.Argument;
 
     public override int GetHashCode()
