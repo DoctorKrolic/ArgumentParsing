@@ -130,7 +130,9 @@ public partial class ArgumentParserGenerator
             return (null, diagnosticsBuilder.ToImmutable());
         }
 
-        var (optionsInfo, optionsDiagnostics) = AnalyzeOptionsType(validOptionsType, context.SemanticModel.Compilation);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var (optionsInfo, optionsDiagnostics) = AnalyzeOptionsType(validOptionsType, context.SemanticModel.Compilation, cancellationToken);
         hasErrors |= optionsInfo is null;
         diagnosticsBuilder.AddRange(optionsDiagnostics);
 
@@ -155,7 +157,7 @@ public partial class ArgumentParserGenerator
         return (argumentParserInfo, diagnosticsBuilder.ToImmutable());
     }
 
-    private static (OptionsInfo? OptionsInfo, ImmutableArray<DiagnosticInfo> Diagnostics) AnalyzeOptionsType(INamedTypeSymbol optionsType, Compilation compilation)
+    private static (OptionsInfo? OptionsInfo, ImmutableArray<DiagnosticInfo> Diagnostics) AnalyzeOptionsType(INamedTypeSymbol optionsType, Compilation compilation, CancellationToken cancellationToken)
     {
         var optionsBuilder = ImmutableArray.CreateBuilder<OptionInfo>();
         var diagnosticsBuilder = ImmutableArray.CreateBuilder<DiagnosticInfo>();
@@ -170,6 +172,8 @@ public partial class ArgumentParserGenerator
 
         foreach (var member in optionsType.GetMembers())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (member is IFieldSymbol { IsRequired: true })
             {
                 hasErrors = true;
@@ -339,7 +343,7 @@ public partial class ArgumentParserGenerator
             {
                 hasErrors = true;
 
-                var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
+                var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken);
                 var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
 
                 diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidOptionPropertyType, diagnosticLocation, property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));

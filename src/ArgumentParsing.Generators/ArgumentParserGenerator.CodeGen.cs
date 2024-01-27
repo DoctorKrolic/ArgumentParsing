@@ -8,6 +8,8 @@ public partial class ArgumentParserGenerator
 {
     private static void Emit(SourceProductionContext context, ArgumentParserInfo parserInfo)
     {
+        var cancellationToken = context.CancellationToken;
+
         (var hierarchy, var method, var optionsInfo) = parserInfo;
         (var qualifiedName, var optionInfos) = optionsInfo;
 
@@ -38,6 +40,8 @@ public partial class ArgumentParserGenerator
         {
             writer.WriteLine($"{info.Type} {info.PropertyName}_val = default({info.Type});");
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         writer.WriteLine();
         writer.WriteLine("int state = 0;");
@@ -70,6 +74,8 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("latestOptionName = slice[longArgSplit[0]];");
         writer.WriteLine("switch (latestOptionName)");
         writer.OpenBlock();
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         Span<char> usageCode = stackalloc char[optionInfos.Length];
 
@@ -145,6 +151,8 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);");
         writer.WriteLine("switch (shortOptionName)");
         writer.OpenBlock();
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         for (var i = 0; i < optionInfos.Length; i++)
         {
@@ -222,6 +230,8 @@ public partial class ArgumentParserGenerator
         writer.Ident++;
         writer.WriteLine("break;");
         writer.Ident--;
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         for (var i = 0; i < optionInfos.Length; i++)
         {
