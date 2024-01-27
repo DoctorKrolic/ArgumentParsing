@@ -337,7 +337,7 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            var possibleParseStrategy = GetPotentialParseStrategy(property.Type);
+            (var possibleParseStrategy, var nullableUnderlyingType) = GetPotentialParseStrategy(property.Type);
 
             if (!possibleParseStrategy.HasValue)
             {
@@ -359,13 +359,19 @@ public partial class ArgumentParserGenerator
                 diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredBoolOption, property));
             }
 
+            if (isRequired && nullableUnderlyingType is not null)
+            {
+                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredNullableOption, property));
+            }
+
             optionsBuilder.Add(new(
                 property.Name,
                 property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 shortName,
                 longName,
                 parseStrategy,
-                isRequired));
+                isRequired,
+                nullableUnderlyingType));
         }
 
         if (hasErrors)
@@ -379,24 +385,37 @@ public partial class ArgumentParserGenerator
 
         return (optionsInfo, diagnosticsBuilder.ToImmutable());
 
-        static ParseStrategy? GetPotentialParseStrategy(ITypeSymbol type) => type switch
+        static (ParseStrategy? possibleParseStrategy, string? nullableUnderlyingType) GetPotentialParseStrategy(ITypeSymbol type)
         {
-            { TypeKind: TypeKind.Enum } => ParseStrategy.Enum,
-            { SpecialType: SpecialType.System_String } => ParseStrategy.String,
+            string? nullableUnderlyingType = null;
+
+            if (type is INamedTypeSymbol { ConstructedFrom.SpecialType: SpecialType.System_Nullable_T, TypeArguments: [var nullableUnderlyingTypeSymbol] })
             {
-                SpecialType: SpecialType.System_Byte or
-                             SpecialType.System_SByte or
-                             SpecialType.System_Int16 or
-                             SpecialType.System_UInt16 or
-                             SpecialType.System_Int32 or
-                             SpecialType.System_UInt32 or
-                             SpecialType.System_Int64 or
-                             SpecialType.System_UInt64
-            } or { Name: "BigInteger", ContainingNamespace: { Name: "Numerics", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } => ParseStrategy.Integer,
-            { SpecialType: SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal } => ParseStrategy.Float,
-            { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
-            { SpecialType: SpecialType.System_Char } => ParseStrategy.Char,
-            _ => null,
-        };
+                nullableUnderlyingType = nullableUnderlyingTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                type = nullableUnderlyingTypeSymbol;
+            }
+
+            ParseStrategy? possibleParseStrategy = type switch
+            {
+                { TypeKind: TypeKind.Enum } => ParseStrategy.Enum,
+                { SpecialType: SpecialType.System_String } => ParseStrategy.String,
+                {
+                    SpecialType: SpecialType.System_Byte or
+                                 SpecialType.System_SByte or
+                                 SpecialType.System_Int16 or
+                                 SpecialType.System_UInt16 or
+                                 SpecialType.System_Int32 or
+                                 SpecialType.System_UInt32 or
+                                 SpecialType.System_Int64 or
+                                 SpecialType.System_UInt64
+                } or { Name: "BigInteger", ContainingNamespace: { Name: "Numerics", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } => ParseStrategy.Integer,
+                { SpecialType: SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal } => ParseStrategy.Float,
+                { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
+                { SpecialType: SpecialType.System_Char } => ParseStrategy.Char,
+                _ => null,
+            };
+
+            return (possibleParseStrategy, nullableUnderlyingType);
+        }
     }
 }

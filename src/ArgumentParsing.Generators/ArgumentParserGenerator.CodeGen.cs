@@ -245,6 +245,7 @@ public partial class ArgumentParserGenerator
             writer.WriteLine($"case {i + 1}:");
             writer.Ident++;
             var parseStrategy = info.ParseStrategy;
+            var nullableUnderlyingType = info.NullableUnderlyingType;
             switch (parseStrategy)
             {
                 case ParseStrategy.String:
@@ -252,26 +253,50 @@ public partial class ArgumentParserGenerator
                     break;
                 case ParseStrategy.Integer:
                 case ParseStrategy.Float:
+                    if (info.NullableUnderlyingType is not null)
+                    {
+                        writer.WriteLine($"{nullableUnderlyingType} {info.PropertyName}_underlying = default({nullableUnderlyingType});");
+                    }
                     var numberStyles = parseStrategy == ParseStrategy.Integer ? "global::System.Globalization.NumberStyles.Integer" : "global::System.Globalization.NumberStyles.Float | global::System.Globalization.NumberStyles.AllowThousands";
-                    writer.WriteLine($"if (!{info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {info.PropertyName}_val))");
+                    writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {info.PropertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
                     writer.CloseBlock();
+                    if (nullableUnderlyingType is not null)
+                    {
+                        writer.WriteLine($"{info.PropertyName}_val = {info.PropertyName}_underlying;");
+                    }
                     break;
                 case ParseStrategy.Enum:
-                    writer.WriteLine($"if (!global::System.Enum.TryParse<{info.Type}>(val, out {info.PropertyName}_val))");
+                    if (info.NullableUnderlyingType is not null)
+                    {
+                        writer.WriteLine($"{nullableUnderlyingType} {info.PropertyName}_underlying = default({nullableUnderlyingType});");
+                    }
+                    writer.WriteLine($"if (!global::System.Enum.TryParse<{nullableUnderlyingType ?? info.Type}>(val, out {info.PropertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
                     writer.CloseBlock();
+                    if (nullableUnderlyingType is not null)
+                    {
+                        writer.WriteLine($"{info.PropertyName}_val = {info.PropertyName}_underlying;");
+                    }
                     break;
                 case ParseStrategy.Char:
-                    writer.WriteLine($"if (!{info.Type}.TryParse(val.ToString(), out {info.PropertyName}_val))");
+                    if (info.NullableUnderlyingType is not null)
+                    {
+                        writer.WriteLine($"{nullableUnderlyingType} {info.PropertyName}_underlying = default({nullableUnderlyingType});");
+                    }
+                    writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val.ToString(), out {info.PropertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
                     writer.CloseBlock();
+                    if (nullableUnderlyingType is not null)
+                    {
+                        writer.WriteLine($"{info.PropertyName}_val = {info.PropertyName}_underlying;");
+                    }
                     break;
             }
             writer.WriteLine("break;");

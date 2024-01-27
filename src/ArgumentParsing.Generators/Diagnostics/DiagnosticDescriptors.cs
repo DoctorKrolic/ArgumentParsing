@@ -140,4 +140,13 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor RequiredNullableOption = new(
+        id: "ARGP0020",
+        title: "Required nullable option",
+        messageFormat: "Having a required nullable option defeats the purpose of its nullability",
+        description: "Since nullable option is null only if it is not present in arguments, by making it required it looses this ability",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }
