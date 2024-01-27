@@ -33,7 +33,7 @@ internal sealed class CodeWriter
 
     public void WriteLine()
     {
-        _textWriter.WriteLine();
+        _sw.WriteLine();
     }
 
     public void OpenBlock()

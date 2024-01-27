@@ -181,33 +181,33 @@ public sealed class ArgumentParserGeneratorTests
             {
                 public static partial global::ArgumentParsing.Results.ParseResult<global::EmptyOptions> ParseArguments({{parameterType}} s)
                 {
-                    
+
                     int state = 0;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
                     global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
                     string previousArgument = null;
-                    
+
                     foreach (string arg in s)
                     {
                         global::System.ReadOnlySpan<char> val;
-                        
+
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
                         bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
-                        
+
                         if (state > 0 && startsOption)
                         {
                             errors ??= new();
                             errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                             state = 0;
                         }
-                        
+
                         if (hasLetters && arg.StartsWith("--"))
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);
                             int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');
-                            
+
                             latestOptionName = slice[longArgSplit[0]];
                             switch (latestOptionName)
                             {
@@ -220,20 +220,20 @@ public sealed class ArgumentParserGeneratorTests
                                     }
                                     goto continueMainLoop;
                             }
-                            
+
                             if (written == 2)
                             {
                                 val = slice[longArgSplit[1]];
                                 goto decodeValue;
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         if (startsOption)
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);
-                            
+
                             for (int i = 0; i < slice.Length; i++)
                             {
                                 if (state > 0)
@@ -241,7 +241,7 @@ public sealed class ArgumentParserGeneratorTests
                                     val = slice.Slice(i);
                                     goto decodeValue;
                                 }
-                                
+
                                 char shortOptionName = slice[i];
                                 latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);
                                 switch (shortOptionName)
@@ -253,12 +253,12 @@ public sealed class ArgumentParserGeneratorTests
                                         goto continueMainLoop;
                                 }
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         val = global::System.MemoryExtensions.AsSpan(arg);
-                        
+
                     decodeValue:
                         switch (state)
                         {
@@ -269,28 +269,28 @@ public sealed class ArgumentParserGeneratorTests
                                 errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
                                 break;
                         }
-                        
+
                         state = 0;
-                        
+
                     continueMainLoop:
                         previousArgument = arg;
                     }
-                    
+
                     if (state > 0)
                     {
                         errors ??= new();
                         errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                     }
-                    
+
                     if (errors != null)
                     {
                         return new global::ArgumentParsing.Results.ParseResult<global::EmptyOptions>(global::ArgumentParsing.Results.Errors.ParseErrorCollection.AsErrorCollection(errors));
                     }
-                    
+
                     global::EmptyOptions options = new global::EmptyOptions
                     {
                     };
-                    
+
                     return new global::ArgumentParsing.Results.ParseResult<global::EmptyOptions>(options);
                 }
             }
@@ -989,33 +989,33 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
                     {{integerType}} Option_val = default({{integerType}});
-                    
+
                     int state = 0;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
                     global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
                     string previousArgument = null;
-                    
+
                     foreach (string arg in args)
                     {
                         global::System.ReadOnlySpan<char> val;
-                        
+
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
                         bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
-                        
+
                         if (state > 0 && startsOption)
                         {
                             errors ??= new();
                             errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                             state = 0;
                         }
-                        
+
                         if (hasLetters && arg.StartsWith("--"))
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);
                             int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');
-                            
+
                             latestOptionName = slice[longArgSplit[0]];
                             switch (latestOptionName)
                             {
@@ -1037,20 +1037,20 @@ public sealed class ArgumentParserGeneratorTests
                                     }
                                     goto continueMainLoop;
                             }
-                            
+
                             if (written == 2)
                             {
                                 val = slice[longArgSplit[1]];
                                 goto decodeValue;
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         if (startsOption)
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);
-                            
+
                             for (int i = 0; i < slice.Length; i++)
                             {
                                 if (state > 0)
@@ -1058,7 +1058,7 @@ public sealed class ArgumentParserGeneratorTests
                                     val = slice.Slice(i);
                                     goto decodeValue;
                                 }
-                                
+
                                 char shortOptionName = slice[i];
                                 latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);
                                 switch (shortOptionName)
@@ -1070,12 +1070,12 @@ public sealed class ArgumentParserGeneratorTests
                                         goto continueMainLoop;
                                 }
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         val = global::System.MemoryExtensions.AsSpan(arg);
-                        
+
                     decodeValue:
                         switch (state)
                         {
@@ -1093,29 +1093,29 @@ public sealed class ArgumentParserGeneratorTests
                                 errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
                                 break;
                         }
-                        
+
                         state = 0;
-                        
+
                     continueMainLoop:
                         previousArgument = arg;
                     }
-                    
+
                     if (state > 0)
                     {
                         errors ??= new();
                         errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                     }
-                    
+
                     if (errors != null)
                     {
                         return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(global::ArgumentParsing.Results.Errors.ParseErrorCollection.AsErrorCollection(errors));
                     }
-                    
+
                     global::MyOptions options = new global::MyOptions
                     {
                         Option = Option_val,
                     };
-                    
+
                     return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(options);
                 }
             }
@@ -1154,33 +1154,33 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
                     {{floatType}} Option_val = default({{floatType}});
-                    
+
                     int state = 0;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
                     global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
                     string previousArgument = null;
-                    
+
                     foreach (string arg in args)
                     {
                         global::System.ReadOnlySpan<char> val;
-                        
+
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
                         bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
-                        
+
                         if (state > 0 && startsOption)
                         {
                             errors ??= new();
                             errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                             state = 0;
                         }
-                        
+
                         if (hasLetters && arg.StartsWith("--"))
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);
                             int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');
-                            
+
                             latestOptionName = slice[longArgSplit[0]];
                             switch (latestOptionName)
                             {
@@ -1202,20 +1202,20 @@ public sealed class ArgumentParserGeneratorTests
                                     }
                                     goto continueMainLoop;
                             }
-                            
+
                             if (written == 2)
                             {
                                 val = slice[longArgSplit[1]];
                                 goto decodeValue;
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         if (startsOption)
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);
-                            
+
                             for (int i = 0; i < slice.Length; i++)
                             {
                                 if (state > 0)
@@ -1223,7 +1223,7 @@ public sealed class ArgumentParserGeneratorTests
                                     val = slice.Slice(i);
                                     goto decodeValue;
                                 }
-                                
+
                                 char shortOptionName = slice[i];
                                 latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);
                                 switch (shortOptionName)
@@ -1235,12 +1235,12 @@ public sealed class ArgumentParserGeneratorTests
                                         goto continueMainLoop;
                                 }
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         val = global::System.MemoryExtensions.AsSpan(arg);
-                        
+
                     decodeValue:
                         switch (state)
                         {
@@ -1258,29 +1258,29 @@ public sealed class ArgumentParserGeneratorTests
                                 errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
                                 break;
                         }
-                        
+
                         state = 0;
-                        
+
                     continueMainLoop:
                         previousArgument = arg;
                     }
-                    
+
                     if (state > 0)
                     {
                         errors ??= new();
                         errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                     }
-                    
+
                     if (errors != null)
                     {
                         return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(global::ArgumentParsing.Results.Errors.ParseErrorCollection.AsErrorCollection(errors));
                     }
-                    
+
                     global::MyOptions options = new global::MyOptions
                     {
                         Option = Option_val,
                     };
-                    
+
                     return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(options);
                 }
             }
@@ -1345,33 +1345,33 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
                     {{integerType}}? OptionA_val = default({{integerType}}?);
-                    
+
                     int state = 0;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
                     global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
                     string previousArgument = null;
-                    
+
                     foreach (string arg in args)
                     {
                         global::System.ReadOnlySpan<char> val;
-                        
+
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
                         bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
-                        
+
                         if (state > 0 && startsOption)
                         {
                             errors ??= new();
                             errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                             state = 0;
                         }
-                        
+
                         if (hasLetters && arg.StartsWith("--"))
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);
                             int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');
-                            
+
                             latestOptionName = slice[longArgSplit[0]];
                             switch (latestOptionName)
                             {
@@ -1393,20 +1393,20 @@ public sealed class ArgumentParserGeneratorTests
                                     }
                                     goto continueMainLoop;
                             }
-                            
+
                             if (written == 2)
                             {
                                 val = slice[longArgSplit[1]];
                                 goto decodeValue;
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         if (startsOption)
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);
-                            
+
                             for (int i = 0; i < slice.Length; i++)
                             {
                                 if (state > 0)
@@ -1414,7 +1414,7 @@ public sealed class ArgumentParserGeneratorTests
                                     val = slice.Slice(i);
                                     goto decodeValue;
                                 }
-                                
+
                                 char shortOptionName = slice[i];
                                 latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);
                                 switch (shortOptionName)
@@ -1426,12 +1426,12 @@ public sealed class ArgumentParserGeneratorTests
                                         goto continueMainLoop;
                                 }
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         val = global::System.MemoryExtensions.AsSpan(arg);
-                        
+
                     decodeValue:
                         switch (state)
                         {
@@ -1451,35 +1451,35 @@ public sealed class ArgumentParserGeneratorTests
                                 errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
                                 break;
                         }
-                        
+
                         state = 0;
-                        
+
                     continueMainLoop:
                         previousArgument = arg;
                     }
-                    
+
                     if (state > 0)
                     {
                         errors ??= new();
                         errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                     }
-                    
+
                     if ((seenOptions & 0b1) == 0)
                     {
                         errors ??= new();
                         errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError("option-a"));
                     }
-                    
+
                     if (errors != null)
                     {
                         return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(global::ArgumentParsing.Results.Errors.ParseErrorCollection.AsErrorCollection(errors));
                     }
-                    
+
                     global::MyOptions options = new global::MyOptions
                     {
                         OptionA = OptionA_val,
                     };
-                    
+
                     return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(options);
                 }
             }
@@ -1518,33 +1518,33 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
                     {{floatType}}? OptionA_val = default({{floatType}}?);
-                    
+
                     int state = 0;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
                     global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
                     string previousArgument = null;
-                    
+
                     foreach (string arg in args)
                     {
                         global::System.ReadOnlySpan<char> val;
-                        
+
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
                         bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
-                        
+
                         if (state > 0 && startsOption)
                         {
                             errors ??= new();
                             errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                             state = 0;
                         }
-                        
+
                         if (hasLetters && arg.StartsWith("--"))
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);
                             int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');
-                            
+
                             latestOptionName = slice[longArgSplit[0]];
                             switch (latestOptionName)
                             {
@@ -1566,20 +1566,20 @@ public sealed class ArgumentParserGeneratorTests
                                     }
                                     goto continueMainLoop;
                             }
-                            
+
                             if (written == 2)
                             {
                                 val = slice[longArgSplit[1]];
                                 goto decodeValue;
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         if (startsOption)
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);
-                            
+
                             for (int i = 0; i < slice.Length; i++)
                             {
                                 if (state > 0)
@@ -1587,7 +1587,7 @@ public sealed class ArgumentParserGeneratorTests
                                     val = slice.Slice(i);
                                     goto decodeValue;
                                 }
-                                
+
                                 char shortOptionName = slice[i];
                                 latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);
                                 switch (shortOptionName)
@@ -1599,12 +1599,12 @@ public sealed class ArgumentParserGeneratorTests
                                         goto continueMainLoop;
                                 }
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         val = global::System.MemoryExtensions.AsSpan(arg);
-                        
+
                     decodeValue:
                         switch (state)
                         {
@@ -1624,35 +1624,35 @@ public sealed class ArgumentParserGeneratorTests
                                 errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
                                 break;
                         }
-                        
+
                         state = 0;
-                        
+
                     continueMainLoop:
                         previousArgument = arg;
                     }
-                    
+
                     if (state > 0)
                     {
                         errors ??= new();
                         errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                     }
-                    
+
                     if ((seenOptions & 0b1) == 0)
                     {
                         errors ??= new();
                         errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError("option-a"));
                     }
-                    
+
                     if (errors != null)
                     {
                         return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(global::ArgumentParsing.Results.Errors.ParseErrorCollection.AsErrorCollection(errors));
                     }
-                    
+
                     global::MyOptions options = new global::MyOptions
                     {
                         OptionA = OptionA_val,
                     };
-                    
+
                     return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(options);
                 }
             }
@@ -1694,33 +1694,33 @@ public sealed class ArgumentParserGeneratorTests
                 {
                     global::System.DayOfWeek? OptionA_val = default(global::System.DayOfWeek?);
                     char? OptionB_val = default(char?);
-                    
+
                     int state = 0;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
                     global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
                     string previousArgument = null;
-                    
+
                     foreach (string arg in args)
                     {
                         global::System.ReadOnlySpan<char> val;
-                        
+
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
                         bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
-                        
+
                         if (state > 0 && startsOption)
                         {
                             errors ??= new();
                             errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                             state = 0;
                         }
-                        
+
                         if (hasLetters && arg.StartsWith("--"))
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);
                             int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');
-                            
+
                             latestOptionName = slice[longArgSplit[0]];
                             switch (latestOptionName)
                             {
@@ -1751,20 +1751,20 @@ public sealed class ArgumentParserGeneratorTests
                                     }
                                     goto continueMainLoop;
                             }
-                            
+
                             if (written == 2)
                             {
                                 val = slice[longArgSplit[1]];
                                 goto decodeValue;
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         if (startsOption)
                         {
                             global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);
-                            
+
                             for (int i = 0; i < slice.Length; i++)
                             {
                                 if (state > 0)
@@ -1772,7 +1772,7 @@ public sealed class ArgumentParserGeneratorTests
                                     val = slice.Slice(i);
                                     goto decodeValue;
                                 }
-                                
+
                                 char shortOptionName = slice[i];
                                 latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);
                                 switch (shortOptionName)
@@ -1784,12 +1784,12 @@ public sealed class ArgumentParserGeneratorTests
                                         goto continueMainLoop;
                                 }
                             }
-                            
+
                             goto continueMainLoop;
                         }
-                        
+
                         val = global::System.MemoryExtensions.AsSpan(arg);
-                        
+
                     decodeValue:
                         switch (state)
                         {
@@ -1818,42 +1818,42 @@ public sealed class ArgumentParserGeneratorTests
                                 errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
                                 break;
                         }
-                        
+
                         state = 0;
-                        
+
                     continueMainLoop:
                         previousArgument = arg;
                     }
-                    
+
                     if (state > 0)
                     {
                         errors ??= new();
                         errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
                     }
-                    
+
                     if ((seenOptions & 0b01) == 0)
                     {
                         errors ??= new();
                         errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError("option-a"));
                     }
-                    
+
                     if ((seenOptions & 0b10) == 0)
                     {
                         errors ??= new();
                         errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError("option-b"));
                     }
-                    
+
                     if (errors != null)
                     {
                         return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(global::ArgumentParsing.Results.Errors.ParseErrorCollection.AsErrorCollection(errors));
                     }
-                    
+
                     global::MyOptions options = new global::MyOptions
                     {
                         OptionA = OptionA_val,
                         OptionB = OptionB_val,
                     };
-                    
+
                     return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(options);
                 }
             }
