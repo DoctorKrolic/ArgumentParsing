@@ -266,6 +266,13 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
                     writer.CloseBlock();
                     break;
+                case ParseStrategy.Char:
+                    writer.WriteLine($"if (!{info.Type}.TryParse(val.ToString(), out {info.PropertyName}_val))");
+                    writer.OpenBlock();
+                    writer.WriteLine("errors ??= new();");
+                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
+                    writer.CloseBlock();
+                    break;
             }
             writer.WriteLine("break;");
             writer.Ident--;
