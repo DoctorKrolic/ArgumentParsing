@@ -18,7 +18,7 @@ public sealed partial class SimpleEnumOptionsTests
     }
 
     [GeneratedArgumentParser]
-    private static partial ParseResult<Options> ParseArguments(string[] args);
+    private static partial ParseResult<Options> ParseArguments(ICollection<string> args);
     #endregion
 
     [Theory]
