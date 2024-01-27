@@ -284,19 +284,15 @@ public partial class ArgumentParserGenerator
                     }
                     break;
                 case ParseStrategy.Char:
-                    if (info.NullableUnderlyingType is not null)
-                    {
-                        writer.WriteLine($"{nullableUnderlyingType} {info.PropertyName}_underlying = default({nullableUnderlyingType});");
-                    }
-                    writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val.ToString(), out {info.PropertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                    writer.WriteLine($"if (val.Length == 1)");
+                    writer.OpenBlock();
+                    writer.WriteLine($"{info.PropertyName}_val = val[0];");
+                    writer.CloseBlock();
+                    writer.WriteLine("else");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
                     writer.CloseBlock();
-                    if (nullableUnderlyingType is not null)
-                    {
-                        writer.WriteLine($"{info.PropertyName}_val = {info.PropertyName}_underlying;");
-                    }
                     break;
             }
             writer.WriteLine("break;");

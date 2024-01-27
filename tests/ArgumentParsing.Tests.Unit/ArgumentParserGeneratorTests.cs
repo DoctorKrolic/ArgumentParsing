@@ -1805,13 +1805,15 @@ public sealed class ArgumentParserGeneratorTests
                                 OptionA_val = OptionA_underlying;
                                 break;
                             case 2:
-                                char OptionB_underlying = default(char);
-                                if (!char.TryParse(val.ToString(), out OptionB_underlying))
+                                if (val.Length == 1)
+                                {
+                                    OptionB_val = val[0];
+                                }
+                                else
                                 {
                                     errors ??= new();
                                     errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));
                                 }
-                                OptionB_val = OptionB_underlying;
                                 break;
                             default:
                                 errors ??= new();
