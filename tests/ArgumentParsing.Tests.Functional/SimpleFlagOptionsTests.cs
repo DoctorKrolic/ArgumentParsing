@@ -23,6 +23,7 @@ public sealed partial class SimpleFlagOptionsTests
     #endregion
 
     [Theory]
+    [InlineData("", false, false, false)]
     [InlineData("-a -b -c", true, true, true)]
     [InlineData("-ab -c", true, true, true)]
     [InlineData("-a -bc", true, true, true)]
@@ -34,7 +35,7 @@ public sealed partial class SimpleFlagOptionsTests
     [InlineData("--flag-c", false, false, true)]
     public void ParseCorrectArguments(string argsString, bool a, bool b, bool c)
     {
-        var args = argsString.Split(' ');
+        var args = string.IsNullOrEmpty(argsString) ? [] : argsString.Split(' ');
         var result = ParseArguments(args);
 
         Assert.Equal(ParseResultState.ParsedOptions, result.State);
