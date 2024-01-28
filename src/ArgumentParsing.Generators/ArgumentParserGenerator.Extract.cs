@@ -353,7 +353,7 @@ public partial class ArgumentParserGenerator
             var parseStrategy = possibleParseStrategy.Value;
             var isRequired = hasRequiredAttribute || property.IsRequired;
 
-            if (isRequired && parseStrategy == ParseStrategy.Flag)
+            if (isRequired && parseStrategy == ParseStrategy.Flag && nullableUnderlyingType is null)
             {
                 hasErrors = true;
                 diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredBoolOption, property));

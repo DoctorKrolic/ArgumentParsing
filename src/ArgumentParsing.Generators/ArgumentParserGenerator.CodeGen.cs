@@ -100,7 +100,7 @@ public partial class ArgumentParserGenerator
             if (info.ParseStrategy == ParseStrategy.Flag)
             {
                 writer.WriteLine($"{info.PropertyName}_val = true;");
-                writer.WriteLine("state = -2;");
+                writer.WriteLine($"state = {(info.NullableUnderlyingType is null ? "-10" : (int.MinValue + i))};");
             }
             else
             {
@@ -175,7 +175,7 @@ public partial class ArgumentParserGenerator
             if (info.ParseStrategy == ParseStrategy.Flag)
             {
                 writer.WriteLine($"{info.PropertyName}_val = true;");
-                writer.WriteLine("state = -2;");
+                writer.WriteLine($"state = {(info.NullableUnderlyingType is null ? "-10" : (int.MinValue + i))};");
             }
             else
             {
@@ -186,14 +186,17 @@ public partial class ArgumentParserGenerator
             writer.Ident--;
         }
 
-        var hasFlagOptions = optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag);
-        
         writer.WriteLine("default:");
         writer.Ident++;
-        if (hasFlagOptions)
+        if (optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag))
         {
-            writer.WriteLine("if (state == -2)");
+            var hasNullableFlags = optionInfos.Any(static i => i.NullableUnderlyingType is not null);
+            writer.WriteLine($"if (state {(hasNullableFlags ? "<=" : "==")} -10)");
             writer.OpenBlock();
+            if (hasNullableFlags)
+            {
+                writer.WriteLine("val = slice.Slice(i);");
+            }
             writer.WriteLine("latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i - 1]);");
             writer.WriteLine("goto decodeValue;");
             writer.CloseBlock();
@@ -217,9 +220,9 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("decodeValue:", identDelta: -1);
         writer.WriteLine("switch (state)");
         writer.OpenBlock();
-        if (hasFlagOptions)
+        if (optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag && i.NullableUnderlyingType is null))
         {
-            writer.WriteLine("case -2:");
+            writer.WriteLine("case -10:");
             writer.Ident++;
             writer.WriteLine("errors ??= new();");
             writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(latestOptionName.ToString()));");
@@ -237,15 +240,16 @@ public partial class ArgumentParserGenerator
         {
             var info = optionInfos[i];
 
-            if (info.ParseStrategy == ParseStrategy.Flag)
+            var parseStrategy = info.ParseStrategy;
+            var nullableUnderlyingType = info.NullableUnderlyingType;
+
+            if (parseStrategy == ParseStrategy.Flag && nullableUnderlyingType is null)
             {
                 continue;
             }
 
-            writer.WriteLine($"case {i + 1}:");
+            writer.WriteLine($"case {(parseStrategy == ParseStrategy.Flag ? (int.MinValue + i) : (i + 1))}:");
             writer.Ident++;
-            var parseStrategy = info.ParseStrategy;
-            var nullableUnderlyingType = info.NullableUnderlyingType;
             switch (parseStrategy)
             {
                 case ParseStrategy.String:
@@ -267,6 +271,15 @@ public partial class ArgumentParserGenerator
                     {
                         writer.WriteLine($"{info.PropertyName}_val = {info.PropertyName}_underlying;");
                     }
+                    break;
+                case ParseStrategy.Flag when nullableUnderlyingType is not null:
+                    writer.WriteLine($"bool {info.PropertyName}_underlying = default({nullableUnderlyingType});");
+                    writer.WriteLine($"if (!bool.TryParse(val, out {info.PropertyName}_underlying))");
+                    writer.OpenBlock();
+                    writer.WriteLine("errors ??= new();");
+                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
+                    writer.CloseBlock();
+                    writer.WriteLine($"{info.PropertyName}_val = {info.PropertyName}_underlying;");
                     break;
                 case ParseStrategy.Enum:
                     if (info.NullableUnderlyingType is not null)
