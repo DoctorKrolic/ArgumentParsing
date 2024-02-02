@@ -24,8 +24,8 @@ internal static class DiagnosticDescriptors
 
     public static readonly DiagnosticDescriptor InvalidArgsParameterType = new(
         id: "ARGP0003",
-        title: "Invalid type of an argument parser's parameter",
-        messageFormat: "Parameter of an argument parser must an enumerable collection of strings",
+        title: "Invalid type of argument parser's parameter",
+        messageFormat: "Parameter of argument parser must an enumerable collection of strings",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -62,10 +62,10 @@ internal static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static readonly DiagnosticDescriptor RequiredPropertyMustBeOptionOrValue = new(
+    public static readonly DiagnosticDescriptor RequiredPropertyMustBeOptionOrParameter = new(
         id: "ARGP0008",
-        title: "Required property must be option or value",
-        messageFormat: "Required property must be marked wither with 'Option' or 'Value' attribute",
+        title: "Required property must be option or parameter",
+        messageFormat: "Required property must be marked wither with 'Option' or 'Parameter' attribute",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);

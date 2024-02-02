@@ -253,7 +253,7 @@ public partial class ArgumentParserGenerator
                         property.DeclaredAccessibility >= optionsType.DeclaredAccessibility &&
                         property.SetMethod.DeclaredAccessibility >= optionsType.DeclaredAccessibility)
                     {
-                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredPropertyMustBeOptionOrValue, property));
+                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredPropertyMustBeOptionOrParameter, property));
                     }
                 }
 
