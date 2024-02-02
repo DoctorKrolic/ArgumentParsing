@@ -38,14 +38,13 @@ public partial class ArgumentParserGenerator
 
         foreach (var info in optionInfos)
         {
-            if (info.SequenceType == SequenceType.None)
+            writer.WriteLine(info.SequenceType switch
             {
-                writer.WriteLine($"{info.Type} {info.PropertyName}_val = default({info.Type});");
-            }
-            else if (info.SequenceType == SequenceType.List)
-            {
-                writer.WriteLine($"global::System.Collections.Generic.List<{info.Type}> {info.PropertyName}_builder = new();");
-            }
+                SequenceType.None => $"{info.Type} {info.PropertyName}_val = default({info.Type});",
+                SequenceType.List => $"global::System.Collections.Generic.List<{info.Type}> {info.PropertyName}_builder = new();",
+                SequenceType.ImmutableArray => $"global::System.Collections.Immutable.ImmutableArray<{info.Type}>.Builder {info.PropertyName}_builder = global::System.Collections.Immutable.ImmutableArray.CreateBuilder<{info.Type}>();",
+                _ => throw new InvalidOperationException("Unreachable"),
+            });
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -277,7 +276,7 @@ public partial class ArgumentParserGenerator
 
             writer.WriteLine($"case {(parseStrategy == ParseStrategy.Flag || sequenceType != SequenceType.None ? (int.MinValue + i) : (i + 1))}:");
             writer.Ident++;
-            if (sequenceType == SequenceType.List)
+            if (sequenceType != SequenceType.None)
             {
                 writer.WriteLine($"{info.Type} {propertyName}_val = default({info.Type});");
             }
@@ -415,7 +414,7 @@ public partial class ArgumentParserGenerator
 
         foreach (var info in optionInfos)
         {
-            writer.WriteLine($"{info.PropertyName} = {info.PropertyName}{(info.SequenceType != SequenceType.None ? "_builder" : "_val")},");
+            writer.WriteLine($"{info.PropertyName} = {info.PropertyName}{(info.SequenceType != SequenceType.None ? "_builder" : "_val")}{(info.SequenceType == SequenceType.ImmutableArray ? ".ToImmutable()" : string.Empty)},");
         }
 
         writer.Ident--;

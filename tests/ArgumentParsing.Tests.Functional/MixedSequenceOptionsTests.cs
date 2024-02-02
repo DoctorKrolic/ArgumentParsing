@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using ArgumentParsing.Results;
 using ArgumentParsing.Results.Errors;
 
@@ -16,6 +17,9 @@ public sealed partial class MixedSequenceOptionsTests
 
         [Option('d')]
         public IReadOnlyCollection<DayOfWeek> DaysOfWeek { get; init; } = null!;
+
+        [Option('c')]
+        public ImmutableArray<char> Chars { get; init; }
     }
 
     [GeneratedArgumentParser]
@@ -23,18 +27,18 @@ public sealed partial class MixedSequenceOptionsTests
     #endregion
 
     [Theory]
-    [InlineData("", null, null, null)]
-    [InlineData("-s -i -d", null, null, null)]
-    [InlineData("-s a -i 1 -d Monday", new string[] { "a" }, new int[] { 1 }, new DayOfWeek[] { DayOfWeek.Monday })]
-    [InlineData("-sa -i1 -dMonday", new string[] { "a" }, new int[] { 1 }, new DayOfWeek[] { DayOfWeek.Monday })]
-    [InlineData("-s a b -i 1 2 -d Monday Sunday", new string[] { "a", "b" }, new int[] { 1, 2 }, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Sunday })]
-    [InlineData("-s a b c -i 1 2 3 -d Monday Sunday Friday", new string[] { "a", "b", "c" }, new int[] { 1, 2, 3 }, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Sunday, DayOfWeek.Friday })]
-    [InlineData("--strings --ints --days-of-week", null, null, null)]
-    [InlineData("--strings a --ints 1 --days-of-week Monday", new string[] { "a" }, new int[] { 1 }, new DayOfWeek[] { DayOfWeek.Monday })]
-    [InlineData("--strings=a --ints=1 --days-of-week=Monday", new string[] { "a" }, new int[] { 1 }, new DayOfWeek[] { DayOfWeek.Monday })]
-    [InlineData("--strings a b --ints 1 2 --days-of-week Monday Sunday", new string[] { "a", "b" }, new int[] { 1, 2 }, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Sunday })]
-    [InlineData("--strings a b c --ints 1 2 3 --days-of-week Monday Sunday Friday", new string[] { "a", "b", "c" }, new int[] { 1, 2, 3 }, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Sunday, DayOfWeek.Friday })]
-    public void ParseCorrectArguments(string argsString, string[]? strings, int[]? ints, DayOfWeek[]? daysOfWeek)
+    [InlineData("", null, null, null, null)]
+    [InlineData("-s -i -d -c", null, null, null, null)]
+    [InlineData("-s a -i 1 -d Monday -c c", new string[] { "a" }, new int[] { 1 }, new DayOfWeek[] { DayOfWeek.Monday }, new char[] { 'c' })]
+    [InlineData("-sa -i1 -dMonday -c c", new string[] { "a" }, new int[] { 1 }, new DayOfWeek[] { DayOfWeek.Monday }, new char[] { 'c' })]
+    [InlineData("-s a b -i 1 2 -d Monday Sunday -c c h", new string[] { "a", "b" }, new int[] { 1, 2 }, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Sunday }, new char[] { 'c', 'h' })]
+    [InlineData("-s a b c -i 1 2 3 -d Monday Sunday Friday -c c h a", new string[] { "a", "b", "c" }, new int[] { 1, 2, 3 }, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Sunday, DayOfWeek.Friday }, new char[] { 'c', 'h', 'a' })]
+    [InlineData("--strings --ints --days-of-week --chars", null, null, null, null)]
+    [InlineData("--strings a --ints 1 --days-of-week Monday --chars c", new string[] { "a" }, new int[] { 1 }, new DayOfWeek[] { DayOfWeek.Monday }, new char[] { 'c' })]
+    [InlineData("--strings=a --ints=1 --days-of-week=Monday --chars=c", new string[] { "a" }, new int[] { 1 }, new DayOfWeek[] { DayOfWeek.Monday }, new char[] { 'c' })]
+    [InlineData("--strings a b --ints 1 2 --days-of-week Monday Sunday --chars c h", new string[] { "a", "b" }, new int[] { 1, 2 }, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Sunday }, new char[] { 'c', 'h' })]
+    [InlineData("--strings a b c --ints 1 2 3 --days-of-week Monday Sunday Friday --chars c h a", new string[] { "a", "b", "c" }, new int[] { 1, 2, 3 }, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Sunday, DayOfWeek.Friday }, new char[] { 'c', 'h', 'a' })]
+    public void ParseCorrectArguments(string argsString, string[]? strings, int[]? ints, DayOfWeek[]? daysOfWeek, char[]? chars)
     {
         var args = string.IsNullOrEmpty(argsString) ? [] : argsString.Split(' ');
         var result = ParseArguments(args);
@@ -47,10 +51,12 @@ public sealed partial class MixedSequenceOptionsTests
         strings ??= [];
         ints ??= [];
         daysOfWeek ??= [];
+        chars ??= [];
 
         var stringsAsserts = new Action<string>[strings.Length];
         var intsAsserts = new Action<int>[ints.Length];
         var daysOfWeekAsserts = new Action<DayOfWeek>[daysOfWeek.Length];
+        var charsAsserts = new Action<char>[chars.Length];
 
         for (var i = 0; i < stringsAsserts.Length; i++)
         {
@@ -70,9 +76,16 @@ public sealed partial class MixedSequenceOptionsTests
             daysOfWeekAsserts[i] = (d) => Assert.Equal(daysOfWeek[copy], d);
         }
 
+        for (var i = 0; i < charsAsserts.Length; i++)
+        {
+            var copy = i; // Avoid closure
+            charsAsserts[i] = (c) => Assert.Equal(chars[copy], c);
+        }
+
         Assert.Collection(strings, stringsAsserts);
         Assert.Collection(ints, intsAsserts);
         Assert.Collection(daysOfWeek, daysOfWeekAsserts);
+        Assert.Collection(chars, charsAsserts);
 
         Assert.Null(result.Errors);
     }

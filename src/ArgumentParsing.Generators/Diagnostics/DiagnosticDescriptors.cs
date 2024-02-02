@@ -149,4 +149,6 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    // ARGP0021 - suggest switching sequence option to immutable array if possible
 }

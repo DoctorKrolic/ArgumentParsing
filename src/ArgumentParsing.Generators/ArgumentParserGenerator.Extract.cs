@@ -395,15 +395,20 @@ public partial class ArgumentParserGenerator
 
             if (type is INamedTypeSymbol namedType)
             {
-                var iEnumerableOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")!;
-                var iReadOnlyCollectionOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1")!;
-                var iReadOnlyListOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1")!;
+                var iEnumerableOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
+                var iReadOnlyCollectionOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
+                var iReadOnlyListOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1");
+                var immutableArrayType = compilation.GetTypeByMetadataName("System.Collections.Immutable.ImmutableArray`1");
 
-                if (namedType.ConstructedFrom.Equals(iEnumerableOfTType, SymbolEqualityComparer.Default) ||
-                    namedType.ConstructedFrom.Equals(iReadOnlyCollectionOfTType, SymbolEqualityComparer.Default) ||
-                    namedType.ConstructedFrom.Equals(iReadOnlyListOfTType, SymbolEqualityComparer.Default))
+                var constructedFrom = namedType.ConstructedFrom;
+                var isImmutableArray = constructedFrom.Equals(immutableArrayType, SymbolEqualityComparer.Default);
+
+                if (isImmutableArray ||
+                    constructedFrom.Equals(iEnumerableOfTType, SymbolEqualityComparer.Default) ||
+                    constructedFrom.Equals(iReadOnlyCollectionOfTType, SymbolEqualityComparer.Default) ||
+                    constructedFrom.Equals(iReadOnlyListOfTType, SymbolEqualityComparer.Default))
                 {
-                    sequenceType = SequenceType.List;
+                    sequenceType = isImmutableArray ? SequenceType.ImmutableArray : SequenceType.List;
                     type = namedType.TypeArguments[0];
                     sequenceUnderlyingType = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                 }
