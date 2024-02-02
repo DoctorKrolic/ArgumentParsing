@@ -42,7 +42,7 @@ public partial class ArgumentParserGenerator
             {
                 writer.WriteLine($"{info.Type} {info.PropertyName}_val = default({info.Type});");
             }
-            else if (info.SequenceType == SequenceType.Default)
+            else if (info.SequenceType == SequenceType.List)
             {
                 writer.WriteLine($"global::System.Collections.Generic.List<{info.Type}> {info.PropertyName}_builder = new();");
             }
@@ -57,6 +57,11 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];");
         writer.WriteLine("global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;");
         writer.WriteLine("string previousArgument = null;");
+        var hasSequenceOptions = optionInfos.Any(static i => i.SequenceType != SequenceType.None);
+        if (hasSequenceOptions)
+        {
+            writer.WriteLine("int optionSource = 0;");
+        }
         writer.WriteLine();
 
         writer.WriteLine($"foreach (string arg in {method.ArgsParameterInfo.Name})");
@@ -78,6 +83,11 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);");
         writer.WriteLine("int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');");
         writer.WriteLine();
+        if (hasSequenceOptions)
+        {
+            writer.WriteLine("optionSource = 2;");
+            writer.WriteLine();
+        }
         writer.WriteLine("latestOptionName = slice[longArgSplit[0]];");
         writer.WriteLine("switch (latestOptionName)");
         writer.OpenBlock();
@@ -146,6 +156,11 @@ public partial class ArgumentParserGenerator
         writer.OpenBlock();
         writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);");
         writer.WriteLine();
+        if (hasSequenceOptions)
+        {
+            writer.WriteLine("optionSource = 1;");
+            writer.WriteLine();
+        }
         writer.WriteLine("for (int i = 0; i < slice.Length; i++)");
         writer.OpenBlock();
         writer.WriteLine("if (state > 0)");
@@ -195,12 +210,11 @@ public partial class ArgumentParserGenerator
 
         writer.WriteLine("default:");
         writer.Ident++;
-        if (optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag))
+        if (optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag || i.SequenceType != SequenceType.None))
         {
-            var hasNullableFlags = optionInfos.Any(static i => i.NullableUnderlyingType is not null);
-            writer.WriteLine($"if (state {(hasNullableFlags ? "<=" : "==")} -10)");
+            writer.WriteLine($"if (state <= -10)");
             writer.OpenBlock();
-            if (hasNullableFlags)
+            if (optionInfos.Any(static i => i.NullableUnderlyingType is not null || i.SequenceType != SequenceType.None))
             {
                 writer.WriteLine("val = slice.Slice(i);");
             }
@@ -222,6 +236,10 @@ public partial class ArgumentParserGenerator
 
         writer.WriteLine();
         writer.WriteLine("val = global::System.MemoryExtensions.AsSpan(arg);");
+        if (hasSequenceOptions)
+        {
+            writer.WriteLine("optionSource = 0;");
+        }
         writer.WriteLine();
 
         writer.WriteLine("decodeValue:", identDelta: -1);
@@ -259,7 +277,7 @@ public partial class ArgumentParserGenerator
 
             writer.WriteLine($"case {(parseStrategy == ParseStrategy.Flag || sequenceType != SequenceType.None ? (int.MinValue + i) : (i + 1))}:");
             writer.Ident++;
-            if (sequenceType == SequenceType.Default)
+            if (sequenceType == SequenceType.List)
             {
                 writer.WriteLine($"{info.Type} {propertyName}_val = default({info.Type});");
             }
@@ -324,6 +342,10 @@ public partial class ArgumentParserGenerator
             if (sequenceType != SequenceType.None)
             {
                 writer.WriteLine($"{propertyName}_builder.Add({propertyName}_val);");
+                writer.WriteLine("if (optionSource > 0)");
+                writer.OpenBlock();
+                writer.WriteLine("state = 0;");
+                writer.CloseBlock();
                 writer.WriteLine("continue;");
             }
             else

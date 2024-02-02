@@ -403,7 +403,7 @@ public partial class ArgumentParserGenerator
                     namedType.ConstructedFrom.Equals(iReadOnlyCollectionOfTType, SymbolEqualityComparer.Default) ||
                     namedType.ConstructedFrom.Equals(iReadOnlyListOfTType, SymbolEqualityComparer.Default))
                 {
-                    sequenceType = SequenceType.Default;
+                    sequenceType = SequenceType.List;
                     type = namedType.TypeArguments[0];
                     sequenceUnderlyingType = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                 }
