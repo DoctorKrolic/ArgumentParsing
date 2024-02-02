@@ -38,7 +38,14 @@ public partial class ArgumentParserGenerator
 
         foreach (var info in optionInfos)
         {
-            writer.WriteLine($"{info.Type} {info.PropertyName}_val = default({info.Type});");
+            if (info.SequenceType == SequenceType.None)
+            {
+                writer.WriteLine($"{info.Type} {info.PropertyName}_val = default({info.Type});");
+            }
+            else if (info.SequenceType == SequenceType.Default)
+            {
+                writer.WriteLine($"global::System.Collections.Generic.List<{info.Type}> {info.PropertyName}_builder = new();");
+            }
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -104,7 +111,7 @@ public partial class ArgumentParserGenerator
             }
             else
             {
-                writer.WriteLine($"state = {i + 1};");
+                writer.WriteLine($"state = {(info.SequenceType != SequenceType.None ? (int.MinValue + i) : i + 1)};");
             }
             writer.WriteLine($"seenOptions |= 0b{usageCode.ToString()};");
             writer.WriteLine("break;");
@@ -179,7 +186,7 @@ public partial class ArgumentParserGenerator
             }
             else
             {
-                writer.WriteLine($"state = {i + 1};");
+                writer.WriteLine($"state = {(info.SequenceType != SequenceType.None ? (int.MinValue + i) : i + 1)};");
             }
             writer.WriteLine($"seenOptions |= 0b{usageCode.ToString()};");
             writer.WriteLine("break;");
@@ -240,66 +247,72 @@ public partial class ArgumentParserGenerator
         {
             var info = optionInfos[i];
 
+            var propertyName = info.PropertyName;
             var parseStrategy = info.ParseStrategy;
             var nullableUnderlyingType = info.NullableUnderlyingType;
+            var sequenceType = info.SequenceType;
 
             if (parseStrategy == ParseStrategy.Flag && nullableUnderlyingType is null)
             {
                 continue;
             }
 
-            writer.WriteLine($"case {(parseStrategy == ParseStrategy.Flag ? (int.MinValue + i) : (i + 1))}:");
+            writer.WriteLine($"case {(parseStrategy == ParseStrategy.Flag || sequenceType != SequenceType.None ? (int.MinValue + i) : (i + 1))}:");
             writer.Ident++;
+            if (sequenceType == SequenceType.Default)
+            {
+                writer.WriteLine($"{info.Type} {propertyName}_val = default({info.Type});");
+            }
             switch (parseStrategy)
             {
                 case ParseStrategy.String:
-                    writer.WriteLine($"{info.PropertyName}_val = val.ToString();");
+                    writer.WriteLine($"{propertyName}_val = val.ToString();");
                     break;
                 case ParseStrategy.Integer:
                 case ParseStrategy.Float:
                     if (info.NullableUnderlyingType is not null)
                     {
-                        writer.WriteLine($"{nullableUnderlyingType} {info.PropertyName}_underlying = default({nullableUnderlyingType});");
+                        writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
                     }
                     var numberStyles = parseStrategy == ParseStrategy.Integer ? "global::System.Globalization.NumberStyles.Integer" : "global::System.Globalization.NumberStyles.Float | global::System.Globalization.NumberStyles.AllowThousands";
-                    writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {info.PropertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                    writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
                     writer.CloseBlock();
                     if (nullableUnderlyingType is not null)
                     {
-                        writer.WriteLine($"{info.PropertyName}_val = {info.PropertyName}_underlying;");
+                        writer.WriteLine($"{propertyName}_val = {propertyName}_underlying;");
                     }
                     break;
                 case ParseStrategy.Flag when nullableUnderlyingType is not null:
-                    writer.WriteLine($"bool {info.PropertyName}_underlying = default({nullableUnderlyingType});");
-                    writer.WriteLine($"if (!bool.TryParse(val, out {info.PropertyName}_underlying))");
+                    writer.WriteLine($"bool {propertyName}_underlying = default({nullableUnderlyingType});");
+                    writer.WriteLine($"if (!bool.TryParse(val, out {propertyName}_underlying))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
                     writer.CloseBlock();
-                    writer.WriteLine($"{info.PropertyName}_val = {info.PropertyName}_underlying;");
+                    writer.WriteLine($"{propertyName}_val = {propertyName}_underlying;");
                     break;
                 case ParseStrategy.Enum:
                     if (info.NullableUnderlyingType is not null)
                     {
-                        writer.WriteLine($"{nullableUnderlyingType} {info.PropertyName}_underlying = default({nullableUnderlyingType});");
+                        writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
                     }
-                    writer.WriteLine($"if (!global::System.Enum.TryParse<{nullableUnderlyingType ?? info.Type}>(val, out {info.PropertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                    writer.WriteLine($"if (!global::System.Enum.TryParse<{nullableUnderlyingType ?? info.Type}>(val, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
                     writer.CloseBlock();
                     if (nullableUnderlyingType is not null)
                     {
-                        writer.WriteLine($"{info.PropertyName}_val = {info.PropertyName}_underlying;");
+                        writer.WriteLine($"{propertyName}_val = {propertyName}_underlying;");
                     }
                     break;
                 case ParseStrategy.Char:
                     writer.WriteLine($"if (val.Length == 1)");
                     writer.OpenBlock();
-                    writer.WriteLine($"{info.PropertyName}_val = val[0];");
+                    writer.WriteLine($"{propertyName}_val = val[0];");
                     writer.CloseBlock();
                     writer.WriteLine("else");
                     writer.OpenBlock();
@@ -308,7 +321,15 @@ public partial class ArgumentParserGenerator
                     writer.CloseBlock();
                     break;
             }
-            writer.WriteLine("break;");
+            if (sequenceType != SequenceType.None)
+            {
+                writer.WriteLine($"{propertyName}_builder.Add({propertyName}_val);");
+                writer.WriteLine("continue;");
+            }
+            else
+            {
+                writer.WriteLine("break;");
+            }
             writer.Ident--;
         }
 
@@ -372,7 +393,7 @@ public partial class ArgumentParserGenerator
 
         foreach (var info in optionInfos)
         {
-            writer.WriteLine($"{info.PropertyName} = {info.PropertyName}_val,");
+            writer.WriteLine($"{info.PropertyName} = {info.PropertyName}{(info.SequenceType != SequenceType.None ? "_builder" : "_val")},");
         }
 
         writer.Ident--;

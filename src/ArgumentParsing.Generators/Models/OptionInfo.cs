@@ -7,4 +7,5 @@ internal sealed record OptionInfo(
     string? LongName,
     ParseStrategy ParseStrategy,
     bool IsRequired,
-    string? NullableUnderlyingType);
+    string? NullableUnderlyingType,
+    SequenceType SequenceType);

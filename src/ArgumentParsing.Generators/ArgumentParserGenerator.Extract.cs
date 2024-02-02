@@ -337,7 +337,7 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            (var possibleParseStrategy, var nullableUnderlyingType) = GetPotentialParseStrategy(property.Type);
+            (var possibleParseStrategy, var nullableUnderlyingType, var sequenceType, var sequenceUnderlyingType) = GetPotentialParseStrategy(property.Type, compilation);
 
             if (!possibleParseStrategy.HasValue)
             {
@@ -366,12 +366,13 @@ public partial class ArgumentParserGenerator
 
             optionsBuilder.Add(new(
                 property.Name,
-                property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                sequenceUnderlyingType ?? property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 shortName,
                 longName,
                 parseStrategy,
                 isRequired,
-                nullableUnderlyingType));
+                nullableUnderlyingType,
+                sequenceType));
         }
 
         if (hasErrors)
@@ -385,14 +386,32 @@ public partial class ArgumentParserGenerator
 
         return (optionsInfo, diagnosticsBuilder.ToImmutable());
 
-        static (ParseStrategy? possibleParseStrategy, string? nullableUnderlyingType) GetPotentialParseStrategy(ITypeSymbol type)
+        static (ParseStrategy? possibleParseStrategy, string? nullableUnderlyingType, SequenceType sequenceType, string? sequenceUnderlyingType) GetPotentialParseStrategy(ITypeSymbol type, Compilation compilation)
         {
             string? nullableUnderlyingType = null;
 
-            if (type is INamedTypeSymbol { ConstructedFrom.SpecialType: SpecialType.System_Nullable_T, TypeArguments: [var nullableUnderlyingTypeSymbol] })
+            var sequenceType = SequenceType.None;
+            string? sequenceUnderlyingType = null;
+
+            if (type is INamedTypeSymbol namedType)
             {
-                nullableUnderlyingType = nullableUnderlyingTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                type = nullableUnderlyingTypeSymbol;
+                var iEnumerableOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")!;
+                var iReadOnlyCollectionOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1")!;
+                var iReadOnlyListOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1")!;
+
+                if (namedType.ConstructedFrom.Equals(iEnumerableOfTType, SymbolEqualityComparer.Default) ||
+                    namedType.ConstructedFrom.Equals(iReadOnlyCollectionOfTType, SymbolEqualityComparer.Default) ||
+                    namedType.ConstructedFrom.Equals(iReadOnlyListOfTType, SymbolEqualityComparer.Default))
+                {
+                    sequenceType = SequenceType.Default;
+                    type = namedType.TypeArguments[0];
+                    sequenceUnderlyingType = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                }
+                else if (namedType is { ConstructedFrom.SpecialType: SpecialType.System_Nullable_T, TypeArguments: [var nullableUnderlyingTypeSymbol] })
+                {
+                    nullableUnderlyingType = nullableUnderlyingTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    type = nullableUnderlyingTypeSymbol;
+                }
             }
 
             ParseStrategy? possibleParseStrategy = type switch
@@ -415,7 +434,7 @@ public partial class ArgumentParserGenerator
                 _ => null,
             };
 
-            return (possibleParseStrategy, nullableUnderlyingType);
+            return (possibleParseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType);
         }
     }
 }
