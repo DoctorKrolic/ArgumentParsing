@@ -202,6 +202,7 @@ public partial class ArgumentParserGenerator
             string? longName = null;
 
             var parameterIndex = 0;
+            string? parameterName = null;
 
             var optionAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.OptionAttribute")!;
             var parameterAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.ParameterAttribute");
@@ -261,6 +262,17 @@ public partial class ArgumentParserGenerator
                         {
                             parameterIndex = (int)argValue!;
                         }
+                    }
+                }
+
+                if (isParameterAttribute)
+                {
+                    foreach (var namedArg in attr.NamedArguments)
+                    {
+                        if (namedArg.Key != "Name")
+                            continue;
+
+                        parameterName = (string?)namedArg.Value.Value;
                     }
                 }
             }
@@ -451,6 +463,7 @@ public partial class ArgumentParserGenerator
                 if (!hasParameter)
                 {
                     var parameterInfo = new ParameterInfo(
+                        parameterName ?? propertyName.ToKebabCase(),
                         propertyName,
                         propertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         potentialParseStrategy ?? default,

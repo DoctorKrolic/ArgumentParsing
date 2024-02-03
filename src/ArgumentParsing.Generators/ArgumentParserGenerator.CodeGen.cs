@@ -400,21 +400,21 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!{info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}_val))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         break;
                     case ParseStrategy.Flag:
                         writer.WriteLine($"if (!bool.TryParse(arg, out {propertyName}_val))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         break;
                     case ParseStrategy.Enum:
                         writer.WriteLine($"if (!global::System.Enum.TryParse<{info.Type}>(arg, out {propertyName}_val))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         break;
                     case ParseStrategy.Char:
@@ -425,7 +425,7 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine("else");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         break;
                     default:

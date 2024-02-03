@@ -47,13 +47,13 @@ public sealed partial class SimpleNumericParametersTests
     }
 
     [Theory]
-    [InlineData("a 2 3", "a", 0)]
-    [InlineData("2147483648 5 3.7", "2147483648", 0)]
-    [InlineData("20 long 3.7", "long", 1)]
-    [InlineData("20 8.37 3.7", "8.37", 1)]
-    [InlineData("20 45 f", "f", 2)]
-    [InlineData("20 45 3;7", "3;7", 2)]
-    public void BadParameterValueFormatError(string argsString, string badValue, int parameterIndex)
+    [InlineData("a 2 3", "a", "param1", 0)]
+    [InlineData("2147483648 5 3.7", "2147483648", "param1", 0)]
+    [InlineData("20 long 3.7", "long", "param2", 1)]
+    [InlineData("20 8.37 3.7", "8.37", "param2", 1)]
+    [InlineData("20 45 f", "f", "param3", 2)]
+    [InlineData("20 45 3;7", "3;7", "param3", 2)]
+    public void BadParameterValueFormatError(string argsString, string badValue, string parameterName, int parameterIndex)
     {
         var args = argsString.Split(' ');
         var result = ParseArguments([.. args]);
@@ -69,6 +69,7 @@ public sealed partial class SimpleNumericParametersTests
         var badParameterValueFormatError = Assert.IsType<BadParameterValueFormatError>(error);
 
         Assert.Equal(badValue, badParameterValueFormatError.Value);
+        Assert.Equal(parameterName, badParameterValueFormatError.ParameterName);
         Assert.Equal(parameterIndex, badParameterValueFormatError.ParameterIndex);
     }
 }

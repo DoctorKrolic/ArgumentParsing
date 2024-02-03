@@ -36,9 +36,9 @@ public sealed partial class SimpleEnumParametersTests
     }
 
     [Theory]
-    [InlineData("SomeDay", "SomeDay", 0)]
-    [InlineData("monday", "monday", 0)]
-    public void BadParameterValueFormatError(string argsString, string badValue, int parameterIndex)
+    [InlineData("SomeDay", "SomeDay", "param1", 0)]
+    [InlineData("monday", "monday", "param1", 0)]
+    public void BadParameterValueFormatError(string argsString, string badValue, string parameterName, int parameterIndex)
     {
         var args = argsString.Split(' ');
         var result = ParseArguments([.. args]);
@@ -54,6 +54,7 @@ public sealed partial class SimpleEnumParametersTests
         var badParameterValueFormatError = Assert.IsType<BadParameterValueFormatError>(error);
 
         Assert.Equal(badValue, badParameterValueFormatError.Value);
+        Assert.Equal(parameterName, badParameterValueFormatError.ParameterName);
         Assert.Equal(parameterIndex, badParameterValueFormatError.ParameterIndex);
     }
 }

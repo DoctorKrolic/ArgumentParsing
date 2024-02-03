@@ -45,10 +45,10 @@ public sealed partial class SimpleFlagParametersTests
     }
 
     [Theory]
-    [InlineData("a true false", "a", 0)]
-    [InlineData("false no false", "no", 1)]
-    [InlineData("true true yes", "yes", 2)]
-    public void BadParameterValueFormatError(string argsString, string badValue, int parameterIndex)
+    [InlineData("a true false", "a", "param1", 0)]
+    [InlineData("false no false", "no", "param2", 1)]
+    [InlineData("true true yes", "yes", "param3", 2)]
+    public void BadParameterValueFormatError(string argsString, string badValue, string parameterName, int parameterIndex)
     {
         var args = argsString.Split(' ');
         var result = ParseArguments([.. args]);
@@ -64,6 +64,7 @@ public sealed partial class SimpleFlagParametersTests
         var badParameterValueFormatError = Assert.IsType<BadParameterValueFormatError>(error);
 
         Assert.Equal(badValue, badParameterValueFormatError.Value);
+        Assert.Equal(parameterName, badParameterValueFormatError.ParameterName);
         Assert.Equal(parameterIndex, badParameterValueFormatError.ParameterIndex);
     }
 }
