@@ -183,11 +183,9 @@ public sealed class ArgumentParserGeneratorTests
                 {
 
                     int state = 0;
-                    int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
                     global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
-                    string previousArgument = null;
 
                     foreach (string arg in s)
                     {
@@ -195,13 +193,6 @@ public sealed class ArgumentParserGeneratorTests
 
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
                         bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
-
-                        if (state > 0 && startsOption)
-                        {
-                            errors ??= new();
-                            errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
-                            state = 0;
-                        }
 
                         if (hasLetters && arg.StartsWith("--"))
                         {
@@ -273,13 +264,7 @@ public sealed class ArgumentParserGeneratorTests
                         state = 0;
 
                     continueMainLoop:
-                        previousArgument = arg;
-                    }
-
-                    if (state > 0)
-                    {
-                        errors ??= new();
-                        errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
+                        ;
                     }
 
                     if (errors != null)

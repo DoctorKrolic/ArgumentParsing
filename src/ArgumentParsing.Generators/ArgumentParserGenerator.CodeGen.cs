@@ -49,13 +49,21 @@ public partial class ArgumentParserGenerator
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        var hasAnyOptions = optionInfos.Length > 0;
+
         writer.WriteLine();
         writer.WriteLine("int state = 0;");
-        writer.WriteLine("int seenOptions = 0;");
+        if (hasAnyOptions)
+        {
+            writer.WriteLine("int seenOptions = 0;");
+        }
         writer.WriteLine("global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;");
         writer.WriteLine("global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];");
         writer.WriteLine("global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;");
-        writer.WriteLine("string previousArgument = null;");
+        if (hasAnyOptions)
+        {
+            writer.WriteLine("string previousArgument = null;");
+        }
         var hasSequenceOptions = optionInfos.Any(static i => i.SequenceType != SequenceType.None);
         if (hasSequenceOptions)
         {
@@ -70,13 +78,16 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);");
         writer.WriteLine("bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');");
         writer.WriteLine();
-        writer.WriteLine("if (state > 0 && startsOption)");
-        writer.OpenBlock();
-        writer.WriteLine("errors ??= new();");
-        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));");
-        writer.WriteLine("state = 0;");
-        writer.CloseBlock();
-        writer.WriteLine();
+        if (hasAnyOptions)
+        {
+            writer.WriteLine("if (state > 0 && startsOption)");
+            writer.OpenBlock();
+            writer.WriteLine("errors ??= new();");
+            writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));");
+            writer.WriteLine("state = 0;");
+            writer.CloseBlock();
+            writer.WriteLine();
+        }
         writer.WriteLine("if (hasLetters && arg.StartsWith(\"--\"))");
         writer.OpenBlock();
         writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);");
@@ -368,15 +379,25 @@ public partial class ArgumentParserGenerator
 
         writer.WriteLine();
         writer.WriteLine("continueMainLoop:", identDelta: -1);
-        writer.WriteLine("previousArgument = arg;");
+        if (hasAnyOptions)
+        {
+            writer.WriteLine("previousArgument = arg;");
+        }
+        else
+        {
+            writer.WriteLine(";");
+        }
         writer.CloseBlock();
 
-        writer.WriteLine();
-        writer.WriteLine("if (state > 0)");
-        writer.OpenBlock();
-        writer.WriteLine("errors ??= new();");
-        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));");
-        writer.CloseBlock();
+        if (hasAnyOptions)
+        {
+            writer.WriteLine();
+            writer.WriteLine("if (state > 0)");
+            writer.OpenBlock();
+            writer.WriteLine("errors ??= new();");
+            writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));");
+            writer.CloseBlock();
+        }
 
         for (var i = 0; i < optionInfos.Length; i++)
         {
