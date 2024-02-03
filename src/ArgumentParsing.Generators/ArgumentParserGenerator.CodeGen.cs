@@ -47,9 +47,15 @@ public partial class ArgumentParserGenerator
             });
         }
 
+        foreach (var info in parameterInfos)
+        {
+            writer.WriteLine($"{info.Type} {info.PropertyName}_val = default({info.Type});");
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
 
         var hasAnyOptions = optionInfos.Length > 0;
+        var hasAnyParameters = parameterInfos.Length > 0;
 
         writer.WriteLine();
         writer.WriteLine("int state = 0;");
@@ -68,6 +74,10 @@ public partial class ArgumentParserGenerator
         if (hasSequenceOptions)
         {
             writer.WriteLine("int optionSource = 0;");
+        }
+        if (hasAnyParameters)
+        {
+            writer.WriteLine("int parameterIndex = 0;");
         }
         writer.WriteLine();
 
@@ -367,8 +377,76 @@ public partial class ArgumentParserGenerator
 
         writer.WriteLine("default:");
         writer.Ident++;
-        writer.WriteLine("errors ??= new();");
-        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+        if (hasAnyParameters)
+        {
+            writer.WriteLine("switch (parameterIndex++)");
+            writer.OpenBlock();
+            for (var i = 0; i < parameterInfos.Length; i++)
+            {
+                var info = parameterInfos[i];
+                var propertyName = info.PropertyName;
+                var parseStrategy = info.ParseStrategy;
+
+                writer.WriteLine($"case {i}:");
+                writer.Ident++;
+                switch (parseStrategy)
+                {
+                    case ParseStrategy.String:
+                        writer.WriteLine($"{propertyName}_val = arg;");
+                        break;
+                    case ParseStrategy.Integer:
+                    case ParseStrategy.Float:
+                        var numberStyles = parseStrategy == ParseStrategy.Integer ? "global::System.Globalization.NumberStyles.Integer" : "global::System.Globalization.NumberStyles.Float | global::System.Globalization.NumberStyles.AllowThousands";
+                        writer.WriteLine($"if (!{info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}_val))");
+                        writer.OpenBlock();
+                        writer.WriteLine("errors ??= new();");
+                        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.CloseBlock();
+                        break;
+                    case ParseStrategy.Flag:
+                        writer.WriteLine($"if (!bool.TryParse(arg, out {propertyName}_val))");
+                        writer.OpenBlock();
+                        writer.WriteLine("errors ??= new();");
+                        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.CloseBlock();
+                        break;
+                    case ParseStrategy.Enum:
+                        writer.WriteLine($"if (!global::System.Enum.TryParse<{info.Type}>(arg, out {propertyName}_val))");
+                        writer.OpenBlock();
+                        writer.WriteLine("errors ??= new();");
+                        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.CloseBlock();
+                        break;
+                    case ParseStrategy.Char:
+                        writer.WriteLine($"if (arg.Length == 1)");
+                        writer.OpenBlock();
+                        writer.WriteLine($"{propertyName}_val = arg[0];");
+                        writer.CloseBlock();
+                        writer.WriteLine("else");
+                        writer.OpenBlock();
+                        writer.WriteLine("errors ??= new();");
+                        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.CloseBlock();
+                        break;
+                    default:
+                        break;
+                }
+                writer.WriteLine("break;");
+                writer.Ident--;
+            }
+            writer.WriteLine("default:");
+            writer.Ident++;
+            writer.WriteLine("errors ??= new();");
+            writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+            writer.WriteLine("break;");
+            writer.Ident--;
+            writer.CloseBlock();
+        }
+        else
+        {
+            writer.WriteLine("errors ??= new();");
+            writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+        }
         writer.WriteLine("break;");
         writer.Ident--;
 
@@ -436,6 +514,11 @@ public partial class ArgumentParserGenerator
         foreach (var info in optionInfos)
         {
             writer.WriteLine($"{info.PropertyName} = {info.PropertyName}{(info.SequenceType != SequenceType.None ? "_builder" : "_val")}{(info.SequenceType == SequenceType.ImmutableArray ? ".ToImmutable()" : string.Empty)},");
+        }
+
+        foreach (var info in parameterInfos)
+        {
+            writer.WriteLine($"{info.PropertyName} = {info.PropertyName}_val,");
         }
 
         writer.Ident--;
