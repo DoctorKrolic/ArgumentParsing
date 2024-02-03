@@ -293,6 +293,7 @@ public partial class ArgumentParserGenerator
             }
 
             var propertyName = property.Name;
+            var propertyType = property.Type;
             var isRequired = hasRequiredAttribute || property.IsRequired;
 
             if (hasOptionAttribute)
@@ -361,16 +362,20 @@ public partial class ArgumentParserGenerator
                     }
                 }
 
-                (var possibleParseStrategy, var nullableUnderlyingType, var sequenceType, var sequenceUnderlyingType) = GetPotentialParseStrategyForOption(property.Type, compilation);
+                (var possibleParseStrategy, var nullableUnderlyingType, var sequenceType, var sequenceUnderlyingType) = GetPotentialParseStrategyForOption(propertyType, compilation);
 
                 if (!possibleParseStrategy.HasValue)
                 {
                     hasErrors = true;
 
-                    var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken);
-                    var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
+                    if (propertyType.TypeKind != TypeKind.Error)
+                    {
+                        var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken);
+                        var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
 
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidOptionPropertyType, diagnosticLocation, property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidOptionPropertyType, diagnosticLocation, propertyType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                    }
+
                     continue;
                 }
 
@@ -389,7 +394,7 @@ public partial class ArgumentParserGenerator
 
                 optionsBuilder.Add(new(
                     propertyName,
-                    sequenceUnderlyingType ?? property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                    sequenceUnderlyingType ?? propertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                     shortName,
                     longName,
                     parseStrategy,
@@ -428,22 +433,25 @@ public partial class ArgumentParserGenerator
                     }
                 }
 
-                var potentialParseStrategy = GetPotentialPrimaryParseStrategy(property.Type);
+                var potentialParseStrategy = GetPotentialPrimaryParseStrategy(propertyType);
                 if (!potentialParseStrategy.HasValue)
                 {
                     hasErrors = true;
 
-                    var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken);
-                    var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
+                    if (propertyType.TypeKind != TypeKind.Error)
+                    {
+                        var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken);
+                        var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
 
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidParameterPropertyType, diagnosticLocation, property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidParameterPropertyType, diagnosticLocation, propertyType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                    }
                 }
 
                 if (!hasParameter)
                 {
                     var parameterInfo = new ParameterInfo(
                         propertyName,
-                        property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                        propertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         potentialParseStrategy ?? default,
                         isRequired);
 

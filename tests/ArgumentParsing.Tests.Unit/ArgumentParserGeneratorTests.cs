@@ -140,7 +140,7 @@ public sealed class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task InvalidParameterType_ErrorType()
+    public async Task InvalidParameterType_ErrorType_NoCustomDiagnostics()
     {
         var source = """
             partial class C
@@ -932,6 +932,26 @@ public sealed class ArgumentParserGeneratorTests
             {
                 [Option]
                 public {|ARGP0016:{{invalidType}}|} OptionA { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidOptionType_ErrorType_NoCustomDiagnostics()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option]
+                public {|CS0246:ErrorType|} OptionA { get; set; }
             }
             """;
 
@@ -2091,6 +2111,26 @@ public sealed class ArgumentParserGeneratorTests
             {
                 [Parameter(0)]
                 public {|ARGP0024:{{invalidType}}|} Parameter { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidParameterType_ErrorType_NoCustomDiagnostics()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public {|CS0246:ErrorType|} Parameter { get; set; }
             }
             """;
 
