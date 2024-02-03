@@ -171,6 +171,7 @@ public partial class ArgumentParserGenerator
         var firstPropertyOfLongNameWithNoError = new Dictionary<string, IPropertySymbol>();
 
         var parameterMap = new Dictionary<int, ParameterInfo>();
+        var parametersProperties = new Dictionary<ParameterInfo, IPropertySymbol>();
         var firstIndexWithNoError = new Dictionary<int, IPropertySymbol>();
 
         foreach (var member in optionsType.GetMembers())
@@ -455,7 +456,8 @@ public partial class ArgumentParserGenerator
                         potentialParseStrategy ?? default,
                         isRequired);
 
-                    parameterMap.Add(parameterIndex, parameterInfo); 
+                    parameterMap.Add(parameterIndex, parameterInfo);
+                    parametersProperties.Add(parameterInfo, property);
                 }
             }
         }
@@ -483,6 +485,24 @@ public partial class ArgumentParserGenerator
 
             parametersBuilder.Add(pair.Value);
             lastSeenIndex = index;
+        }
+
+        var canNextParameterBeRequired = true;
+
+        foreach (var info in parametersBuilder)
+        {
+            if (info.IsRequired)
+            {
+                if (!canNextParameterBeRequired)
+                {
+                    hasErrors = true;
+                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredCanOnlyBeFirstNParametersInARow, parametersProperties[info]));
+                }
+            }
+            else
+            {
+                canNextParameterBeRequired = false;
+            }
         }
 
         if (hasErrors)

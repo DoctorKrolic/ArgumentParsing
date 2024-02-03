@@ -2351,6 +2351,84 @@ public sealed class ArgumentParserGeneratorTests
         ]);
     }
 
+    [Fact]
+    public async Task OptionsType_InvalidRequiredParameter_RequiredProperty()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public string Parameter1 { get; set; }
+
+                [Parameter(1)]
+                public required string {|ARGP0027:Parameter2|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidRequiredParameter_RequiredAttribute()
+    {
+        var source = """
+            using System.ComponentModel.DataAnnotations;
+
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public string Parameter1 { get; set; }
+
+                [Parameter(1)]
+                [Required]
+                public string {|ARGP0027:Parameter2|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_TwoInvalidRequiredParameters()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public string Parameter1 { get; set; }
+
+                [Parameter(1)]
+                public string Parameter2 { get; set; }
+
+                [Parameter(2)]
+                public required string {|ARGP0027:Parameter3|} { get; set; }
+
+                [Parameter(3)]
+                public required string {|ARGP0027:Parameter4|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     private static async Task VerifyGeneratorAsync(string source, DiagnosticResult[] diagnostics)
         => await VerifyGeneratorAsync(source, diagnostics, []);
 

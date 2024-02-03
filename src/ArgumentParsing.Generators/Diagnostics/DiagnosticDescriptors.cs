@@ -191,4 +191,12 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor RequiredCanOnlyBeFirstNParametersInARow = new(
+        id: "ARGP0027",
+        title: "Invalid required parameter",
+        messageFormat: "Only first several parameters in a row can be required",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
