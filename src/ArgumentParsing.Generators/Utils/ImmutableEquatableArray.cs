@@ -143,4 +143,7 @@ internal readonly struct ImmutableEquatableArray<T>(ImmutableArray<T> array) : I
     {
         return !left.Equals(right);
     }
+
+    public bool Any(Func<T, bool> predicate)
+        => AsImmutableArray().Any(predicate);
 }
