@@ -151,4 +151,44 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true);
 
     // ARGP0021 - suggest switching sequence option to immutable array if possible
+
+    public static readonly DiagnosticDescriptor NegativeParameterIndex = new(
+        id: "ARGP0022",
+        title: "Negative parameter index",
+        messageFormat: "Parameter index cannot be negative",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor DuplicateParameterIndex = new(
+        id: "ARGP0023",
+        title: "Parameter with this index is already defined",
+        messageFormat: "Parameter with index '{0}' is already defined",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidParameterPropertyType = new(
+        id: "ARGP0024",
+        title: "Invalid type of parameter property",
+        messageFormat: "Type '{0}' is invalid for parameter property",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor MissingParameterWithIndex = new(
+        id: "ARGP0025",
+        title: "Missing parameter with index",
+        messageFormat: "Parameter with index '{0}' is missing",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor MissingParametersWithIndexes = new(
+        id: "ARGP0026",
+        title: "Missing parameters with indexes",
+        messageFormat: "Parameters with indexes from '{0}' to '{1}' are missing",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
