@@ -5,4 +5,5 @@ internal sealed record ParameterInfo(
     string PropertyName,
     string Type,
     ParseStrategy ParseStrategy,
-    bool IsRequired);
+    bool IsRequired,
+    string? NullableUnderlyingType);

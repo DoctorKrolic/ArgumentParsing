@@ -446,7 +446,7 @@ public partial class ArgumentParserGenerator
                     }
                 }
 
-                var potentialParseStrategy = GetPotentialPrimaryParseStrategy(propertyType);
+                var (potentialParseStrategy, nullableUnderlyingType) = GetPotentialParseStrategyForParameter(propertyType);
                 if (!potentialParseStrategy.HasValue)
                 {
                     hasErrors = true;
@@ -467,7 +467,8 @@ public partial class ArgumentParserGenerator
                         propertyName,
                         propertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         potentialParseStrategy ?? default,
-                        isRequired);
+                        isRequired,
+                        nullableUnderlyingType);
 
                     parameterMap.Add(parameterIndex, parameterInfo);
                     parametersProperties.Add(parameterInfo, property);
@@ -501,6 +502,7 @@ public partial class ArgumentParserGenerator
         }
 
         var canNextParameterBeRequired = true;
+        var encounteredFirstNullableParameter = false;
 
         foreach (var info in parametersBuilder)
         {
@@ -515,6 +517,21 @@ public partial class ArgumentParserGenerator
             else
             {
                 canNextParameterBeRequired = false;
+            }
+
+            if (info.NullableUnderlyingType is null)
+            {
+                var parameterProperty = parametersProperties[info];
+
+                if (encounteredFirstNullableParameter && parameterProperty.Type.IsValueType)
+                {
+                    hasErrors = true;
+                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.NullableCanOnlyBeLastNParametersInARow, parameterProperty));
+                }
+            }
+            else
+            {
+                encounteredFirstNullableParameter = true;
             }
         }
 
@@ -565,6 +582,20 @@ public partial class ArgumentParserGenerator
 
             var possibleParseStrategy = GetPotentialPrimaryParseStrategy(type);
             return (possibleParseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType);
+        }
+
+        static (ParseStrategy?, string? nullableUnderlyingType) GetPotentialParseStrategyForParameter(ITypeSymbol type)
+        {
+            string? nullableUnderlyingType = null;
+
+            if (type is INamedTypeSymbol { ConstructedFrom.SpecialType: SpecialType.System_Nullable_T, TypeArguments: [var nullableUnderlyingTypeSymbol] })
+            {
+                nullableUnderlyingType = nullableUnderlyingTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                type = nullableUnderlyingTypeSymbol;
+            }
+
+            var possibleParseStrategy = GetPotentialPrimaryParseStrategy(type);
+            return (possibleParseStrategy, nullableUnderlyingType);
         }
 
         static ParseStrategy? GetPotentialPrimaryParseStrategy(ITypeSymbol type) => type switch
