@@ -500,6 +500,21 @@ public partial class ArgumentParserGenerator
             }
         }
 
+        for (var i = 0; i < parameterInfos.Length; i++)
+        {
+            var info = parameterInfos[i];
+
+            if (info.IsRequired)
+            {
+                writer.WriteLine();
+                writer.WriteLine($"if (parameterIndex <= {i})");
+                writer.OpenBlock();
+                writer.WriteLine("errors ??= new();");
+                writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredParameterError(\"{info.Name}\", {i}));");
+                writer.CloseBlock();
+            }
+        }
+
         writer.WriteLine();
         writer.WriteLine("if (errors != null)");
         writer.OpenBlock();
