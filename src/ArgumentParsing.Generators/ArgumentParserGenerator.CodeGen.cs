@@ -52,6 +52,16 @@ public partial class ArgumentParserGenerator
             writer.WriteLine($"{info.Type} {info.PropertyName}_val = default({info.Type});");
         }
 
+        if (remainingParametersInfo is not null)
+        {
+            writer.WriteLine(remainingParametersInfo.SequenceType switch
+            {
+                SequenceType.List => $"global::System.Collections.Generic.List<{remainingParametersInfo.Type}>.Builder remainingParametersBuilder = new();",
+                SequenceType.ImmutableArray => $"global::System.Collections.Immutable.ImmutableArray<{remainingParametersInfo.Type}>.Builder remainingParametersBuilder = global::System.Collections.Immutable.ImmutableArray.CreateBuilder<{remainingParametersInfo.Type}>();",
+                _ => throw new InvalidOperationException("Unreachable"),
+            });
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
 
         var hasAnyOptions = optionInfos.Length > 0;
@@ -453,16 +463,69 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         break;
-                    default:
-                        break;
                 }
                 writer.WriteLine("break;");
                 writer.Ident--;
             }
             writer.WriteLine("default:");
             writer.Ident++;
-            writer.WriteLine("errors ??= new();");
-            writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+            if (remainingParametersInfo is null)
+            {
+                writer.WriteLine("errors ??= new();");
+                writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+            }
+            else
+            {
+                var propertyName = remainingParametersInfo.PropertyName;
+                var type = remainingParametersInfo.Type;
+                var parseStrategy = remainingParametersInfo.ParseStrategy;
+                switch (parseStrategy)
+                {
+                    case ParseStrategy.String:
+                        writer.WriteLine("remainingParametersBuilder.Add(arg);");
+                        break;
+                    case ParseStrategy.Integer:
+                    case ParseStrategy.Float:
+                        writer.WriteLine($"{type} {propertyName}_val = default({type});");
+                        var numberStyles = parseStrategy == ParseStrategy.Integer ? "global::System.Globalization.NumberStyles.Integer" : "global::System.Globalization.NumberStyles.Float | global::System.Globalization.NumberStyles.AllowThousands";
+                        writer.WriteLine($"if (!{type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}_val))");
+                        writer.OpenBlock();
+                        writer.WriteLine("errors ??= new();");
+                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.CloseBlock();
+                        writer.WriteLine($"remainingParametersBuilder.Add({propertyName}_val);");
+                        break;
+                    case ParseStrategy.Flag:
+                        writer.WriteLine($"bool {propertyName}_val = default(bool);");
+                        writer.WriteLine($"if (!bool.TryParse(arg, out {propertyName}_val))");
+                        writer.OpenBlock();
+                        writer.WriteLine("errors ??= new();");
+                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.CloseBlock();
+                        writer.WriteLine($"remainingParametersBuilder.Add({propertyName}_val);");
+                        break;
+                    case ParseStrategy.Enum:
+                        writer.WriteLine($"{type} {propertyName}_val = default({type});");
+                        writer.WriteLine($"if (!global::System.Enum.TryParse<{type}>(arg, out {propertyName}_val))");
+                        writer.OpenBlock();
+                        writer.WriteLine("errors ??= new();");
+                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.CloseBlock();
+                        writer.WriteLine($"remainingParametersBuilder.Add({propertyName}_val);");
+                        break;
+                    case ParseStrategy.Char:
+                        writer.WriteLine($"if (arg.Length == 1)");
+                        writer.OpenBlock();
+                        writer.WriteLine($"remainingParametersBuilder.Add(arg[0]);");
+                        writer.CloseBlock();
+                        writer.WriteLine("else");
+                        writer.OpenBlock();
+                        writer.WriteLine("errors ??= new();");
+                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.CloseBlock();
+                        break;
+                }
+            }
             writer.WriteLine("break;");
             writer.Ident--;
             writer.CloseBlock();
@@ -559,6 +622,16 @@ public partial class ArgumentParserGenerator
         foreach (var info in parameterInfos)
         {
             writer.WriteLine($"{info.PropertyName} = {info.PropertyName}_val,");
+        }
+
+        if (remainingParametersInfo is not null)
+        {
+            writer.WriteLine($"{remainingParametersInfo.PropertyName} = {remainingParametersInfo.SequenceType switch
+            {
+                SequenceType.List => "remainingParametersBuilder",
+                SequenceType.ImmutableArray => "remainingParametersBuilder.ToImmutable()",
+                _ => throw new InvalidOperationException("Unreachable"),
+            }},");
         }
 
         writer.Ident--;

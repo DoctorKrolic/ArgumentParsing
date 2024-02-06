@@ -223,4 +223,6 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    // ARGP0031 - fade out `required` keyword or `[Required]` attribute for remaining parameters property. Implement when we can suppress nullability warning on that property
 }
