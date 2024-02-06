@@ -174,6 +174,10 @@ public partial class ArgumentParserGenerator
         var parametersProperties = new Dictionary<ParameterInfo, IPropertySymbol>();
         var firstIndexWithNoError = new Dictionary<int, IPropertySymbol>();
 
+        var declaredRemainingParameters = false;
+        RemainingParametersInfo? remainingParametersInfo = null;
+        IPropertySymbol? remainingParametersProperty = null;
+
         foreach (var member in optionsType.GetMembers())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -204,8 +208,11 @@ public partial class ArgumentParserGenerator
             var parameterIndex = 0;
             string? parameterName = null;
 
+            var isRemainingParameters = false;
+
             var optionAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.OptionAttribute")!;
             var parameterAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.ParameterAttribute");
+            var remainingParametersAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.RemainingParametersAttribute");
             var requiredAttributeType = compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.RequiredAttribute")!;
 
             foreach (var attr in property.GetAttributes())
@@ -220,6 +227,12 @@ public partial class ArgumentParserGenerator
                 if (attributeClass.Equals(requiredAttributeType, SymbolEqualityComparer.Default))
                 {
                     hasRequiredAttribute = true;
+                    continue;
+                }
+
+                if (attributeClass.Equals(remainingParametersAttributeType, SymbolEqualityComparer.Default))
+                {
+                    isRemainingParameters = true;
                     continue;
                 }
 
@@ -277,7 +290,7 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            if (!hasOptionAttribute && !hasParameterAttribute)
+            if (!hasOptionAttribute && !hasParameterAttribute && !isRemainingParameters)
             {
                 if (property.IsRequired)
                 {
@@ -415,10 +428,8 @@ public partial class ArgumentParserGenerator
                     nullableUnderlyingType,
                     sequenceType));
             }
-            else
+            else if (hasParameterAttribute)
             {
-                Debug.Assert(hasParameterAttribute);
-
                 var hasParameter = parameterMap.ContainsKey(parameterIndex);
 
                 if (parameterIndex < 0)
@@ -473,6 +484,49 @@ public partial class ArgumentParserGenerator
                     parameterMap.Add(parameterIndex, parameterInfo);
                     parametersProperties.Add(parameterInfo, property);
                 }
+            }
+            else
+            {
+                Debug.Assert(isRemainingParameters);
+
+                if (declaredRemainingParameters)
+                {
+                    hasErrors = true;
+
+                    if (remainingParametersProperty is not null)
+                    {
+                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateRemainingParameters, remainingParametersProperty));
+                        remainingParametersProperty = null;
+                    }
+
+                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateRemainingParameters, property));
+                }
+                else
+                {
+                    remainingParametersProperty = property;
+                }
+
+                declaredRemainingParameters = true;
+
+                var (possibleParseStrategy, _, sequenceType, sequenceUnderlyingType) = GetPotentialParseStrategyForOption(propertyType, compilation);
+                if (!possibleParseStrategy.HasValue || sequenceType == SequenceType.None)
+                {
+                    hasErrors = true;
+
+                    if (propertyType.TypeKind != TypeKind.Error)
+                    {
+                        var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken);
+                        var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
+
+                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidRemainingParametersPropertyType, diagnosticLocation, propertyType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                    }
+                }
+
+                remainingParametersInfo = new(
+                    propertyName,
+                    sequenceUnderlyingType!,
+                    possibleParseStrategy ?? default,
+                    sequenceType);
             }
         }
 
@@ -543,7 +597,8 @@ public partial class ArgumentParserGenerator
         var optionsInfo = new OptionsInfo(
             optionsType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)),
             optionsBuilder.ToImmutable(),
-            parametersBuilder.ToImmutable());
+            parametersBuilder.ToImmutable(),
+            remainingParametersInfo);
 
         return (optionsInfo, diagnosticsBuilder.ToImmutable());
 

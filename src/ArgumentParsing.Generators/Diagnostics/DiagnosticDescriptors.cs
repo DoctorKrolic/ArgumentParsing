@@ -207,4 +207,20 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor DuplicateRemainingParameters = new(
+        id: "ARGP0029",
+        title: "Remaining parameters are already defined",
+        messageFormat: "Property for remaining parameters is already defined",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidRemainingParametersPropertyType = new(
+        id: "ARGP0030",
+        title: "Invalid type of remaining parameters property",
+        messageFormat: "Type '{0}' is invalid for remaining parameters property",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
