@@ -108,7 +108,9 @@ public partial class ArgumentParserGenerator
             writer.CloseBlock();
             writer.WriteLine();
         }
-        writer.WriteLine("if (hasLetters && arg.StartsWith(\"--\"))");
+        writer.WriteLine("if (state != -2)");
+        writer.OpenBlock();
+        writer.WriteLine("if (arg.StartsWith(\"--\") && (hasLetters || arg.Length == 2 || arg.Contains('=')))");
         writer.OpenBlock();
         writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);");
         writer.WriteLine("int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');");
@@ -123,6 +125,20 @@ public partial class ArgumentParserGenerator
         writer.OpenBlock();
 
         cancellationToken.ThrowIfCancellationRequested();
+
+        writer.WriteLine("case \"\":");
+        writer.Ident++;
+        writer.WriteLine("if (written == 1)");
+        writer.OpenBlock();
+        writer.WriteLine("state = -2;");
+        writer.CloseBlock();
+        writer.WriteLine("else");
+        writer.OpenBlock();
+        writer.WriteLine("errors ??= new();");
+        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+        writer.CloseBlock();
+        writer.WriteLine("continue;");
+        writer.Ident--;
 
         Span<char> usageCode = stackalloc char[optionInfos.Length];
 
@@ -262,6 +278,7 @@ public partial class ArgumentParserGenerator
         writer.CloseBlock();
         writer.WriteLine();
         writer.WriteLine("goto continueMainLoop;");
+        writer.CloseBlock();
         writer.CloseBlock();
 
         writer.WriteLine();
