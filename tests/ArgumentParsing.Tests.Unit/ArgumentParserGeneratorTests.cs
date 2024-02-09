@@ -182,13 +182,24 @@ public sealed class ArgumentParserGeneratorTests
                 public static partial global::ArgumentParsing.Results.ParseResult<global::EmptyOptions> ParseArguments({{parameterType}} s)
                 {
 
-                    int state = 0;
+                    int state = -3;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
                     global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
 
                     foreach (string arg in s)
                     {
+                        if (state == -3)
+                        {
+                            switch (arg)
+                            {
+                                case "--version":
+                                    return new global::ArgumentParsing.Results.ParseResult<global::EmptyOptions>(new global::ArgumentParsing.Generated.VersionCommandHandler());
+                            }
+
+                            state = 0;
+                        }
+
                         global::System.ReadOnlySpan<char> val;
 
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
@@ -295,7 +306,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source, ("EmptyOptions.g.cs", generated));
+        await VerifyGeneratorAsync(source, ("EmptyOptions.g.cs", generated), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 
     [Theory]
@@ -1009,7 +1020,7 @@ public sealed class ArgumentParserGeneratorTests
                 {
                     {{integerType}} Option_val = default({{integerType}});
 
-                    int state = 0;
+                    int state = -3;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
@@ -1018,6 +1029,17 @@ public sealed class ArgumentParserGeneratorTests
 
                     foreach (string arg in args)
                     {
+                        if (state == -3)
+                        {
+                            switch (arg)
+                            {
+                                case "--version":
+                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.VersionCommandHandler());
+                            }
+
+                            state = 0;
+                        }
+
                         global::System.ReadOnlySpan<char> val;
 
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
@@ -1154,7 +1176,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated));
+        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 
     [Theory]
@@ -1188,7 +1210,7 @@ public sealed class ArgumentParserGeneratorTests
                 {
                     {{floatType}} Option_val = default({{floatType}});
 
-                    int state = 0;
+                    int state = -3;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
@@ -1197,6 +1219,17 @@ public sealed class ArgumentParserGeneratorTests
 
                     foreach (string arg in args)
                     {
+                        if (state == -3)
+                        {
+                            switch (arg)
+                            {
+                                case "--version":
+                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.VersionCommandHandler());
+                            }
+
+                            state = 0;
+                        }
+
                         global::System.ReadOnlySpan<char> val;
 
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
@@ -1333,7 +1366,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated));
+        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 
     [Fact]
@@ -1393,7 +1426,7 @@ public sealed class ArgumentParserGeneratorTests
                 {
                     {{integerType}}? OptionA_val = default({{integerType}}?);
 
-                    int state = 0;
+                    int state = -3;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
@@ -1402,6 +1435,17 @@ public sealed class ArgumentParserGeneratorTests
 
                     foreach (string arg in args)
                     {
+                        if (state == -3)
+                        {
+                            switch (arg)
+                            {
+                                case "--version":
+                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.VersionCommandHandler());
+                            }
+
+                            state = 0;
+                        }
+
                         global::System.ReadOnlySpan<char> val;
 
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
@@ -1546,7 +1590,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated));
+        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 
     [Theory]
@@ -1580,7 +1624,7 @@ public sealed class ArgumentParserGeneratorTests
                 {
                     {{floatType}}? OptionA_val = default({{floatType}}?);
 
-                    int state = 0;
+                    int state = -3;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
@@ -1589,6 +1633,17 @@ public sealed class ArgumentParserGeneratorTests
 
                     foreach (string arg in args)
                     {
+                        if (state == -3)
+                        {
+                            switch (arg)
+                            {
+                                case "--version":
+                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.VersionCommandHandler());
+                            }
+
+                            state = 0;
+                        }
+
                         global::System.ReadOnlySpan<char> val;
 
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
@@ -1733,7 +1788,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated));
+        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 
     [Fact]
@@ -1774,7 +1829,7 @@ public sealed class ArgumentParserGeneratorTests
                     global::System.DayOfWeek? OptionB_val = default(global::System.DayOfWeek?);
                     char? OptionC_val = default(char?);
 
-                    int state = 0;
+                    int state = -3;
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
@@ -1783,8 +1838,19 @@ public sealed class ArgumentParserGeneratorTests
 
                     foreach (string arg in args)
                     {
+                        if (state == -3)
+                        {
+                            switch (arg)
+                            {
+                                case "--version":
+                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.VersionCommandHandler());
+                            }
+
+                            state = 0;
+                        }
+
                         global::System.ReadOnlySpan<char> val;
-            
+
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
                         bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
 
@@ -1986,7 +2052,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated));
+        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 
     [Theory]
@@ -2593,7 +2659,7 @@ public sealed class ArgumentParserGeneratorTests
                     int? Parameter1_val = default(int?);
                     string Parameter2_val = default(string);
 
-                    int state = 0;
+                    int state = -3;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
                     global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
@@ -2601,6 +2667,17 @@ public sealed class ArgumentParserGeneratorTests
 
                     foreach (string arg in args)
                     {
+                        if (state == -3)
+                        {
+                            switch (arg)
+                            {
+                                case "--version":
+                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.VersionCommandHandler());
+                            }
+
+                            state = 0;
+                        }
+
                         global::System.ReadOnlySpan<char> val;
 
                         bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
@@ -2726,7 +2803,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated));
+        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 
     [Fact]
@@ -2923,4 +3000,28 @@ public sealed class ArgumentParserGeneratorTests
 
         await test.RunAsync();
     }
+
+    private const string VersionCommandHander = """
+        // <auto-generated/>
+        #nullable disable
+        #pragma warning disable
+        
+        namespace ArgumentParsing.Generated
+        {
+            [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--version")]
+            internal sealed class VersionCommandHandler : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
+            {
+                public static void WriteVersionTo(global::System.IO.TextWriter writer)
+                {
+                    writer.WriteLine("TestProject 0.0.0.0");
+                }
+        
+                public int HandleCommand()
+                {
+                    WriteVersionTo(global::System.Console.Out);
+                    return 0;
+                }
+            }
+        }
+        """;
 }

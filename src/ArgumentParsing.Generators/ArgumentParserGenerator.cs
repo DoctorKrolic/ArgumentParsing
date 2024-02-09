@@ -25,6 +25,13 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .Where(info => info.ArgumentParserInfo is not null)
             .Select((info, _) => info.ArgumentParserInfo!);
 
-        context.RegisterSourceOutput(argumentParserInfos, Emit);
+        context.RegisterSourceOutput(argumentParserInfos, EmitArgumentParser);
+
+        var assemblyVersionInfos = extractedInfosProvider
+            .Where(info => info.AssemblyVersionInfo is not null)
+            .Select((info, _) => info.AssemblyVersionInfo!)
+            .Collect();
+
+        context.RegisterSourceOutput(assemblyVersionInfos, EmitVersionCommandHandlers);
     }
 }

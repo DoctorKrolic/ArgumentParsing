@@ -11,7 +11,7 @@ namespace ArgumentParsing.Generators;
 
 public partial class ArgumentParserGenerator
 {
-    private static (ArgumentParserInfo? ArgumentParserInfo, ImmutableEquatableArray<DiagnosticInfo> Diagnostics) Extract(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    private static (ArgumentParserInfo? ArgumentParserInfo, AssemblyVersionInfo? AssemblyVersionInfo, ImmutableEquatableArray<DiagnosticInfo> Diagnostics) Extract(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
     {
         var argumentParserMethodSyntax = (MethodDeclarationSyntax)context.TargetNode;
         var argumentParserMethodSymbol = (IMethodSymbol)context.TargetSymbol;
@@ -127,7 +127,7 @@ public partial class ArgumentParserGenerator
 
         if (validOptionsType is null)
         {
-            return (null, diagnosticsBuilder.ToImmutable());
+            return (null, null, diagnosticsBuilder.ToImmutable());
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -138,7 +138,7 @@ public partial class ArgumentParserGenerator
 
         if (hasErrors)
         {
-            return (null, diagnosticsBuilder.ToImmutable());
+            return (null, null, diagnosticsBuilder.ToImmutable());
         }
 
         Debug.Assert(parameterInfo is not null);
@@ -154,7 +154,12 @@ public partial class ArgumentParserGenerator
             methodInfo,
             optionsInfo!);
 
-        return (argumentParserInfo, diagnosticsBuilder.ToImmutable());
+        var assembly = validOptionsType.ContainingAssembly;
+        var assemblyVersionInfo = new AssemblyVersionInfo(
+            assembly.Name,
+            assembly.Identity.Version);
+
+        return (argumentParserInfo, assemblyVersionInfo, diagnosticsBuilder.ToImmutable());
     }
 
     private static (OptionsInfo? OptionsInfo, ImmutableArray<DiagnosticInfo> Diagnostics) AnalyzeOptionsType(INamedTypeSymbol optionsType, Compilation compilation, CancellationToken cancellationToken)
