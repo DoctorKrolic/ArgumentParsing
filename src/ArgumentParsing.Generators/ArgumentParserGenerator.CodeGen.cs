@@ -292,7 +292,7 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("decodeValue:", identDelta: -1);
         writer.WriteLine("switch (state)");
         writer.OpenBlock();
-        if (optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag && i.NullableUnderlyingType is null))
+        if (!hasAnyParameters && optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag && i.NullableUnderlyingType is null))
         {
             writer.WriteLine("case -10:");
             writer.Ident++;
@@ -488,8 +488,23 @@ public partial class ArgumentParserGenerator
             writer.Ident++;
             if (remainingParametersInfo is null)
             {
-                writer.WriteLine("errors ??= new();");
-                writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+                if (optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag && i.NullableUnderlyingType is null))
+                {
+                    writer.WriteLine("errors ??= new();");
+                    writer.WriteLine("if (state == -10)");
+                    writer.OpenBlock();
+                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(latestOptionName.ToString()));");
+                    writer.CloseBlock();
+                    writer.WriteLine("else");
+                    writer.OpenBlock();
+                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+                    writer.CloseBlock();
+                }
+                else
+                {
+                    writer.WriteLine("errors ??= new();");
+                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+                }
             }
             else
             {
