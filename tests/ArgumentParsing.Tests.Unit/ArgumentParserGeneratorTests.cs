@@ -3011,14 +3011,9 @@ public sealed class ArgumentParserGeneratorTests
             [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--version")]
             internal sealed class VersionCommandHandler : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
             {
-                public static void WriteVersionTo(global::System.IO.TextWriter writer)
-                {
-                    writer.WriteLine("TestProject 0.0.0.0");
-                }
-        
                 public int HandleCommand()
                 {
-                    WriteVersionTo(global::System.Console.Out);
+                    global::System.Console.WriteLine("TestProject 0.0.0");
                     return 0;
                 }
             }

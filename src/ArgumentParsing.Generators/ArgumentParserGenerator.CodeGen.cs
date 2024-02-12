@@ -708,14 +708,9 @@ public partial class ArgumentParserGenerator
                     [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--version")]
                     internal sealed class VersionCommandHandler : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                     {
-                        public static void WriteVersionTo(global::System.IO.TextWriter writer)
-                        {
-                            writer.WriteLine("{{versionInfo.Name}} {{versionInfo.Version}}");
-                        }
-
                         public int HandleCommand()
                         {
-                            WriteVersionTo(global::System.Console.Out);
+                            global::System.Console.WriteLine("{{versionInfo.Name}} {{versionInfo.Version.ToString(3)}}");
                             return 0;
                         }
                     }
