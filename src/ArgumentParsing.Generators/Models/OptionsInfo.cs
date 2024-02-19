@@ -6,4 +6,5 @@ internal sealed record OptionsInfo(
     string QualifiedTypeName,
     ImmutableEquatableArray<OptionInfo> OptionInfos,
     ImmutableEquatableArray<ParameterInfo> ParameterInfos,
-    RemainingParametersInfo? RemainingParametersInfo);
+    RemainingParametersInfo? RemainingParametersInfo,
+    AssemblyVersionInfo AssemblyVersionInfo);

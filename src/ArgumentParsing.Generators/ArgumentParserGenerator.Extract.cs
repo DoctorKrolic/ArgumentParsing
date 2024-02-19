@@ -11,7 +11,7 @@ namespace ArgumentParsing.Generators;
 
 public partial class ArgumentParserGenerator
 {
-    private static (ArgumentParserInfo? ArgumentParserInfo, AssemblyVersionInfo? AssemblyVersionInfo, ImmutableEquatableArray<DiagnosticInfo> Diagnostics) Extract(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    private static (ArgumentParserInfo? ArgumentParserInfo, ImmutableEquatableArray<DiagnosticInfo> Diagnostics) Extract(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
     {
         var argumentParserMethodSyntax = (MethodDeclarationSyntax)context.TargetNode;
         var argumentParserMethodSymbol = (IMethodSymbol)context.TargetSymbol;
@@ -127,7 +127,7 @@ public partial class ArgumentParserGenerator
 
         if (validOptionsType is null)
         {
-            return (null, null, diagnosticsBuilder.ToImmutable());
+            return (null, diagnosticsBuilder.ToImmutable());
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -138,7 +138,7 @@ public partial class ArgumentParserGenerator
 
         if (hasErrors)
         {
-            return (null, null, diagnosticsBuilder.ToImmutable());
+            return (null, diagnosticsBuilder.ToImmutable());
         }
 
         Debug.Assert(parameterInfo is not null);
@@ -154,12 +154,7 @@ public partial class ArgumentParserGenerator
             methodInfo,
             optionsInfo!);
 
-        var assembly = validOptionsType.ContainingAssembly;
-        var assemblyVersionInfo = new AssemblyVersionInfo(
-            assembly.Name,
-            assembly.Identity.Version);
-
-        return (argumentParserInfo, assemblyVersionInfo, diagnosticsBuilder.ToImmutable());
+        return (argumentParserInfo, diagnosticsBuilder.ToImmutable());
     }
 
     private static (OptionsInfo? OptionsInfo, ImmutableArray<DiagnosticInfo> Diagnostics) AnalyzeOptionsType(INamedTypeSymbol optionsType, Compilation compilation, CancellationToken cancellationToken)
@@ -215,10 +210,13 @@ public partial class ArgumentParserGenerator
 
             var isRemainingParameters = false;
 
+            string? helpDescription = null;
+
             var optionAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.OptionAttribute")!;
             var parameterAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.ParameterAttribute");
             var remainingParametersAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.RemainingParametersAttribute");
             var requiredAttributeType = compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.RequiredAttribute")!;
+            var helpInfoAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Help.HelpInfoAttribute")!;
 
             foreach (var attr in property.GetAttributes())
             {
@@ -238,6 +236,13 @@ public partial class ArgumentParserGenerator
                 if (attributeClass.Equals(remainingParametersAttributeType, SymbolEqualityComparer.Default))
                 {
                     isRemainingParameters = true;
+                    continue;
+                }
+
+                if (attributeClass.Equals(helpInfoAttributeType, SymbolEqualityComparer.Default) &&
+                    attr.ConstructorArguments.Length > 0)
+                {
+                    helpDescription = (string?)attr.ConstructorArguments[0].Value;
                     continue;
                 }
 
@@ -431,7 +436,8 @@ public partial class ArgumentParserGenerator
                     parseStrategy,
                     isRequired,
                     nullableUnderlyingType,
-                    sequenceType));
+                    sequenceType,
+                    helpDescription));
             }
             else if (hasParameterAttribute)
             {
@@ -484,7 +490,8 @@ public partial class ArgumentParserGenerator
                         propertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         potentialParseStrategy ?? default,
                         isRequired,
-                        nullableUnderlyingType);
+                        nullableUnderlyingType,
+                        helpDescription);
 
                     parameterMap.Add(parameterIndex, parameterInfo);
                     parametersProperties.Add(parameterInfo, property);
@@ -531,7 +538,8 @@ public partial class ArgumentParserGenerator
                     propertyName,
                     sequenceUnderlyingType!,
                     possibleParseStrategy ?? default,
-                    sequenceType);
+                    sequenceType,
+                    helpDescription);
             }
         }
 
@@ -599,11 +607,17 @@ public partial class ArgumentParserGenerator
             return (null, diagnosticsBuilder.ToImmutable());
         }
 
+        var assembly = optionsType.ContainingAssembly;
+        var assemblyVersionInfo = new AssemblyVersionInfo(
+            assembly.Name,
+            assembly.Identity.Version);
+
         var optionsInfo = new OptionsInfo(
             optionsType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)),
             optionsBuilder.ToImmutable(),
             parametersBuilder.ToImmutable(),
-            remainingParametersInfo);
+            remainingParametersInfo,
+            assemblyVersionInfo);
 
         return (optionsInfo, diagnosticsBuilder.ToImmutable());
 
