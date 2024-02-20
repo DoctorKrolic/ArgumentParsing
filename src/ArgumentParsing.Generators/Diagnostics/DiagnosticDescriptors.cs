@@ -225,4 +225,12 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true);
 
     // ARGP0031 - fade out `required` keyword or `[Required]` attribute for remaining parameters property. Implement when we can suppress nullability warning on that property
+
+    public static readonly DiagnosticDescriptor InvalidParameterName = new(
+        id: "ARGP0032",
+        title: "Invalid parameter name",
+        messageFormat: "Parameter name '{0}' is invalid. Parameter name must start with a letter and contain only letters, digits and possibly '-' as separators",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

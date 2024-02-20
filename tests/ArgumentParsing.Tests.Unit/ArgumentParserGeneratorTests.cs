@@ -3300,6 +3300,31 @@ public sealed class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
+    [Theory]
+    [InlineData("5param")]
+    [InlineData("-param")]
+    [InlineData("$param")]
+    [InlineData("param name")]
+    [InlineData("invalid&name")]
+    public async Task OptionsType_InvalidParametersName(string invalidName)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0, Name = "{{invalidName}}")]
+                public string {|ARGP0032:Param|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     private static async Task VerifyGeneratorAsync(string source, DiagnosticResult[] diagnostics)
         => await VerifyGeneratorAsync(source, diagnostics, []);
 

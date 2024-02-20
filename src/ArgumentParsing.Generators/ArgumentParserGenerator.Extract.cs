@@ -468,6 +468,14 @@ public partial class ArgumentParserGenerator
                     }
                 }
 
+                parameterName ??= propertyName.ToKebabCase();
+
+                if (!char.IsLetter(parameterName[0]) || !parameterName.Replace("-", string.Empty).All(char.IsLetterOrDigit))
+                {
+                    hasErrors = true;
+                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidParameterName, property, parameterName));
+                }
+
                 var (potentialParseStrategy, nullableUnderlyingType) = GetPotentialParseStrategyForParameter(propertyType);
                 if (!potentialParseStrategy.HasValue)
                 {
@@ -485,7 +493,7 @@ public partial class ArgumentParserGenerator
                 if (!hasParameter)
                 {
                     var parameterInfo = new ParameterInfo(
-                        parameterName ?? propertyName.ToKebabCase(),
+                        parameterName,
                         propertyName,
                         propertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         potentialParseStrategy ?? default,
