@@ -130,6 +130,11 @@ public partial class ArgumentParserGenerator
             return (null, diagnosticsBuilder.ToImmutable());
         }
 
+        if (validOptionsType.DeclaredAccessibility < Accessibility.Internal)
+        {
+            diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.TooLowAccessibilityOfOptionsType, validOptionsType));
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
 
         var (optionsInfo, optionsDiagnostics) = AnalyzeOptionsType(validOptionsType, context.SemanticModel.Compilation, cancellationToken);
@@ -622,6 +627,7 @@ public partial class ArgumentParserGenerator
 
         var optionsInfo = new OptionsInfo(
             optionsType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)),
+            optionsType.DeclaredAccessibility >= Accessibility.Internal,
             optionsBuilder.ToImmutable(),
             parametersBuilder.ToImmutable(),
             remainingParametersInfo,

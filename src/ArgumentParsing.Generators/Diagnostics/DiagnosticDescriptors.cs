@@ -233,4 +233,12 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor TooLowAccessibilityOfOptionsType = new(
+        id: "ARGP0033",
+        title: "Options type has too low accessibility",
+        messageFormat: "Options type has too low accessibility. Default handlers won't be generated for it",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

@@ -12,7 +12,7 @@ public partial class ArgumentParserGenerator
         var cancellationToken = context.CancellationToken;
 
         (var hierarchy, var method, var optionsInfo) = parserInfo;
-        (var qualifiedName, var optionInfos, var parameterInfos, var remainingParametersInfo, var assemblyVersionInfo) = optionsInfo;
+        (var qualifiedName, var hasAtLeastInternalAccessibility, var optionInfos, var parameterInfos, var remainingParametersInfo, var assemblyVersionInfo) = optionsInfo;
 
         var writer = new CodeWriter();
 
@@ -20,6 +20,34 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("#nullable disable");
         writer.WriteLine("#pragma warning disable");
         writer.WriteLine();
+
+        if (hasAtLeastInternalAccessibility)
+        {
+            writer.WriteLine("namespace ArgumentParsing.Generated");
+            writer.OpenBlock();
+            writer.WriteLine("internal static partial class ParseResultExtensions");
+            writer.OpenBlock();
+            writer.WriteLine($"public static void ExecuteDefaults(this {method.ReturnType} result, global::System.Action<global::{optionsInfo.QualifiedTypeName}> action)");
+            writer.OpenBlock();
+            writer.WriteLine("switch (result.State)");
+            writer.OpenBlock();
+            writer.Ident++;
+            writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedOptions:", identDelta: -1);
+            writer.WriteLine("action(result.Options);");
+            writer.WriteLine("break;");
+            writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors:", identDelta: -1);
+            writer.WriteLine($"string errorScreenText = global::ArgumentParsing.Generated.HelpCommandHandler_{qualifiedName.Replace('.', '_')}.GenerateHelpText(result.Errors);");
+            writer.WriteLine("global::System.Console.Error.Write(errorScreenText);");
+            writer.WriteLine("global::System.Environment.Exit(1);");
+            writer.WriteLine("break;");
+            writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:", identDelta: -1);
+            writer.WriteLine("int exitCode = result.SpecialCommandHandler.HandleCommand();");
+            writer.WriteLine("global::System.Environment.Exit(exitCode);");
+            writer.WriteLine("break;");
+            writer.Ident--;
+            writer.CloseRemainingBlocks();
+            writer.WriteLine();
+        }
 
         var @namespace = hierarchy.Namespace;
         if (!string.IsNullOrEmpty(@namespace))
