@@ -181,6 +181,18 @@ public sealed class ArgumentParserGeneratorTests
             {
                 internal static partial class ParseResultExtensions
                 {
+                    /// <summary>
+                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
+                    /// <list type="bullet">
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
+                    /// </list>
+                    /// </summary>
+                    /// <param name="result">Parse result</param>
+                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
+                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                     public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::EmptyOptions> result, global::System.Action<global::EmptyOptions> action)
                     {
                         switch (result.State)
@@ -204,6 +216,8 @@ public sealed class ArgumentParserGeneratorTests
 
             partial class C
             {
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 public static partial global::ArgumentParsing.Results.ParseResult<global::EmptyOptions> ParseArguments({{parameterType}} s)
                 {
 
@@ -341,6 +355,8 @@ public sealed class ArgumentParserGeneratorTests
             namespace ArgumentParsing.Generated
             {
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_EmptyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
@@ -1088,6 +1104,18 @@ public sealed class ArgumentParserGeneratorTests
             {
                 internal static partial class ParseResultExtensions
                 {
+                    /// <summary>
+                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
+                    /// <list type="bullet">
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
+                    /// </list>
+                    /// </summary>
+                    /// <param name="result">Parse result</param>
+                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
+                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                     public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
                     {
                         switch (result.State)
@@ -1111,6 +1139,8 @@ public sealed class ArgumentParserGeneratorTests
 
             partial class C
             {
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
                     {{integerType}} Option_val = default({{integerType}});
@@ -1281,6 +1311,8 @@ public sealed class ArgumentParserGeneratorTests
             namespace ArgumentParsing.Generated
             {
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
@@ -1351,6 +1383,18 @@ public sealed class ArgumentParserGeneratorTests
             {
                 internal static partial class ParseResultExtensions
                 {
+                    /// <summary>
+                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
+                    /// <list type="bullet">
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
+                    /// </list>
+                    /// </summary>
+                    /// <param name="result">Parse result</param>
+                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
+                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                     public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
                     {
                         switch (result.State)
@@ -1374,6 +1418,8 @@ public sealed class ArgumentParserGeneratorTests
 
             partial class C
             {
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
                     {{floatType}} Option_val = default({{floatType}});
@@ -1544,6 +1590,8 @@ public sealed class ArgumentParserGeneratorTests
             namespace ArgumentParsing.Generated
             {
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
@@ -1640,6 +1688,18 @@ public sealed class ArgumentParserGeneratorTests
             {
                 internal static partial class ParseResultExtensions
                 {
+                    /// <summary>
+                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
+                    /// <list type="bullet">
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
+                    /// </list>
+                    /// </summary>
+                    /// <param name="result">Parse result</param>
+                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
+                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                     public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
                     {
                         switch (result.State)
@@ -1663,6 +1723,8 @@ public sealed class ArgumentParserGeneratorTests
 
             partial class C
             {
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
                     {{integerType}}? OptionA_val = default({{integerType}}?);
@@ -1841,6 +1903,8 @@ public sealed class ArgumentParserGeneratorTests
             namespace ArgumentParsing.Generated
             {
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
@@ -1911,6 +1975,18 @@ public sealed class ArgumentParserGeneratorTests
             {
                 internal static partial class ParseResultExtensions
                 {
+                    /// <summary>
+                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
+                    /// <list type="bullet">
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
+                    /// </list>
+                    /// </summary>
+                    /// <param name="result">Parse result</param>
+                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
+                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                     public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
                     {
                         switch (result.State)
@@ -1934,6 +2010,8 @@ public sealed class ArgumentParserGeneratorTests
 
             partial class C
             {
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
                     {{floatType}}? OptionA_val = default({{floatType}}?);
@@ -2112,6 +2190,8 @@ public sealed class ArgumentParserGeneratorTests
             namespace ArgumentParsing.Generated
             {
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
@@ -2187,6 +2267,18 @@ public sealed class ArgumentParserGeneratorTests
             {
                 internal static partial class ParseResultExtensions
                 {
+                    /// <summary>
+                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
+                    /// <list type="bullet">
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
+                    /// </list>
+                    /// </summary>
+                    /// <param name="result">Parse result</param>
+                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
+                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                     public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
                     {
                         switch (result.State)
@@ -2210,6 +2302,8 @@ public sealed class ArgumentParserGeneratorTests
 
             partial class C
             {
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
                     bool? OptionA_val = default(bool?);
@@ -2449,6 +2543,8 @@ public sealed class ArgumentParserGeneratorTests
             namespace ArgumentParsing.Generated
             {
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
@@ -3095,6 +3191,18 @@ public sealed class ArgumentParserGeneratorTests
             {
                 internal static partial class ParseResultExtensions
                 {
+                    /// <summary>
+                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
+                    /// <list type="bullet">
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
+                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
+                    /// </list>
+                    /// </summary>
+                    /// <param name="result">Parse result</param>
+                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
+                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                     public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
                     {
                         switch (result.State)
@@ -3118,6 +3226,8 @@ public sealed class ArgumentParserGeneratorTests
 
             partial class C
             {
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
                     int? Parameter1_val = default(int?);
@@ -3277,6 +3387,8 @@ public sealed class ArgumentParserGeneratorTests
             namespace ArgumentParsing.Generated
             {
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
@@ -3525,6 +3637,8 @@ public sealed class ArgumentParserGeneratorTests
 
             partial class C
             {
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 private static partial global::ArgumentParsing.Results.ParseResult<global::C.Options> ParseArguments(string[] args)
                 {
 
@@ -3662,6 +3776,8 @@ public sealed class ArgumentParserGeneratorTests
             namespace ArgumentParsing.Generated
             {
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_C_Options : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
@@ -3735,7 +3851,7 @@ public sealed class ArgumentParserGeneratorTests
 
         foreach (var (hint, content) in generatedDocuments)
         {
-            test.TestState.GeneratedSources.Add((typeof(ArgumentParserGenerator), hint, content));
+            test.TestState.GeneratedSources.Add((typeof(ArgumentParserGenerator), hint, content.Replace("<GENERATOR_ASSEMBLY_VERSION>", '"' + typeof(ArgumentParserGenerator).Assembly.GetName().Version.ToString() + '"')));
         }
 
         await test.RunAsync();
@@ -3749,6 +3865,8 @@ public sealed class ArgumentParserGeneratorTests
         namespace ArgumentParsing.Generated
         {
             [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--version")]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
+            [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
             internal sealed class VersionCommandHandler : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
             {
                 public int HandleCommand()

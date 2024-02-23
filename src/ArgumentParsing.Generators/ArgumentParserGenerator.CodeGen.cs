@@ -7,6 +7,8 @@ namespace ArgumentParsing.Generators;
 
 public partial class ArgumentParserGenerator
 {
+    private const string ExcludeFromCodeCoverageAttribute = "[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]";
+
     private static void EmitArgumentParserAndHelpCommand(SourceProductionContext context, ArgumentParserInfo parserInfo)
     {
         var cancellationToken = context.CancellationToken;
@@ -21,12 +23,27 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("#pragma warning disable");
         writer.WriteLine();
 
+        var generatorType = typeof(ArgumentParserGenerator);
+        var generatedCodeAttribute = $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{generatorType.FullName}\", \"{generatorType.Assembly.GetName().Version}\")]";
+
         if (hasAtLeastInternalAccessibility)
         {
             writer.WriteLine("namespace ArgumentParsing.Generated");
             writer.OpenBlock();
             writer.WriteLine("internal static partial class ParseResultExtensions");
             writer.OpenBlock();
+            writer.WriteLine("/// <summary>");
+            writer.WriteLine("/// Executes common default actions for the given <see cref=\"global::ArgumentParsing.Results.ParseResult{TOptions}\"/>");
+            writer.WriteLine("/// <list type=\"bullet\">");
+            writer.WriteLine("/// <item>If <paramref name=\"result\"/> is in <see cref=\"global::ArgumentParsing.Results.ParseResultState.ParsedOptions\"/> state invokes provided <paramref name=\"action\"/> with parsed options object</item>");
+            writer.WriteLine("/// <item>If <paramref name=\"result\"/> is in <see cref=\"global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors\"/> state writes help screen text with parse errors to <see cref=\"global::System.Console.Error\"/> and exits application with code 1</item>");
+            writer.WriteLine("/// <item>If <paramref name=\"result\"/> is in <see cref=\"global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand\"/> state executes parsed handler and exits application with code, returned from the handler</item>");
+            writer.WriteLine("/// </list>");
+            writer.WriteLine("/// </summary>");
+            writer.WriteLine("/// <param name=\"result\">Parse result</param>");
+            writer.WriteLine("/// <param name=\"action\">Action, which will be invoked if options type is correctly parsed</param>");
+            writer.WriteLine(generatedCodeAttribute);
+            writer.WriteLine(ExcludeFromCodeCoverageAttribute);
             writer.WriteLine($"public static void ExecuteDefaults(this {method.ReturnType} result, global::System.Action<global::{optionsInfo.QualifiedTypeName}> action)");
             writer.OpenBlock();
             writer.WriteLine("switch (result.State)");
@@ -64,6 +81,8 @@ public partial class ArgumentParserGenerator
             writer.OpenBlock();
         }
 
+        writer.WriteLine(generatedCodeAttribute);
+        writer.WriteLine(ExcludeFromCodeCoverageAttribute);
         writer.WriteLine($"{method.Modifiers} {method.ReturnType} {method.Name}({method.ArgsParameterInfo.Type} {method.ArgsParameterInfo.Name})");
         writer.OpenBlock();
 
@@ -736,6 +755,8 @@ public partial class ArgumentParserGenerator
         helpWriter.WriteLine("namespace ArgumentParsing.Generated");
         helpWriter.OpenBlock();
         helpWriter.WriteLine("[global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute(\"--help\")]");
+        helpWriter.WriteLine(generatedCodeAttribute);
+        helpWriter.WriteLine(ExcludeFromCodeCoverageAttribute);
         helpWriter.WriteLine($"internal sealed class HelpCommandHandler_{qualifiedName.Replace('.', '_')} : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler");
         helpWriter.OpenBlock();
         helpWriter.WriteLine("public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)");
@@ -826,6 +847,9 @@ public partial class ArgumentParserGenerator
 
     private static void EmitVersionCommandHandlers(SourceProductionContext context, ImmutableArray<AssemblyVersionInfo> assemblyVersionInfos)
     {
+        var generatorType = typeof(ArgumentParserGenerator);
+        var generatedCodeAttribute = $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{generatorType.FullName}\", \"{generatorType.Assembly.GetName().Version}\")]";
+
         foreach (var versionInfo in assemblyVersionInfos.Distinct())
         {
             context.CancellationToken.ThrowIfCancellationRequested();
@@ -838,6 +862,8 @@ public partial class ArgumentParserGenerator
                 namespace ArgumentParsing.Generated
                 {
                     [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--version")]
+                    {{generatedCodeAttribute}}
+                    {{ExcludeFromCodeCoverageAttribute}}
                     internal sealed class VersionCommandHandler : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                     {
                         public int HandleCommand()
