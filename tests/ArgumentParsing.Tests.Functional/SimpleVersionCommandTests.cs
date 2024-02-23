@@ -29,7 +29,7 @@ public sealed partial class SimpleVersionCommandTests
 
         var versionCommandHandler = Assert.IsType<VersionCommandHandler>(result.SpecialCommandHandler);
 
-        var stringWriter = new StringWriter();
+        using var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
 
         var exitCode = versionCommandHandler.HandleCommand();
@@ -39,6 +39,6 @@ public sealed partial class SimpleVersionCommandTests
         var assemblyName = typeof(Options).Assembly.GetName();
         var expectedOutput = $"{assemblyName.Name} {assemblyName.Version!.ToString(3)}{Environment.NewLine}";
         var actualOutput = stringWriter.ToString();
-        Assert.Equal(expectedOutput, actualOutput.ReplaceLineEndings());
+        Assert.Equal(expectedOutput, actualOutput);
     }
 }

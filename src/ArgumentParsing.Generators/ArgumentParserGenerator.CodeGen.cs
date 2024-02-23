@@ -9,8 +9,11 @@ public partial class ArgumentParserGenerator
 {
     private const string ExcludeFromCodeCoverageAttribute = "[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]";
 
-    private static void EmitArgumentParserAndHelpCommand(SourceProductionContext context, ArgumentParserInfo parserInfo)
+    private static void EmitArgumentParserAndHelpCommand(SourceProductionContext context, (ArgumentParserInfo ParserInfo, EnvironmentInfo EnvironmentInfo) infos)
     {
+        var (parserInfo, environmentInfo) = infos;
+        var (canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload) = environmentInfo;
+
         var cancellationToken = context.CancellationToken;
 
         var (hierarchy, method, optionsInfo) = parserInfo;
@@ -124,8 +127,12 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("int seenOptions = 0;");
         }
         writer.WriteLine("global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;");
-        writer.WriteLine("global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];");
-        writer.WriteLine("global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;");
+        if (canUseOptimalSpanBasedAlgorithm)
+        {
+            writer.WriteLine("global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];");
+        }
+        var spanOrString = canUseOptimalSpanBasedAlgorithm ? "global::System.ReadOnlySpan<char>" : "string";
+        writer.WriteLine($"{spanOrString} latestOptionName = default({spanOrString});");
         if (hasAnyOptions)
         {
             writer.WriteLine("string previousArgument = null;");
@@ -160,10 +167,10 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("state = 0;");
         writer.CloseBlock();
         writer.WriteLine();
-        writer.WriteLine("global::System.ReadOnlySpan<char> val;");
+        writer.WriteLine($"{spanOrString} val;");
         writer.WriteLine();
         writer.WriteLine("bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);");
-        writer.WriteLine("bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');");
+        writer.WriteLine($"bool startsOption = hasLetters && arg.Length > 1 && {(hasStringStartsWithCharOverload ? "arg.StartsWith('-')" : "(arg[0] == '-')")};");
         writer.WriteLine();
         if (hasAnyOptions)
         {
@@ -179,15 +186,23 @@ public partial class ArgumentParserGenerator
         writer.OpenBlock();
         writer.WriteLine("if (arg.StartsWith(\"--\") && (hasLetters || arg.Length == 2 || arg.Contains('=')))");
         writer.OpenBlock();
-        writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);");
-        writer.WriteLine("int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');");
+        writer.WriteLine($"{spanOrString} slice = {(canUseOptimalSpanBasedAlgorithm ? "global::System.MemoryExtensions.AsSpan(arg, 2)" : "arg.Substring(2)")};");
+        if (canUseOptimalSpanBasedAlgorithm)
+        {
+            writer.WriteLine("int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');");
+        }
+        else
+        {
+            writer.WriteLine("string[] split = slice.Split('=');");
+            writer.WriteLine("int written = split.Length;");
+        }
         writer.WriteLine();
         if (hasSequenceOptions)
         {
             writer.WriteLine("optionSource = 2;");
             writer.WriteLine();
         }
-        writer.WriteLine("latestOptionName = slice[longArgSplit[0]];");
+        writer.WriteLine($"latestOptionName = {(canUseOptimalSpanBasedAlgorithm ? "slice[longArgSplit[0]]" : "split[0]")};");
         writer.WriteLine("switch (latestOptionName)");
         writer.OpenBlock();
 
@@ -257,7 +272,7 @@ public partial class ArgumentParserGenerator
         writer.WriteLine();
         writer.WriteLine("if (written == 2)");
         writer.OpenBlock();
-        writer.WriteLine("val = slice[longArgSplit[1]];");
+        writer.WriteLine($"val = {(canUseOptimalSpanBasedAlgorithm ? "slice[longArgSplit[1]]" : "split[1]")};");
         writer.WriteLine("goto decodeValue;");
         writer.CloseBlock();
         writer.WriteLine();
@@ -267,7 +282,7 @@ public partial class ArgumentParserGenerator
         writer.WriteLine();
         writer.WriteLine("if (startsOption)");
         writer.OpenBlock();
-        writer.WriteLine("global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);");
+        writer.WriteLine($"{spanOrString} slice = {(canUseOptimalSpanBasedAlgorithm ? "global::System.MemoryExtensions.AsSpan(arg, 1)" : "arg.Substring(1)")};");
         writer.WriteLine();
         if (hasSequenceOptions)
         {
@@ -278,12 +293,12 @@ public partial class ArgumentParserGenerator
         writer.OpenBlock();
         writer.WriteLine("if (state > 0)");
         writer.OpenBlock();
-        writer.WriteLine("val = slice.Slice(i);");
+        writer.WriteLine($"val = slice.{(canUseOptimalSpanBasedAlgorithm ? "Slice" : "Substring")}(i);");
         writer.WriteLine("goto decodeValue;");
         writer.CloseBlock();
         writer.WriteLine();
         writer.WriteLine("char shortOptionName = slice[i];");
-        writer.WriteLine("latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);");
+        writer.WriteLine($"latestOptionName = {(canUseOptimalSpanBasedAlgorithm ? "new global::System.ReadOnlySpan<char>(in slice[i])" : "shortOptionName.ToString()")};");
         writer.WriteLine("switch (shortOptionName)");
         writer.OpenBlock();
 
@@ -329,9 +344,9 @@ public partial class ArgumentParserGenerator
             writer.OpenBlock();
             if (optionInfos.Any(static i => i.NullableUnderlyingType is not null || i.SequenceType != SequenceType.None))
             {
-                writer.WriteLine("val = slice.Slice(i);");
+                writer.WriteLine($"val = slice.{(canUseOptimalSpanBasedAlgorithm ? "Slice" : "Substring")}(i);");
             }
-            writer.WriteLine("latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i - 1]);");
+            writer.WriteLine($"latestOptionName = {(canUseOptimalSpanBasedAlgorithm ? "new global::System.ReadOnlySpan<char>(in slice[i - 1])" : "slice[i - 1].ToString()")};");
             writer.WriteLine("goto decodeValue;");
             writer.CloseBlock();
         }
@@ -349,7 +364,7 @@ public partial class ArgumentParserGenerator
         writer.CloseBlock();
 
         writer.WriteLine();
-        writer.WriteLine("val = global::System.MemoryExtensions.AsSpan(arg);");
+        writer.WriteLine($"val = {(canUseOptimalSpanBasedAlgorithm ? "global::System.MemoryExtensions.AsSpan(arg)" : "arg")};");
         if (hasSequenceOptions)
         {
             writer.WriteLine("optionSource = 0;");

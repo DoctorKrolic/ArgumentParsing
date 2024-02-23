@@ -40,7 +40,7 @@ public sealed partial class SimpleHelpCommandTest
 
         var helpCommandHandler = Assert.IsType<HelpCommandHandler_ArgumentParsing_Tests_Functional_SimpleHelpCommandTest_Options>(result.SpecialCommandHandler);
 
-        var stringWriter = new StringWriter();
+        using var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
 
         var exitCode = helpCommandHandler.HandleCommand();
@@ -70,7 +70,7 @@ public sealed partial class SimpleHelpCommandTest
 
             """;
         var actualOutput = stringWriter.ToString();
-        Assert.Equal(expectedOutput.ReplaceLineEndings(), actualOutput.ReplaceLineEndings());
+        Assert.Equal(expectedOutput, actualOutput);
     }
 
     [Fact]
@@ -112,6 +112,6 @@ public sealed partial class SimpleHelpCommandTest
               --version{'\t'}Show version information
 
             """;
-        Assert.Equal(expectedHelpScreen.ReplaceLineEndings(), helpScreen.ReplaceLineEndings());
+        Assert.Equal(expectedHelpScreen, helpScreen);
     }
 }

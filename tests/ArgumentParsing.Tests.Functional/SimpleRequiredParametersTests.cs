@@ -68,7 +68,7 @@ public sealed partial class SimpleRequiredParametersTests
     [Fact]
     public void MissingBothRequiredParameters()
     {
-        var result = ParseArguments(ReadOnlyCollection<string>.Empty);
+        var result = ParseArguments(new ReadOnlyCollection<string>([]));
 
         Assert.Equal(ParseResultState.ParsedWithErrors, result.State);
 

@@ -21,9 +21,13 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
 
         context.ReportDiagnostics(diagnostics);
 
+        var environmentInfo = context.CompilationProvider
+            .Select(ExtractEnvironmentInfo);
+
         var argumentParserInfos = extractedInfosProvider
             .Where(info => info.ArgumentParserInfo is not null)
-            .Select((info, _) => info.ArgumentParserInfo!);
+            .Select((info, _) => info.ArgumentParserInfo!)
+            .Combine(environmentInfo);
 
         context.RegisterSourceOutput(argumentParserInfos, EmitArgumentParserAndHelpCommand);
 

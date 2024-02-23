@@ -706,4 +706,64 @@ public partial class ArgumentParserGenerator
             _ => null,
         };
     }
+
+    private static EnvironmentInfo ExtractEnvironmentInfo(Compilation compilation, CancellationToken cancellationToken)
+    {
+        var canUseOptimalSpanBasedAlgorithm = CanUseOptimalSpanBasedAlgorithm(compilation, cancellationToken);
+
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var hasStringStartsWithCharOverload = stringType.GetMembers("StartsWith").Any(s => s is IMethodSymbol { Parameters: [{ Type.SpecialType: SpecialType.System_Char }] });
+
+        return new(canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload);
+
+        static bool CanUseOptimalSpanBasedAlgorithm(Compilation compilation, CancellationToken cancellationToken)
+        {
+            var spanType = compilation.GetTypeByMetadataName("System.Span`1");
+            if (spanType is null)
+            {
+                return false;
+            }
+
+            var readOnlySpanType = compilation.GetTypeByMetadataName("System.ReadOnlySpan`1");
+            if (readOnlySpanType is null)
+            {
+                return false;
+            }
+
+            var rangeType = compilation.GetTypeByMetadataName("System.Range");
+            if (rangeType is null)
+            {
+                return false;
+            }
+
+            var memoryExtensionsType = compilation.GetTypeByMetadataName("System.MemoryExtensions");
+            if (memoryExtensionsType is null)
+            {
+                return false;
+            }
+
+            var charType = compilation.GetSpecialType(SpecialType.System_Char);
+            var readOnlySpanOfCharType = readOnlySpanType.Construct(charType);
+
+            if (!memoryExtensionsType.GetMembers("AsSpan")
+                .Any(s => s is IMethodSymbol { Parameters: [{ Type.SpecialType: SpecialType.System_String }, { Type.SpecialType: SpecialType.System_Int32 }] } method &&
+                          method.ReturnType.Equals(readOnlySpanOfCharType, SymbolEqualityComparer.Default)))
+            {
+                return false;
+            }
+
+            var spanOfRangeType = spanType.Construct(rangeType);
+
+            if (!memoryExtensionsType.GetMembers("Split")
+                .Any(s => s is IMethodSymbol { Parameters: [{ Type: var firstParameterType }, { Type: var secondParameterType }, { Type.SpecialType: SpecialType.System_Char }, { IsOptional: true }] } &&
+                          firstParameterType.Equals(readOnlySpanOfCharType, SymbolEqualityComparer.Default) &&
+                          secondParameterType.Equals(spanOfRangeType, SymbolEqualityComparer.Default)))
+            {
+                return false;
+            }
+
+            // We have required members for span-based algorithm (we checked for most of them before)
+            return true;
+        }
+    }
 }

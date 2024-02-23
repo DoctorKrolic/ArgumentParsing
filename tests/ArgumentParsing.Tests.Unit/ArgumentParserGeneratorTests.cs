@@ -224,7 +224,7 @@ public sealed class ArgumentParserGeneratorTests
                     int state = -3;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
+                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
 
                     foreach (string arg in s)
                     {
@@ -1149,7 +1149,7 @@ public sealed class ArgumentParserGeneratorTests
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
+                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
                     string previousArgument = null;
 
                     foreach (string arg in args)
@@ -1428,7 +1428,7 @@ public sealed class ArgumentParserGeneratorTests
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
+                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
                     string previousArgument = null;
 
                     foreach (string arg in args)
@@ -1733,7 +1733,7 @@ public sealed class ArgumentParserGeneratorTests
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
+                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
                     string previousArgument = null;
 
                     foreach (string arg in args)
@@ -2020,7 +2020,7 @@ public sealed class ArgumentParserGeneratorTests
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
+                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
                     string previousArgument = null;
 
                     foreach (string arg in args)
@@ -2314,7 +2314,7 @@ public sealed class ArgumentParserGeneratorTests
                     int seenOptions = 0;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
+                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
                     string previousArgument = null;
 
                     foreach (string arg in args)
@@ -3236,7 +3236,7 @@ public sealed class ArgumentParserGeneratorTests
                     int state = -3;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
+                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
                     int parameterIndex = 0;
 
                     foreach (string arg in args)
@@ -3645,7 +3645,7 @@ public sealed class ArgumentParserGeneratorTests
                     int state = -3;
                     global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
                     global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = global::System.ReadOnlySpan<char>.Empty;
+                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
 
                     foreach (string arg in args)
                     {
