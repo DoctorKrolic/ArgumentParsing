@@ -49,6 +49,8 @@ public partial class ArgumentParserGenerator
             writer.WriteLine();
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         var @namespace = hierarchy.Namespace;
         if (!string.IsNullOrEmpty(@namespace))
         {
