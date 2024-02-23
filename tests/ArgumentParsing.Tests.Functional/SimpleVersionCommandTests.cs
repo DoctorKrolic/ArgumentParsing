@@ -3,6 +3,7 @@ using ArgumentParsing.Results;
 
 namespace ArgumentParsing.Tests.Functional;
 
+[Collection("SpecialCommandTests")]
 public sealed partial class SimpleVersionCommandTests
 {
     #region OptionsAndParser

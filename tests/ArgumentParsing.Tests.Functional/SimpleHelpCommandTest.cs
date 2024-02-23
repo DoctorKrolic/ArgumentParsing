@@ -6,6 +6,7 @@ using ArgumentParsing.SpecialCommands.Help;
 
 namespace ArgumentParsing.Tests.Functional;
 
+[Collection("SpecialCommandTests")]
 public sealed partial class SimpleHelpCommandTest
 {
     #region OptionsAndParser
