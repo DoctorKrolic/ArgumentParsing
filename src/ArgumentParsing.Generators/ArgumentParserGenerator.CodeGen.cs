@@ -11,8 +11,8 @@ public partial class ArgumentParserGenerator
     {
         var cancellationToken = context.CancellationToken;
 
-        (var hierarchy, var method, var optionsInfo) = parserInfo;
-        (var qualifiedName, var hasAtLeastInternalAccessibility, var optionInfos, var parameterInfos, var remainingParametersInfo, var assemblyVersionInfo) = optionsInfo;
+        var (hierarchy, method, optionsInfo) = parserInfo;
+        var (qualifiedName, hasAtLeastInternalAccessibility, optionInfos, parameterInfos, remainingParametersInfo, assemblyVersionInfo) = optionsInfo;
 
         var writer = new CodeWriter();
 
