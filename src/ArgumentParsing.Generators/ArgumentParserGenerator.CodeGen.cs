@@ -259,7 +259,7 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("default:");
         writer.Ident++;
         writer.WriteLine("errors ??= new();");
-        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(latestOptionName.ToString(), arg));");
+        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, arg));");
         writer.WriteLine("if (written == 1)");
         writer.OpenBlock();
         writer.WriteLine("state = -1;");
@@ -379,7 +379,7 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("case -10:");
             writer.Ident++;
             writer.WriteLine("errors ??= new();");
-            writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(latestOptionName.ToString()));");
+            writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
             writer.WriteLine("break;");
             writer.Ident--;
         }
@@ -413,7 +413,7 @@ public partial class ArgumentParserGenerator
             switch (parseStrategy)
             {
                 case ParseStrategy.String:
-                    writer.WriteLine($"{propertyName}_val = val.ToString();");
+                    writer.WriteLine($"{propertyName}_val = val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)};");
                     break;
                 case ParseStrategy.Integer:
                 case ParseStrategy.Float:
@@ -425,7 +425,7 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
-                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
+                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     if (nullableUnderlyingType is not null)
                     {
@@ -437,7 +437,7 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine($"if (!bool.TryParse(val, out {propertyName}_underlying))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
-                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
+                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     writer.WriteLine($"{propertyName}_val = {propertyName}_underlying;");
                     break;
@@ -449,7 +449,7 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine($"if (!global::System.Enum.TryParse<{nullableUnderlyingType ?? info.Type}>(val, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
-                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
+                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     if (nullableUnderlyingType is not null)
                     {
@@ -464,7 +464,7 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine("else");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
-                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));");
+                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     break;
             }
@@ -575,7 +575,7 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine("errors ??= new();");
                     writer.WriteLine("if (state == -10)");
                     writer.OpenBlock();
-                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(latestOptionName.ToString()));");
+                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     writer.WriteLine("else");
                     writer.OpenBlock();
