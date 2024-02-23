@@ -70,7 +70,7 @@ public sealed partial class SimpleHelpCommandTest
 
             """;
         var actualOutput = stringWriter.ToString();
-        Assert.Equal(expectedOutput, actualOutput);
+        Assert.Equal(expectedOutput.ReplaceLineEndings(), actualOutput.ReplaceLineEndings());
     }
 
     [Fact]
@@ -112,6 +112,6 @@ public sealed partial class SimpleHelpCommandTest
               --version{'\t'}Show version information
 
             """;
-        Assert.Equal(expectedHelpScreen, helpScreen);
+        Assert.Equal(expectedHelpScreen.ReplaceLineEndings(), helpScreen.ReplaceLineEndings());
     }
 }

@@ -39,6 +39,6 @@ public sealed partial class SimpleVersionCommandTests
         var assemblyName = typeof(Options).Assembly.GetName();
         var expectedOutput = $"{assemblyName.Name} {assemblyName.Version!.ToString(3)}{Environment.NewLine}";
         var actualOutput = stringWriter.ToString();
-        Assert.Equal(expectedOutput, actualOutput);
+        Assert.Equal(expectedOutput, actualOutput.ReplaceLineEndings());
     }
 }
