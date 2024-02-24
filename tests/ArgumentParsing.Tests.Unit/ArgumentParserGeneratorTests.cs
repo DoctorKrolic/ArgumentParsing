@@ -1979,7 +1979,7 @@ public sealed class ArgumentParserGeneratorTests
                         }
                         helpBuilder.AppendLine("OPTIONS:");
                         helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --option-a");
+                        helpBuilder.AppendLine("  --option-a\tRequired");
                         helpBuilder.AppendLine();
                         helpBuilder.AppendLine("COMMANDS:");
                         helpBuilder.AppendLine();
@@ -2280,7 +2280,7 @@ public sealed class ArgumentParserGeneratorTests
                         }
                         helpBuilder.AppendLine("OPTIONS:");
                         helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --option-a");
+                        helpBuilder.AppendLine("  --option-a\tRequired");
                         helpBuilder.AppendLine();
                         helpBuilder.AppendLine("COMMANDS:");
                         helpBuilder.AppendLine();
@@ -2647,11 +2647,11 @@ public sealed class ArgumentParserGeneratorTests
                         }
                         helpBuilder.AppendLine("OPTIONS:");
                         helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --option-a");
+                        helpBuilder.AppendLine("  --option-a\tRequired");
                         helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --option-b");
+                        helpBuilder.AppendLine("  --option-b\tRequired");
                         helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --option-c");
+                        helpBuilder.AppendLine("  --option-c\tRequired");
                         helpBuilder.AppendLine();
                         helpBuilder.AppendLine("COMMANDS:");
                         helpBuilder.AppendLine();

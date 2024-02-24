@@ -821,9 +821,24 @@ public partial class ArgumentParserGenerator
                 {
                     helpWriter.Write($"--{info.LongName}");
                 }
-                if (info.HelpDescription is not null)
+                var isRequired = info.IsRequired;
+                var helpDescription = info.HelpDescription;
+                if (isRequired || helpDescription is not null)
                 {
-                    helpWriter.Write("\\t" + info.HelpDescription);
+                    helpWriter.Write("\\t");
+                }
+                if (isRequired)
+                {
+                    helpWriter.Write("Required");
+                }
+                if (helpDescription is not null)
+                {
+                    if (isRequired)
+                    {
+                        helpWriter.Write(". ");
+                    }
+
+                    helpWriter.Write(helpDescription);
                 }
                 helpWriter.WriteLine("\");");
             }
@@ -838,9 +853,24 @@ public partial class ArgumentParserGenerator
 
                 helpWriter.WriteLine("helpBuilder.AppendLine();");
                 helpWriter.Write($"helpBuilder.AppendLine(\"  {info.Name} (at index {i})");
-                if (info.HelpDescription is not null)
+                var isRequired = info.IsRequired;
+                var helpDescription = info.HelpDescription;
+                if (isRequired || helpDescription is not null)
                 {
-                    helpWriter.Write($"\\t{info.HelpDescription}");
+                    helpWriter.Write("\\t");
+                }
+                if (isRequired)
+                {
+                    helpWriter.Write("Required");
+                }
+                if (helpDescription is not null)
+                {
+                    if (isRequired)
+                    {
+                        helpWriter.Write(". ");
+                    }
+
+                    helpWriter.Write(helpDescription);
                 }
                 helpWriter.WriteLine("\");");
             }
