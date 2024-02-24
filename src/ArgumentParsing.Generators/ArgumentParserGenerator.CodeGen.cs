@@ -769,11 +769,24 @@ public partial class ArgumentParserGenerator
         helpWriter.WriteLine();
         helpWriter.WriteLine("namespace ArgumentParsing.Generated");
         helpWriter.OpenBlock();
+        helpWriter.WriteLine("/// <summary>");
+        helpWriter.WriteLine($"/// Default implementation of <c>--help</c> command for <see cref=\"global::{qualifiedName}\"/> type");
+        helpWriter.WriteLine("/// </summary>");
         helpWriter.WriteLine("[global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute(\"--help\")]");
         helpWriter.WriteLine(generatedCodeAttribute);
         helpWriter.WriteLine(ExcludeFromCodeCoverageAttribute);
         helpWriter.WriteLine($"internal sealed class HelpCommandHandler_{qualifiedName.Replace('.', '_')} : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler");
         helpWriter.OpenBlock();
+        helpWriter.WriteLine("/// <summary>");
+        helpWriter.WriteLine($"/// Generates help text for <see cref=\"global::{qualifiedName}\"/> type.");
+        helpWriter.WriteLine("/// If <paramref name=\"errors\"/> parameter is supplied, generated text will contain an error section");
+        helpWriter.WriteLine("/// </summary>");
+        helpWriter.WriteLine("/// <remarks>");
+        helpWriter.WriteLine("/// Help text, produced by this method, already contains a trailing new line.");
+        helpWriter.WriteLine("/// In order to avoid double trailing new line problem, use <c>Write</c> method instead of <c>WriteLine</c> when writing this text to console or other text writers");
+        helpWriter.WriteLine("/// </remarks>");
+        helpWriter.WriteLine("/// <param name=\"errors\">Parse errors to include into help text</param>");
+        helpWriter.WriteLine("/// <returns>Generated help text with included trailing new line</returns>");
         helpWriter.WriteLine("public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)");
         helpWriter.OpenBlock();
         helpWriter.WriteLine("global::System.Text.StringBuilder helpBuilder = new();");
@@ -851,6 +864,7 @@ public partial class ArgumentParserGenerator
         helpWriter.WriteLine("return helpBuilder.ToString();");
         helpWriter.CloseBlock();
         helpWriter.WriteLine();
+        helpWriter.WriteLine("/// <inheritdoc/>");
         helpWriter.WriteLine("public int HandleCommand()");
         helpWriter.OpenBlock();
         helpWriter.WriteLine("global::System.Console.Out.Write(GenerateHelpText());");
@@ -876,11 +890,15 @@ public partial class ArgumentParserGenerator
 
                 namespace ArgumentParsing.Generated
                 {
+                    /// <summary>
+                    /// Default implementation of <c>--version</c> command for <c>{{versionInfo.Name}}</c> assembly
+                    /// </summary>
                     [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--version")]
                     {{generatedCodeAttribute}}
                     {{ExcludeFromCodeCoverageAttribute}}
                     internal sealed class VersionCommandHandler : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                     {
+                        /// <inheritdoc/>
                         public int HandleCommand()
                         {
                             global::System.Console.WriteLine("{{versionInfo.Name}} {{versionInfo.Version.ToString(3)}}");

@@ -354,11 +354,24 @@ public sealed class ArgumentParserGeneratorTests
 
             namespace ArgumentParsing.Generated
             {
+                /// <summary>
+                /// Default implementation of <c>--help</c> command for <see cref="global::EmptyOptions"/> type
+                /// </summary>
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
                 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_EmptyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
+                    /// <summary>
+                    /// Generates help text for <see cref="global::EmptyOptions"/> type.
+                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
+                    /// </summary>
+                    /// <remarks>
+                    /// Help text, produced by this method, already contains a trailing new line.
+                    /// In order to avoid double trailing new line problem, use <c>Write</c> method instead of <c>WriteLine</c> when writing this text to console or other text writers
+                    /// </remarks>
+                    /// <param name="errors">Parse errors to include into help text</param>
+                    /// <returns>Generated help text with included trailing new line</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -383,6 +396,7 @@ public sealed class ArgumentParserGeneratorTests
                         return helpBuilder.ToString();
                     }
 
+                    /// <inheritdoc/>
                     public int HandleCommand()
                     {
                         global::System.Console.Out.Write(GenerateHelpText());
@@ -1310,11 +1324,24 @@ public sealed class ArgumentParserGeneratorTests
 
             namespace ArgumentParsing.Generated
             {
+                /// <summary>
+                /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
+                /// </summary>
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
                 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
+                    /// <summary>
+                    /// Generates help text for <see cref="global::MyOptions"/> type.
+                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
+                    /// </summary>
+                    /// <remarks>
+                    /// Help text, produced by this method, already contains a trailing new line.
+                    /// In order to avoid double trailing new line problem, use <c>Write</c> method instead of <c>WriteLine</c> when writing this text to console or other text writers
+                    /// </remarks>
+                    /// <param name="errors">Parse errors to include into help text</param>
+                    /// <returns>Generated help text with included trailing new line</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -1342,6 +1369,7 @@ public sealed class ArgumentParserGeneratorTests
                         return helpBuilder.ToString();
                     }
 
+                    /// <inheritdoc/>
                     public int HandleCommand()
                     {
                         global::System.Console.Out.Write(GenerateHelpText());
@@ -1589,11 +1617,24 @@ public sealed class ArgumentParserGeneratorTests
 
             namespace ArgumentParsing.Generated
             {
+                /// <summary>
+                /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
+                /// </summary>
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
                 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
+                    /// <summary>
+                    /// Generates help text for <see cref="global::MyOptions"/> type.
+                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
+                    /// </summary>
+                    /// <remarks>
+                    /// Help text, produced by this method, already contains a trailing new line.
+                    /// In order to avoid double trailing new line problem, use <c>Write</c> method instead of <c>WriteLine</c> when writing this text to console or other text writers
+                    /// </remarks>
+                    /// <param name="errors">Parse errors to include into help text</param>
+                    /// <returns>Generated help text with included trailing new line</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -1621,6 +1662,7 @@ public sealed class ArgumentParserGeneratorTests
                         return helpBuilder.ToString();
                     }
 
+                    /// <inheritdoc/>
                     public int HandleCommand()
                     {
                         global::System.Console.Out.Write(GenerateHelpText());
@@ -1902,11 +1944,24 @@ public sealed class ArgumentParserGeneratorTests
 
             namespace ArgumentParsing.Generated
             {
+                /// <summary>
+                /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
+                /// </summary>
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
                 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
+                    /// <summary>
+                    /// Generates help text for <see cref="global::MyOptions"/> type.
+                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
+                    /// </summary>
+                    /// <remarks>
+                    /// Help text, produced by this method, already contains a trailing new line.
+                    /// In order to avoid double trailing new line problem, use <c>Write</c> method instead of <c>WriteLine</c> when writing this text to console or other text writers
+                    /// </remarks>
+                    /// <param name="errors">Parse errors to include into help text</param>
+                    /// <returns>Generated help text with included trailing new line</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -1934,6 +1989,7 @@ public sealed class ArgumentParserGeneratorTests
                         return helpBuilder.ToString();
                     }
 
+                    /// <inheritdoc/>
                     public int HandleCommand()
                     {
                         global::System.Console.Out.Write(GenerateHelpText());
@@ -2189,11 +2245,24 @@ public sealed class ArgumentParserGeneratorTests
 
             namespace ArgumentParsing.Generated
             {
+                /// <summary>
+                /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
+                /// </summary>
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
                 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
+                    /// <summary>
+                    /// Generates help text for <see cref="global::MyOptions"/> type.
+                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
+                    /// </summary>
+                    /// <remarks>
+                    /// Help text, produced by this method, already contains a trailing new line.
+                    /// In order to avoid double trailing new line problem, use <c>Write</c> method instead of <c>WriteLine</c> when writing this text to console or other text writers
+                    /// </remarks>
+                    /// <param name="errors">Parse errors to include into help text</param>
+                    /// <returns>Generated help text with included trailing new line</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -2221,6 +2290,7 @@ public sealed class ArgumentParserGeneratorTests
                         return helpBuilder.ToString();
                     }
 
+                    /// <inheritdoc/>
                     public int HandleCommand()
                     {
                         global::System.Console.Out.Write(GenerateHelpText());
@@ -2542,11 +2612,24 @@ public sealed class ArgumentParserGeneratorTests
 
             namespace ArgumentParsing.Generated
             {
+                /// <summary>
+                /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
+                /// </summary>
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
                 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
+                    /// <summary>
+                    /// Generates help text for <see cref="global::MyOptions"/> type.
+                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
+                    /// </summary>
+                    /// <remarks>
+                    /// Help text, produced by this method, already contains a trailing new line.
+                    /// In order to avoid double trailing new line problem, use <c>Write</c> method instead of <c>WriteLine</c> when writing this text to console or other text writers
+                    /// </remarks>
+                    /// <param name="errors">Parse errors to include into help text</param>
+                    /// <returns>Generated help text with included trailing new line</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -2578,6 +2661,7 @@ public sealed class ArgumentParserGeneratorTests
                         return helpBuilder.ToString();
                     }
 
+                    /// <inheritdoc/>
                     public int HandleCommand()
                     {
                         global::System.Console.Out.Write(GenerateHelpText());
@@ -3386,11 +3470,24 @@ public sealed class ArgumentParserGeneratorTests
 
             namespace ArgumentParsing.Generated
             {
+                /// <summary>
+                /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
+                /// </summary>
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
                 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
+                    /// <summary>
+                    /// Generates help text for <see cref="global::MyOptions"/> type.
+                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
+                    /// </summary>
+                    /// <remarks>
+                    /// Help text, produced by this method, already contains a trailing new line.
+                    /// In order to avoid double trailing new line problem, use <c>Write</c> method instead of <c>WriteLine</c> when writing this text to console or other text writers
+                    /// </remarks>
+                    /// <param name="errors">Parse errors to include into help text</param>
+                    /// <returns>Generated help text with included trailing new line</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -3421,6 +3518,7 @@ public sealed class ArgumentParserGeneratorTests
                         return helpBuilder.ToString();
                     }
 
+                    /// <inheritdoc/>
                     public int HandleCommand()
                     {
                         global::System.Console.Out.Write(GenerateHelpText());
@@ -3775,11 +3873,24 @@ public sealed class ArgumentParserGeneratorTests
 
             namespace ArgumentParsing.Generated
             {
+                /// <summary>
+                /// Default implementation of <c>--help</c> command for <see cref="global::C.Options"/> type
+                /// </summary>
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
                 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_C_Options : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
+                    /// <summary>
+                    /// Generates help text for <see cref="global::C.Options"/> type.
+                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
+                    /// </summary>
+                    /// <remarks>
+                    /// Help text, produced by this method, already contains a trailing new line.
+                    /// In order to avoid double trailing new line problem, use <c>Write</c> method instead of <c>WriteLine</c> when writing this text to console or other text writers
+                    /// </remarks>
+                    /// <param name="errors">Parse errors to include into help text</param>
+                    /// <returns>Generated help text with included trailing new line</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -3804,6 +3915,7 @@ public sealed class ArgumentParserGeneratorTests
                         return helpBuilder.ToString();
                     }
 
+                    /// <inheritdoc/>
                     public int HandleCommand()
                     {
                         global::System.Console.Out.Write(GenerateHelpText());
@@ -3864,11 +3976,15 @@ public sealed class ArgumentParserGeneratorTests
         
         namespace ArgumentParsing.Generated
         {
+            /// <summary>
+            /// Default implementation of <c>--version</c> command for <c>TestProject</c> assembly
+            /// </summary>
             [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--version")]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
             [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
             internal sealed class VersionCommandHandler : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
             {
+                /// <inheritdoc/>
                 public int HandleCommand()
                 {
                     global::System.Console.WriteLine("TestProject 0.0.0");
