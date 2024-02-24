@@ -193,7 +193,7 @@ public partial class ArgumentParserGenerator
         }
         else
         {
-            writer.WriteLine("string[] split = slice.Split('=');");
+            writer.WriteLine("string[] split = slice.Split(new char[] { '=' }, count: 2);");
             writer.WriteLine("int written = split.Length;");
         }
         writer.WriteLine();
