@@ -342,7 +342,7 @@ public partial class ArgumentParserGenerator
         {
             writer.WriteLine($"if (state <= -10)");
             writer.OpenBlock();
-            if (optionInfos.Any(static i => i.NullableUnderlyingType is not null || i.SequenceType != SequenceType.None))
+            if (hasAnyParameters || optionInfos.Any(static i => i.NullableUnderlyingType is not null || i.SequenceType != SequenceType.None))
             {
                 writer.WriteLine($"val = slice.{(canUseOptimalSpanBasedAlgorithm ? "Slice" : "Substring")}(i);");
             }
