@@ -8,4 +8,14 @@
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
+
+  <!-- Reference source generator without referencing the actual binary so we can be sure it is up to date when packaging this project -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <ProjectReference Include="..\ArgumentParsing.Generators\ArgumentParsing.Generators.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- Pack the source generator to the right folder -->
+  <ItemGroup>
+    <None Include="..\ArgumentParsing.Generators\bin\$(Configuration)\netstandard2.0\ArgumentParsing.Generators.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
+  </ItemGroup>
 </Project>
