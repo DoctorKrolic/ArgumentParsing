@@ -3,4 +3,21 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <Title>$(MSBuildProjectName)</Title>
+    <Description>Source generator based command line arguments parser</Description>
+    <Authors>DoctorKrolic</Authors>
+    <Copyright>Copyright (c) 2024 Arthur Matsur</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageProjectUrl>https://github.com/DoctorKrolic/ArgumentParsing</PackageProjectUrl>
+    <PackageTags>commandline argument arguments option options parser parsing library shell generator sourcegenerator aot nativeaot netstandard</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SourceRoot Include="$(MSBuildThisFileDirectory)/"/>
+  </ItemGroup>
 </Project>
