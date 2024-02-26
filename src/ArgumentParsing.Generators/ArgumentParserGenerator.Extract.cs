@@ -377,6 +377,12 @@ public partial class ArgumentParserGenerator
                     longName = propertyName.ToKebabCase();
                 }
 
+                if (!shortName.HasValue && longName is null)
+                {
+                    hasErrors = true;
+                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.NoOptionNames, property));
+                }
+
                 if (longName is not null &&
                     !(char.IsLetter(longName[0]) && longName.Replace("-", string.Empty).All(char.IsLetterOrDigit)))
                 {

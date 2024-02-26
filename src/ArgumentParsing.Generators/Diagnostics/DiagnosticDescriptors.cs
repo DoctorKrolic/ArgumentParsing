@@ -241,4 +241,12 @@ internal static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor NoOptionNames = new(
+        id: "ARGP0034",
+        title: "Option doesn't have any name",
+        messageFormat: "Option doesn't have both short and long name",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

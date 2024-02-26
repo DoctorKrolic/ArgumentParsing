@@ -39,9 +39,10 @@ public sealed class OptionAttribute : Attribute
 
     /// <summary>
     /// Initializes an option property with no short name and a specified long name.
-    /// Supplying <see langword="null"/> results in option without a long name
+    /// Supplying <see langword="null"/> in this constructor doesn't make sense
+    /// since it leaves option without both short and long names
     /// </summary>
-    public OptionAttribute(string? longName)
+    public OptionAttribute(string longName)
     {
         LongName = longName;
     }

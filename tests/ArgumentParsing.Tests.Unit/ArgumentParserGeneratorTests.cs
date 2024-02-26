@@ -3928,6 +3928,26 @@ public sealed class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source, ("C.Options.g.cs", generated), ("HelpCommandHandler.C.Options.g.cs", helpCommandHandler), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 
+    [Fact]
+    public async Task OptionsType_NoShortAndLongName()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option(null)]
+                public string {|ARGP0034:Option|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     private static async Task VerifyGeneratorAsync(string source, DiagnosticResult[] diagnostics)
         => await VerifyGeneratorAsync(source, diagnostics, []);
 
