@@ -588,7 +588,6 @@ public partial class ArgumentParserGenerator
         }
 
         var canNextParameterBeRequired = true;
-        var encounteredFirstNullableParameter = false;
 
         foreach (var info in parametersBuilder)
         {
@@ -603,21 +602,6 @@ public partial class ArgumentParserGenerator
             else
             {
                 canNextParameterBeRequired = false;
-            }
-
-            if (info.NullableUnderlyingType is null)
-            {
-                var parameterProperty = parametersProperties[info];
-
-                if (encounteredFirstNullableParameter && parameterProperty.Type.IsValueType)
-                {
-                    hasErrors = true;
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.NullableCanOnlyBeLastNParametersInARow, parameterProperty));
-                }
-            }
-            else
-            {
-                encounteredFirstNullableParameter = true;
             }
         }
 

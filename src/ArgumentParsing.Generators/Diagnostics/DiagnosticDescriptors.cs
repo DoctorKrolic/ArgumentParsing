@@ -200,13 +200,7 @@ internal static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static readonly DiagnosticDescriptor NullableCanOnlyBeLastNParametersInARow = new(
-        id: "ARGP0028",
-        title: "Invalid nullable parameter",
-        messageFormat: "Only last several parameters in a row can be nullable",
-        category: ArgumentParsingCategoryName,
-        defaultSeverity: DiagnosticSeverity.Error,
-        isEnabledByDefault: true);
+    // ARGP0028
 
     public static readonly DiagnosticDescriptor DuplicateRemainingParameters = new(
         id: "ARGP0029",
