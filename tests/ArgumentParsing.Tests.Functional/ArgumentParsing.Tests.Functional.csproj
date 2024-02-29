@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <NoWarn>$(NoWarn);ARGP0033</NoWarn>
+    <NoWarn>$(NoWarn);ARGP0032</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

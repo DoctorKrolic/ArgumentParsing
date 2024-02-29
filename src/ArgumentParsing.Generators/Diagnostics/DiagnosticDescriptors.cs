@@ -227,7 +227,7 @@ internal static class DiagnosticDescriptors
     // ARGP0031 - fade out `required` keyword or `[Required]` attribute for remaining parameters property. Implement when we can suppress nullability warning on that property
 
     public static readonly DiagnosticDescriptor TooLowAccessibilityOfOptionsType = new(
-        id: "ARGP0033",
+        id: "ARGP0032",
         title: "Options type has too low accessibility",
         messageFormat: "Options type has too low accessibility. Default handlers won't be generated for it",
         category: ArgumentParsingCategoryName,
@@ -235,7 +235,7 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor NoOptionNames = new(
-        id: "ARGP0034",
+        id: "ARGP0033",
         title: "Option doesn't have any name",
         messageFormat: "Option doesn't have both short and long name",
         category: ArgumentParsingCategoryName,

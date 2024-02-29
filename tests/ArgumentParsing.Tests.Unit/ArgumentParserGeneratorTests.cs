@@ -3362,7 +3362,7 @@ public sealed class ArgumentParserGeneratorTests
                 [GeneratedArgumentParser]
                 private static partial ParseResult<Options> ParseArguments(string[] args);
 
-                {{accessibility}} class {|ARGP0033:Options|}
+                {{accessibility}} class {|ARGP0032:Options|}
                 {
                 }
             }
@@ -3581,7 +3581,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option(null)]
-                public string {|ARGP0034:Option|} { get; set; }
+                public string {|ARGP0033:Option|} { get; set; }
             }
             """;
 
