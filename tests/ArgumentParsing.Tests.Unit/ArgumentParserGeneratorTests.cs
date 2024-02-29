@@ -3197,6 +3197,31 @@ public sealed class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
+    [Theory]
+    [InlineData("5param")]
+    [InlineData("-param")]
+    [InlineData("$param")]
+    [InlineData("param name")]
+    [InlineData("invalid&name")]
+    public async Task OptionsType_InvalidParameterName(string invalidName)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0, Name = "{{invalidName}}")]
+                public string {|ARGP0028:Param|} { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     [Fact]
     public async Task OptionsType_DuplicateRemainingParameters()
     {
@@ -3319,31 +3344,6 @@ public sealed class ArgumentParserGeneratorTests
             {
                 [RemainingParameters]
                 public {|CS0246:ErrorType|} OptionA { get; set; }
-            }
-            """;
-
-        await VerifyGeneratorAsync(source);
-    }
-
-    [Theory]
-    [InlineData("5param")]
-    [InlineData("-param")]
-    [InlineData("$param")]
-    [InlineData("param name")]
-    [InlineData("invalid&name")]
-    public async Task OptionsType_InvalidParametersName(string invalidName)
-    {
-        var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
-            class MyOptions
-            {
-                [Parameter(0, Name = "{{invalidName}}")]
-                public string {|ARGP0032:Param|} { get; set; }
             }
             """;
 

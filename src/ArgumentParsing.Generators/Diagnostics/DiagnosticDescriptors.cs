@@ -200,7 +200,13 @@ internal static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    // ARGP0028
+    public static readonly DiagnosticDescriptor InvalidParameterName = new(
+        id: "ARGP0028",
+        title: "Invalid parameter name",
+        messageFormat: "Parameter name '{0}' is invalid. Parameter name must start with a letter and contain only letters, digits and possibly '-' as separators",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor DuplicateRemainingParameters = new(
         id: "ARGP0029",
@@ -219,14 +225,6 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true);
 
     // ARGP0031 - fade out `required` keyword or `[Required]` attribute for remaining parameters property. Implement when we can suppress nullability warning on that property
-
-    public static readonly DiagnosticDescriptor InvalidParameterName = new(
-        id: "ARGP0032",
-        title: "Invalid parameter name",
-        messageFormat: "Parameter name '{0}' is invalid. Parameter name must start with a letter and contain only letters, digits and possibly '-' as separators",
-        category: ArgumentParsingCategoryName,
-        defaultSeverity: DiagnosticSeverity.Error,
-        isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor TooLowAccessibilityOfOptionsType = new(
         id: "ARGP0033",
