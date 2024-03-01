@@ -11,6 +11,7 @@ Library for command line arguments parsing with intuitive API in declarative sty
 - Provides default implementations of `--help` and `--version` commands with additional customization
 - All parsing logic is entirely source-generated, making this library completely NativeAOT-friendly
 - Delivers rich developer experience: the editor provides real-time diagnostics, including error detection, code suggestions and more as you type
+- Includes detailed and comprehensive wiki documentation
 
 ## Quick start example
 
