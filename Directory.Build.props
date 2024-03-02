@@ -23,12 +23,19 @@
     <Copyright>Copyright (c) 2024 Arthur Matsur</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageIconUrl>https://raw.githubusercontent.com/DoctorKrolic/ArgumentParsing/main/icon.png</PackageIconUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageProjectUrl>https://github.com/DoctorKrolic/ArgumentParsing</PackageProjectUrl>
     <PackageTags>commandline argument arguments option options parser parsing library shell generator sourcegenerator aot nativeaot netstandard</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <SourceRoot Include="$(MSBuildThisFileDirectory)/"/>
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SourceRoot Include="$(MSBuildThisFileDirectory)"/>
   </ItemGroup>
 </Project>
