@@ -71,7 +71,7 @@ public sealed partial class SimpleHelpCommandTest
 
             """;
         var actualOutput = stringWriter.ToString();
-        Assert.Equal(expectedOutput.ReplaceLineEndings(), actualOutput.ReplaceLineEndings());
+        Assert.Equal(expectedOutput.ReplaceLineEndings() + Environment.NewLine, actualOutput.ReplaceLineEndings());
     }
 
     [Fact]

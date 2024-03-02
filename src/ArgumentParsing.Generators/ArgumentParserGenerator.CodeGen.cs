@@ -57,7 +57,7 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("break;");
             writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors:", identDelta: -1);
             writer.WriteLine($"string errorScreenText = global::ArgumentParsing.Generated.HelpCommandHandler_{qualifiedName.Replace('.', '_')}.GenerateHelpText(result.Errors);");
-            writer.WriteLine("global::System.Console.Error.Write(errorScreenText);");
+            writer.WriteLine("global::System.Console.Error.WriteLine(errorScreenText);");
             writer.WriteLine("global::System.Environment.Exit(1);");
             writer.WriteLine("break;");
             writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:", identDelta: -1);
@@ -781,10 +781,6 @@ public partial class ArgumentParserGenerator
         helpWriter.WriteLine($"/// Generates help text for <see cref=\"global::{qualifiedName}\"/> type.");
         helpWriter.WriteLine("/// If <paramref name=\"errors\"/> parameter is supplied, generated text will contain an error section");
         helpWriter.WriteLine("/// </summary>");
-        helpWriter.WriteLine("/// <remarks>");
-        helpWriter.WriteLine("/// Help text, produced by this method, already contains a trailing new line.");
-        helpWriter.WriteLine("/// In order to avoid double trailing new line problem, use <c>Write</c> method instead of <c>WriteLine</c> when writing this text to console or other text writers");
-        helpWriter.WriteLine("/// </remarks>");
         helpWriter.WriteLine("/// <param name=\"errors\">Parse errors to include into help text</param>");
         helpWriter.WriteLine("/// <returns>Generated help text with included trailing new line</returns>");
         helpWriter.WriteLine("public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)");
@@ -897,7 +893,7 @@ public partial class ArgumentParserGenerator
         helpWriter.WriteLine("/// <inheritdoc/>");
         helpWriter.WriteLine("public int HandleCommand()");
         helpWriter.OpenBlock();
-        helpWriter.WriteLine("global::System.Console.Out.Write(GenerateHelpText());");
+        helpWriter.WriteLine("global::System.Console.Out.WriteLine(GenerateHelpText());");
         helpWriter.WriteLine("return 0;");
         helpWriter.CloseRemainingBlocks();
 
