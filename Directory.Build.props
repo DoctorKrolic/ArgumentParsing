@@ -5,6 +5,17 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <CurrentLibraryVersion>0.1.0</CurrentLibraryVersion>
+    <IsReleaseBuild>false</IsReleaseBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyVersion>$(CurrentLibraryVersion).0</AssemblyVersion>
+    <VersionPrefix>$(CurrentLibraryVersion)</VersionPrefix>
+    <VersionSuffix Condition="!$(IsReleaseBuild)">dev</VersionSuffix>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <Title>$(MSBuildProjectName)</Title>
     <Description>Source generator based command line arguments parser</Description>
