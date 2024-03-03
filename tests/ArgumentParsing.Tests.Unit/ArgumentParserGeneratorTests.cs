@@ -367,7 +367,7 @@ public sealed class ArgumentParserGeneratorTests
                     /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
                     /// </summary>
                     /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text with included trailing new line</returns>
+                    /// <returns>Generated help text</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -1333,7 +1333,7 @@ public sealed class ArgumentParserGeneratorTests
                     /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
                     /// </summary>
                     /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text with included trailing new line</returns>
+                    /// <returns>Generated help text</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -1622,7 +1622,7 @@ public sealed class ArgumentParserGeneratorTests
                     /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
                     /// </summary>
                     /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text with included trailing new line</returns>
+                    /// <returns>Generated help text</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -1945,7 +1945,7 @@ public sealed class ArgumentParserGeneratorTests
                     /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
                     /// </summary>
                     /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text with included trailing new line</returns>
+                    /// <returns>Generated help text</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -2242,7 +2242,7 @@ public sealed class ArgumentParserGeneratorTests
                     /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
                     /// </summary>
                     /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text with included trailing new line</returns>
+                    /// <returns>Generated help text</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -2605,7 +2605,7 @@ public sealed class ArgumentParserGeneratorTests
                     /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
                     /// </summary>
                     /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text with included trailing new line</returns>
+                    /// <returns>Generated help text</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();
@@ -3502,7 +3502,7 @@ public sealed class ArgumentParserGeneratorTests
                     /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
                     /// </summary>
                     /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text with included trailing new line</returns>
+                    /// <returns>Generated help text</returns>
                     public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
                     {
                         global::System.Text.StringBuilder helpBuilder = new();

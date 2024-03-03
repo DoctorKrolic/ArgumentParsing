@@ -782,7 +782,7 @@ public partial class ArgumentParserGenerator
         helpWriter.WriteLine("/// If <paramref name=\"errors\"/> parameter is supplied, generated text will contain an error section");
         helpWriter.WriteLine("/// </summary>");
         helpWriter.WriteLine("/// <param name=\"errors\">Parse errors to include into help text</param>");
-        helpWriter.WriteLine("/// <returns>Generated help text with included trailing new line</returns>");
+        helpWriter.WriteLine("/// <returns>Generated help text</returns>");
         helpWriter.WriteLine("public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)");
         helpWriter.OpenBlock();
         helpWriter.WriteLine("global::System.Text.StringBuilder helpBuilder = new();");
