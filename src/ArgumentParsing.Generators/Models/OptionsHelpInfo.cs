@@ -6,5 +6,4 @@ internal sealed record OptionsHelpInfo(
     string QualifiedName,
     ImmutableEquatableArray<OptionHelpInfo> OptionHelpInfos,
     ImmutableEquatableArray<ParameterHelpInfo> ParameterHelpInfos,
-    RemainingParametersHelpInfo? RemainingParametersHelpInfo,
-    AssemblyVersionInfo AssemblyVersionInfo);
+    RemainingParametersHelpInfo? RemainingParametersHelpInfo);

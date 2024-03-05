@@ -33,13 +33,13 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
 
         var optionsHelpInfos = extractedInfosProvider
             .Where(info => info.OptionsHelpInfo is not null)
-            .Select((info, _) => info.OptionsHelpInfo!);
+            .Select((info, _) => (info.OptionsHelpInfo!, info.OptionsTypeAssemblyInfo!));
 
         context.RegisterSourceOutput(optionsHelpInfos, EmitHelpCommandHandler);
 
         var assemblyVersionInfos = extractedInfosProvider
-            .Where(info => info.OptionsHelpInfo?.AssemblyVersionInfo is not null)
-            .Select((info, _) => info.OptionsHelpInfo!.AssemblyVersionInfo!)
+            .Where(info => info.OptionsTypeAssemblyInfo is not null)
+            .Select((info, _) => info.OptionsTypeAssemblyInfo!)
             .Collect();
 
         context.RegisterSourceOutput(assemblyVersionInfos, EmitVersionCommandHandlers);

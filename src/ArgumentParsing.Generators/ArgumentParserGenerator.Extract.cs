@@ -13,7 +13,7 @@ public partial class ArgumentParserGenerator
 {
     private static readonly SymbolDisplayFormat s_qualifiedNameFormat = SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
 
-    private static (ArgumentParserInfo? ArgumentParserInfo, OptionsHelpInfo? OptionsHelpInfo, ImmutableEquatableArray<DiagnosticInfo> Diagnostics) Extract(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    private static (ArgumentParserInfo? ArgumentParserInfo, OptionsHelpInfo? OptionsHelpInfo, AssemblyVersionInfo? OptionsTypeAssemblyInfo, ImmutableEquatableArray<DiagnosticInfo> Diagnostics) Extract(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
     {
         var argumentParserMethodSyntax = (MethodDeclarationSyntax)context.TargetNode;
         var argumentParserMethodSymbol = (IMethodSymbol)context.TargetSymbol;
@@ -129,7 +129,7 @@ public partial class ArgumentParserGenerator
 
         if (validOptionsType is null)
         {
-            return (null, null, diagnosticsBuilder.ToImmutable());
+            return (null, null, null, diagnosticsBuilder.ToImmutable());
         }
 
         if (validOptionsType.DeclaredAccessibility < Accessibility.Internal)
@@ -145,7 +145,7 @@ public partial class ArgumentParserGenerator
 
         if (hasErrors)
         {
-            return (null, null, diagnosticsBuilder.ToImmutable());
+            return (null, null, null, diagnosticsBuilder.ToImmutable());
         }
 
         Debug.Assert(parameterInfo is not null);
@@ -161,7 +161,12 @@ public partial class ArgumentParserGenerator
             methodInfo,
             optionsInfo!);
 
-        return (argumentParserInfo, optionsHelpInfo, diagnosticsBuilder.ToImmutable());
+        var assembly = validOptionsType.ContainingAssembly;
+        var assemblyVersionInfo = new AssemblyVersionInfo(
+            assembly.Name,
+            assembly.Identity.Version);
+
+        return (argumentParserInfo, optionsHelpInfo, assemblyVersionInfo, diagnosticsBuilder.ToImmutable());
     }
 
     private static (OptionsInfo? OptionsInfo, OptionsHelpInfo? OptionsHelpInfo, ImmutableArray<DiagnosticInfo> Diagnostics) AnalyzeOptionsType(INamedTypeSymbol optionsType, Compilation compilation, CancellationToken cancellationToken)
@@ -625,11 +630,6 @@ public partial class ArgumentParserGenerator
             return (null, null, diagnosticsBuilder.ToImmutable());
         }
 
-        var assembly = optionsType.ContainingAssembly;
-        var assemblyVersionInfo = new AssemblyVersionInfo(
-            assembly.Name,
-            assembly.Identity.Version);
-
         var qualifiedName = optionsType.ToDisplayString(s_qualifiedNameFormat);
         var optionsInfo = new OptionsInfo(
             qualifiedName,
@@ -642,8 +642,7 @@ public partial class ArgumentParserGenerator
             qualifiedName,
             optionsHelpBuilder.ToImmutable(),
             parametersHelpBuilder.ToImmutable(),
-            remainingParametersHelpInfo,
-            assemblyVersionInfo);
+            remainingParametersHelpInfo);
 
         return (optionsInfo, optionsHelpInfo, diagnosticsBuilder.ToImmutable());
 

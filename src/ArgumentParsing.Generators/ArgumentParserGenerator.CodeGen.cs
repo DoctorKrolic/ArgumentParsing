@@ -760,9 +760,10 @@ public partial class ArgumentParserGenerator
         context.AddSource($"{qualifiedName}.g.cs", writer.ToString().Trim());
     }
 
-    private static void EmitHelpCommandHandler(SourceProductionContext context, OptionsHelpInfo optionsHelpInfo)
+    private static void EmitHelpCommandHandler(SourceProductionContext context, (OptionsHelpInfo, AssemblyVersionInfo) infos)
     {
-        var (qualifiedName, optionHelpInfos, parameterHelpInfos, remainingParametersHelpInfo, assemblyVersionInfo) = optionsHelpInfo;
+        var (optionsHelpInfo, assemblyVersionInfo) = infos;
+        var (qualifiedName, optionHelpInfos, parameterHelpInfos, remainingParametersHelpInfo) = optionsHelpInfo;
 
         var writer = new CodeWriter();
 
