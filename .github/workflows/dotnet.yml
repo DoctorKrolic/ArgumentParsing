@@ -18,7 +18,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build -l:trx
+      run: dotnet test --no-build --logger "trx;logfilename=TestResults.trx"
     - name: Report test results
       uses: zyborg/dotnet-tests-report@v1
       with:
