@@ -22,5 +22,5 @@ jobs:
     - name: Report test results
       uses: zyborg/dotnet-tests-report@v1
       with:
-        test_results_path: '**/TestResults/*.trx'
+        test_results_path: '/home/runner/work/ArgumentParsing/ArgumentParsing/tests/ArgumentParsing.Tests.Functional/TestResults/TestResults.trx'
         github_token: ${{ secrets.GITHUB_TOKEN }}
