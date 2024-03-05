@@ -18,9 +18,9 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build -l:trx;LogFileName=/tmp/TestResults.xml
+      run: dotnet test --no-build -l:trx
     - name: Report test results
       uses: zyborg/dotnet-tests-report@v1
       with:
-        test_results_path: /tmp/TestResults.xml
+        test_results_path: '**/TestResults/*.trx'
         github_token: ${{ secrets.GITHUB_TOKEN }}
