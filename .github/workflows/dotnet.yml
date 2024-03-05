@@ -22,5 +22,5 @@ jobs:
     - name: Report test results
       uses: zyborg/dotnet-tests-report@v1
       with:
-        test_result_path: /tmp/TestResults.xml
+        test_results_path: /tmp/TestResults.xml
         github_token: ${{ secrets.GITHUB_TOKEN }}
