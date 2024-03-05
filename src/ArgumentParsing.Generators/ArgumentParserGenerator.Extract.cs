@@ -11,7 +11,9 @@ namespace ArgumentParsing.Generators;
 
 public partial class ArgumentParserGenerator
 {
-    private static (ArgumentParserInfo? ArgumentParserInfo, ImmutableEquatableArray<DiagnosticInfo> Diagnostics) Extract(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    private static readonly SymbolDisplayFormat s_qualifiedNameFormat = SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
+
+    private static (ArgumentParserInfo? ArgumentParserInfo, OptionsHelpInfo? OptionsHelpInfo, ImmutableEquatableArray<DiagnosticInfo> Diagnostics) Extract(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
     {
         var argumentParserMethodSyntax = (MethodDeclarationSyntax)context.TargetNode;
         var argumentParserMethodSymbol = (IMethodSymbol)context.TargetSymbol;
@@ -127,7 +129,7 @@ public partial class ArgumentParserGenerator
 
         if (validOptionsType is null)
         {
-            return (null, diagnosticsBuilder.ToImmutable());
+            return (null, null, diagnosticsBuilder.ToImmutable());
         }
 
         if (validOptionsType.DeclaredAccessibility < Accessibility.Internal)
@@ -137,13 +139,13 @@ public partial class ArgumentParserGenerator
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var (optionsInfo, optionsDiagnostics) = AnalyzeOptionsType(validOptionsType, context.SemanticModel.Compilation, cancellationToken);
+        var (optionsInfo, optionsHelpInfo, optionsDiagnostics) = AnalyzeOptionsType(validOptionsType, context.SemanticModel.Compilation, cancellationToken);
         hasErrors |= optionsInfo is null;
         diagnosticsBuilder.AddRange(optionsDiagnostics);
 
         if (hasErrors)
         {
-            return (null, diagnosticsBuilder.ToImmutable());
+            return (null, null, diagnosticsBuilder.ToImmutable());
         }
 
         Debug.Assert(parameterInfo is not null);
@@ -159,12 +161,13 @@ public partial class ArgumentParserGenerator
             methodInfo,
             optionsInfo!);
 
-        return (argumentParserInfo, diagnosticsBuilder.ToImmutable());
+        return (argumentParserInfo, optionsHelpInfo, diagnosticsBuilder.ToImmutable());
     }
 
-    private static (OptionsInfo? OptionsInfo, ImmutableArray<DiagnosticInfo> Diagnostics) AnalyzeOptionsType(INamedTypeSymbol optionsType, Compilation compilation, CancellationToken cancellationToken)
+    private static (OptionsInfo? OptionsInfo, OptionsHelpInfo? OptionsHelpInfo, ImmutableArray<DiagnosticInfo> Diagnostics) AnalyzeOptionsType(INamedTypeSymbol optionsType, Compilation compilation, CancellationToken cancellationToken)
     {
         var optionsBuilder = ImmutableArray.CreateBuilder<OptionInfo>();
+        var optionsHelpBuilder = ImmutableArray.CreateBuilder<OptionHelpInfo>();
         var diagnosticsBuilder = ImmutableArray.CreateBuilder<DiagnosticInfo>();
 
         var hasErrors = false;
@@ -181,6 +184,7 @@ public partial class ArgumentParserGenerator
 
         var declaredRemainingParameters = false;
         RemainingParametersInfo? remainingParametersInfo = null;
+        RemainingParametersHelpInfo? remainingParametersHelpInfo = null;
         IPropertySymbol? remainingParametersProperty = null;
 
         foreach (var member in optionsType.GetMembers())
@@ -449,6 +453,12 @@ public partial class ArgumentParserGenerator
                     nullableUnderlyingType,
                     sequenceType,
                     helpDescription));
+
+                optionsHelpBuilder.Add(new(
+                    shortName,
+                    longName,
+                    isRequired,
+                    helpDescription));
             }
             else if (hasParameterAttribute)
             {
@@ -559,11 +569,14 @@ public partial class ArgumentParserGenerator
                     possibleParseStrategy ?? default,
                     sequenceType,
                     helpDescription);
+
+                remainingParametersHelpInfo = new(helpDescription);
             }
         }
 
         var lastSeenIndex = 0;
         var parametersBuilder = ImmutableArray.CreateBuilder<ParameterInfo>();
+        var parametersHelpBuilder = ImmutableArray.CreateBuilder<ParameterHelpInfo>();
 
         foreach (var pair in parameterMap.OrderBy(pair => pair.Key))
         {
@@ -583,7 +596,9 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            parametersBuilder.Add(pair.Value);
+            var parameterInfo = pair.Value;
+            parametersBuilder.Add(parameterInfo);
+            parametersHelpBuilder.Add(new(parameterInfo.Name, parameterInfo.IsRequired, parameterInfo.HelpDescription));
             lastSeenIndex = index;
         }
 
@@ -607,7 +622,7 @@ public partial class ArgumentParserGenerator
 
         if (hasErrors)
         {
-            return (null, diagnosticsBuilder.ToImmutable());
+            return (null, null, diagnosticsBuilder.ToImmutable());
         }
 
         var assembly = optionsType.ContainingAssembly;
@@ -615,15 +630,22 @@ public partial class ArgumentParserGenerator
             assembly.Name,
             assembly.Identity.Version);
 
+        var qualifiedName = optionsType.ToDisplayString(s_qualifiedNameFormat);
         var optionsInfo = new OptionsInfo(
-            optionsType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)),
+            qualifiedName,
             optionsType.DeclaredAccessibility >= Accessibility.Internal,
             optionsBuilder.ToImmutable(),
             parametersBuilder.ToImmutable(),
-            remainingParametersInfo,
+            remainingParametersInfo);
+
+        var optionsHelpInfo = new OptionsHelpInfo(
+            qualifiedName,
+            optionsHelpBuilder.ToImmutable(),
+            parametersHelpBuilder.ToImmutable(),
+            remainingParametersHelpInfo,
             assemblyVersionInfo);
 
-        return (optionsInfo, diagnosticsBuilder.ToImmutable());
+        return (optionsInfo, optionsHelpInfo, diagnosticsBuilder.ToImmutable());
 
         static (ParseStrategy? possibleParseStrategy, string? nullableUnderlyingType, SequenceType sequenceType, string? sequenceUnderlyingType) GetPotentialParseStrategyForOption(ITypeSymbol type, Compilation compilation)
         {

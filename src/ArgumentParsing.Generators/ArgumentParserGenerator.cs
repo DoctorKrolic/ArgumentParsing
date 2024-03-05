@@ -29,11 +29,17 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .Select((info, _) => info.ArgumentParserInfo!)
             .Combine(environmentInfo);
 
-        context.RegisterSourceOutput(argumentParserInfos, EmitArgumentParserAndHelpCommand);
+        context.RegisterSourceOutput(argumentParserInfos, EmitArgumentParser);
+
+        var optionsHelpInfos = extractedInfosProvider
+            .Where(info => info.OptionsHelpInfo is not null)
+            .Select((info, _) => info.OptionsHelpInfo!);
+
+        context.RegisterSourceOutput(optionsHelpInfos, EmitHelpCommandHandler);
 
         var assemblyVersionInfos = extractedInfosProvider
-            .Where(info => info.ArgumentParserInfo?.OptionsInfo.AssemblyVersionInfo is not null)
-            .Select((info, _) => info.ArgumentParserInfo!.OptionsInfo.AssemblyVersionInfo!)
+            .Where(info => info.OptionsHelpInfo?.AssemblyVersionInfo is not null)
+            .Select((info, _) => info.OptionsHelpInfo!.AssemblyVersionInfo!)
             .Collect();
 
         context.RegisterSourceOutput(assemblyVersionInfos, EmitVersionCommandHandlers);
