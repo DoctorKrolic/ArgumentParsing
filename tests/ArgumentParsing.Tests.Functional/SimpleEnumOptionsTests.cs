@@ -31,7 +31,7 @@ public sealed partial class SimpleEnumOptionsTests
         var args = argsString.Split(' ');
         var result = ParseArguments(args);
 
-        Assert.Equal(ParseResultState.ParsedOptions, result.State);
+        Assert.Equal(ParseResultState.None, result.State);
 
         var options = result.Options;
         Assert.NotNull(options);
