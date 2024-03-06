@@ -13,7 +13,7 @@ public partial class ArgumentParserGenerator
 {
     private static readonly SymbolDisplayFormat s_qualifiedNameFormat = SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
 
-    private static (ArgumentParserInfo? ArgumentParserInfo, OptionsHelpInfo? OptionsHelpInfo, AssemblyVersionInfo? OptionsTypeAssemblyInfo, ImmutableEquatableArray<DiagnosticInfo> Diagnostics) Extract(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    private static (ArgumentParserInfo? ArgumentParserInfo, OptionsHelpInfo? OptionsHelpInfo, ImmutableEquatableArray<DiagnosticInfo> Diagnostics) ExtractMainInfo(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
     {
         var argumentParserMethodSyntax = (MethodDeclarationSyntax)context.TargetNode;
         var argumentParserMethodSymbol = (IMethodSymbol)context.TargetSymbol;
@@ -129,7 +129,7 @@ public partial class ArgumentParserGenerator
 
         if (validOptionsType is null)
         {
-            return (null, null, null, diagnosticsBuilder.ToImmutable());
+            return (null, null, diagnosticsBuilder.ToImmutable());
         }
 
         if (validOptionsType.DeclaredAccessibility < Accessibility.Internal)
@@ -145,7 +145,7 @@ public partial class ArgumentParserGenerator
 
         if (hasErrors)
         {
-            return (null, null, null, diagnosticsBuilder.ToImmutable());
+            return (null, null, diagnosticsBuilder.ToImmutable());
         }
 
         Debug.Assert(parameterInfo is not null);
@@ -161,12 +161,7 @@ public partial class ArgumentParserGenerator
             methodInfo,
             optionsInfo!);
 
-        var assembly = validOptionsType.ContainingAssembly;
-        var assemblyVersionInfo = new AssemblyVersionInfo(
-            assembly.Name,
-            assembly.Identity.Version);
-
-        return (argumentParserInfo, optionsHelpInfo, assemblyVersionInfo, diagnosticsBuilder.ToImmutable());
+        return (argumentParserInfo, optionsHelpInfo, diagnosticsBuilder.ToImmutable());
     }
 
     private static (OptionsInfo? OptionsInfo, OptionsHelpInfo? OptionsHelpInfo, ImmutableArray<DiagnosticInfo> Diagnostics) AnalyzeOptionsType(INamedTypeSymbol optionsType, Compilation compilation, CancellationToken cancellationToken)
@@ -718,16 +713,25 @@ public partial class ArgumentParserGenerator
         };
     }
 
-    private static EnvironmentInfo ExtractEnvironmentInfo(Compilation compilation, CancellationToken cancellationToken)
+    private static (EnvironmentInfo EnvironmentInfo, AssemblyVersionInfo AssemblyVersionInfo) ExtractInfoFromCompilation(Compilation compilation, CancellationToken cancellationToken)
     {
-        var canUseOptimalSpanBasedAlgorithm = CanUseOptimalSpanBasedAlgorithm(compilation, cancellationToken);
+        var canUseOptimalSpanBasedAlgorithm = CanUseOptimalSpanBasedAlgorithm(compilation);
 
         var stringType = compilation.GetSpecialType(SpecialType.System_String);
         var hasStringStartsWithCharOverload = stringType.GetMembers("StartsWith").Any(s => s is IMethodSymbol { Parameters: [{ Type.SpecialType: SpecialType.System_Char }] });
 
-        return new(canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload);
+        cancellationToken.ThrowIfCancellationRequested();
 
-        static bool CanUseOptimalSpanBasedAlgorithm(Compilation compilation, CancellationToken cancellationToken)
+        var environmentInfo = new EnvironmentInfo(canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload);
+
+        var assembly = compilation.Assembly;
+        var assemblyVersionInfo = new AssemblyVersionInfo(
+            assembly.Name,
+            assembly.Identity.Version);
+
+        return (environmentInfo, assemblyVersionInfo);
+
+        static bool CanUseOptimalSpanBasedAlgorithm(Compilation compilation)
         {
             var spanType = compilation.GetTypeByMetadataName("System.Span`1");
             if (spanType is null)

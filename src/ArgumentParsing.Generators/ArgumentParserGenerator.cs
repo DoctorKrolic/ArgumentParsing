@@ -13,7 +13,7 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .ForAttributeWithMetadataName(
                 "ArgumentParsing.GeneratedArgumentParserAttribute",
                     static (node, _) => node is MethodDeclarationSyntax,
-                    Extract);
+                    ExtractMainInfo);
 
         var diagnostics = extractedInfosProvider
             .Where(info => !info.Diagnostics.IsDefaultOrEmpty)
@@ -21,8 +21,11 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
 
         context.ReportDiagnostics(diagnostics);
 
-        var environmentInfo = context.CompilationProvider
-            .Select(ExtractEnvironmentInfo);
+        var infoFromCompilation = context.CompilationProvider
+            .Select(ExtractInfoFromCompilation);
+
+        var environmentInfo = infoFromCompilation
+            .Select((info, _) => info.EnvironmentInfo);
 
         var argumentParserInfos = extractedInfosProvider
             .Where(info => info.ArgumentParserInfo is not null)
@@ -31,17 +34,25 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(argumentParserInfos, EmitArgumentParser);
 
+        var assemblyVersionInfo = infoFromCompilation
+            .Select((info, _) => info.AssemblyVersionInfo);
+
         var optionsHelpInfos = extractedInfosProvider
             .Where(info => info.OptionsHelpInfo is not null)
-            .Select((info, _) => (info.OptionsHelpInfo!, info.OptionsTypeAssemblyInfo!));
+            .Select((info, _) => info.OptionsHelpInfo!)
+            .Combine(assemblyVersionInfo);
 
         context.RegisterSourceOutput(optionsHelpInfos, EmitHelpCommandHandler);
 
-        var assemblyVersionInfos = extractedInfosProvider
-            .Where(info => info.OptionsTypeAssemblyInfo is not null)
-            .Select((info, _) => info.OptionsTypeAssemblyInfo!)
-            .Collect();
+        // We want to generate `--version` command handler only if there is at least 1 argument parser method defined.
+        // This ugly hack will result in correct assembly version info if the condition is true and `null` otherwise.
+        // Obviously, we can then detect `null` on the generation step to emit handler conditionally
+        var assemblyVersionInfoForCommandGeneration = argumentParserInfos
+            .Select((_, _) => 0)
+            .Collect()
+            .Combine(assemblyVersionInfo)
+            .Select((tup, _) => tup.Left.Length > 0 ? tup.Right : null);
 
-        context.RegisterSourceOutput(assemblyVersionInfos, EmitVersionCommandHandlers);
+        context.RegisterSourceOutput(assemblyVersionInfoForCommandGeneration, EmitVersionCommandHandler);
     }
 }
