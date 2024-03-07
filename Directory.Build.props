@@ -38,4 +38,6 @@
   <ItemGroup>
     <SourceRoot Include="$(MSBuildThisFileDirectory)"/>
   </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)Versions.props" />
 </Project>
