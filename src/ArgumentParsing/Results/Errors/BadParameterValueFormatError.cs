@@ -32,7 +32,7 @@ public sealed class BadParameterValueFormatError(string messageFormat, string va
     /// <param name="parameterIndex">Parameter index</param>
     public BadParameterValueFormatError(string value, string parameterName, int parameterIndex)
         : this(DefaultErrorMessageFormats.BadParameterValueFormatError, value, parameterName, parameterIndex)
-    { 
+    {
     }
 
     /// <inheritdoc/>
