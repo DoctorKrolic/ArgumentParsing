@@ -91,7 +91,8 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor InvalidShortName = new(
         id: "ARGP0012",
         title: "Invalid short name of an option",
-        messageFormat: "Short name '{0}' is invalid. Short name of an option must be either empty (null) or a letter",
+        messageFormat: "Short name '{0}' is invalid",
+        description: "Short name of an option must be either empty (null) or a letter.",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -99,7 +100,8 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor InvalidLongName = new(
         id: "ARGP0013",
         title: "Invalid long name of an option",
-        messageFormat: "Long name '{0}' is invalid. Long name of an option must be either empty (null) or start with a letter and contain only letters, digits and possibly '-' as separators",
+        messageFormat: "Long name '{0}' is invalid",
+        description: "Long name of an option must be either empty (null) or start with a letter and contain only letters, digits and possibly '-' as separators.",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -136,7 +138,7 @@ internal static class DiagnosticDescriptors
         id: "ARGP0019",
         title: "Invalid required boolean option",
         messageFormat: "Having a required boolean option doesn't make sense",
-        description: "Since boolean option is either set or not, making it required results in the only valid way, where the value of an option is always true, so it doesn't make sense to declare such option then",
+        description: "Since boolean option is either set or not, making it required results in the only valid way, where the value of an option is always true, so it doesn't make sense to declare such option then.",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -145,7 +147,7 @@ internal static class DiagnosticDescriptors
         id: "ARGP0020",
         title: "Required nullable option",
         messageFormat: "Having a required nullable option defeats the purpose of its nullability",
-        description: "Since nullable option is null only if it is not present in arguments, by making it required it looses this ability",
+        description: "Since nullable option is null only if it is not present in arguments, making it required means it looses this ability.",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
@@ -203,7 +205,8 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor InvalidParameterName = new(
         id: "ARGP0028",
         title: "Invalid parameter name",
-        messageFormat: "Parameter name '{0}' is invalid. Parameter name must start with a letter and contain only letters, digits and possibly '-' as separators",
+        messageFormat: "Parameter name '{0}' is invalid",
+        description: "Parameter name must start with a letter and contain only letters, digits and possibly '-' as separators.",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -229,7 +232,7 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor TooLowAccessibilityOfOptionsType = new(
         id: "ARGP0032",
         title: "Options type has too low accessibility",
-        messageFormat: "Options type has too low accessibility. Default handlers won't be generated for it",
+        messageFormat: "Options type has too low accessibility, so default '--help' command handler won't be generated for it",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
