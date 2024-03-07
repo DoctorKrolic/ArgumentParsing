@@ -28,7 +28,7 @@ public sealed class ArgumentParserGeneratorTests
             partial class C
             {
                 [GeneratedArgumentParser]
-                public partial ParseResult<EmptyOptions> {|CS8795:{|ARGP0001:ParseArguments|}|}();
+                public partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}();
             }
             """;
 
@@ -42,7 +42,7 @@ public sealed class ArgumentParserGeneratorTests
             partial class C
             {
                 [GeneratedArgumentParser]
-                public partial ParseResult<EmptyOptions> {|CS8795:{|ARGP0001:ParseArguments|}|}(int a, int b);
+                public partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(int a, int b);
             }
             """;
 
@@ -56,7 +56,7 @@ public sealed class ArgumentParserGeneratorTests
             partial class C
             {
                 [GeneratedArgumentParser]
-                public partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}({|ARGP0002:params string[] s|});
+                public partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(params string[] s);
             }
             """;
 
@@ -70,7 +70,7 @@ public sealed class ArgumentParserGeneratorTests
             partial class C
             {
                 [GeneratedArgumentParser]
-                public partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}({|ARGP0002:ref string[] s|});
+                public partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(ref string[] s);
             }
             """;
 
@@ -84,7 +84,7 @@ public sealed class ArgumentParserGeneratorTests
             partial class C
             {
                 [GeneratedArgumentParser]
-                public partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}({|ARGP0002:scoped ReadOnlySpan<string> s|});
+                public partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(scoped ReadOnlySpan<string> s);
             }
             """;
 
@@ -98,7 +98,7 @@ public sealed class ArgumentParserGeneratorTests
             partial class C
             {
                 [GeneratedArgumentParser]
-                public partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}({|ARGP0002:scoped ref string[] s|});
+                public partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(scoped ref string[] s);
             }
             """;
 
@@ -112,7 +112,7 @@ public sealed class ArgumentParserGeneratorTests
             static partial class C
             {
                 [GeneratedArgumentParser]
-                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}({|ARGP0002:this string[] s|});
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(this string[] s);
             }
             """;
 
@@ -132,7 +132,7 @@ public sealed class ArgumentParserGeneratorTests
             partial class C
             {
                 [GeneratedArgumentParser]
-                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}({|ARGP0003:{{invalidType}}|} s);
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}({{invalidType}} s);
             }
             """;
 
@@ -140,7 +140,7 @@ public sealed class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task InvalidParameterType_ErrorType_NoCustomDiagnostics()
+    public async Task InvalidParameterType_ErrorType()
     {
         var source = """
             partial class C
@@ -162,13 +162,13 @@ public sealed class ArgumentParserGeneratorTests
     [InlineData("global::System.Collections.Generic.IList<string>")]
     [InlineData("global::System.Collections.Generic.List<string>")]
     [InlineData("global::System.Collections.Generic.HashSet<string>")]
-    public async Task SuggestChangingParameterNameToArgs(string parameterType)
+    public async Task EnsureEquivalentCodeGenForValidParameterTypes(string parameterType)
     {
         var source = $$"""
             partial class C
             {
                 [GeneratedArgumentParser]
-                public static partial ParseResult<EmptyOptions> ParseArguments({{parameterType}} {|ARGP0004:s|});
+                public static partial ParseResult<EmptyOptions> ParseArguments({{parameterType}} s);
             }
             """;
 
@@ -417,7 +417,7 @@ public sealed class ArgumentParserGeneratorTests
             partial class C
             {
                 [GeneratedArgumentParser]
-                public static partial {|ARGP0005:{{invalidType}}|} {|CS8795:ParseArguments|}(string[] args);
+                public static partial {{invalidType}} {|CS8795:ParseArguments|}(string[] args);
             }
 
             class MyOptions
@@ -448,19 +448,19 @@ public sealed class ArgumentParserGeneratorTests
     [InlineData("string")]
     [InlineData("Action")]
     [InlineData("DayOfWeek")]
-    [InlineData("ClassWithParameterConstructor")]
+    [InlineData("ClassWithoutParameterlessConstructor")]
     public async Task InvalidOptionsType(string invalidType)
     {
         var source = $$"""
             partial class C
             {
                 [GeneratedArgumentParser]
-                public static partial ParseResult<{|ARGP0006:{{invalidType}}|}> {|CS8795:ParseArguments|}(string[] args);
+                public static partial ParseResult<{{invalidType}}> {|CS8795:ParseArguments|}(string[] args);
             }
 
-            class ClassWithParameterConstructor
+            class ClassWithoutParameterlessConstructor
             {
-                public ClassWithParameterConstructor(int a)
+                public ClassWithoutParameterlessConstructor(int a)
                 {
                 }
             }
@@ -490,7 +490,7 @@ public sealed class ArgumentParserGeneratorTests
             partial class C
             {
                 [GeneratedArgumentParser]
-                public static partial {|ARGP0005:int|} {|CS8795:ParseArguments|}({|ARGP0003:string|} args);
+                public static partial int {|CS8795:ParseArguments|}(string args);
             }
             """;
 

@@ -1,12 +1,15 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace ArgumentParsing.Tests.Unit.Utilities;
 
-public sealed class CSharpSourceGeneratorTest<TGenerator> : CSharpSourceGeneratorTest<TGenerator, XUnitVerifier>
-    where TGenerator : new()
+public sealed class CSharpCodeFixTest<TAnalyzer, TCodeFixProvider> : CSharpCodeFixTest<TAnalyzer, TCodeFixProvider, XUnitVerifier>
+    where TAnalyzer: DiagnosticAnalyzer, new()
+    where TCodeFixProvider: CodeFixProvider, new()
 {
     public LanguageVersion LanguageVersion { get; init; }
 

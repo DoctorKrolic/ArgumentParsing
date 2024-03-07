@@ -28,7 +28,6 @@ public partial class ArgumentParserGenerator
         if (argumentParserMethodSymbol.Parameters is not [var singleParameter])
         {
             hasErrors = true;
-            diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidParserParameterCount, argumentParserMethodSyntax.Identifier));
         }
         else
         {
@@ -40,86 +39,34 @@ public partial class ArgumentParserGenerator
                 argumentParserMethodSymbol.IsExtensionMethod)
             {
                 hasErrors = true;
-                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidArgsParameter, singleParameterSyntax));
             }
 
             var singleParameterType = singleParameter.Type;
 
-            if (!IsEnumerableCollectionOfStrings(singleParameterType))
+            if (!singleParameterType.IsEnumerableCollectionOfStrings())
             {
                 hasErrors = true;
-
-                if (singleParameterType.TypeKind != TypeKind.Error)
-                {
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidArgsParameterType, singleParameterSyntax.Type!));
-                }
-            }
-
-            if (!hasErrors && singleParameter.Name != "args")
-            {
-                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.PreferArgsParameterName, singleParameterSyntax.Identifier));
             }
 
             parameterInfo = new(singleParameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), singleParameter.Name);
-
-            static bool IsEnumerableCollectionOfStrings(ITypeSymbol type)
-            {
-                return HasMember(type, "GetEnumerator", static e => e is IMethodSymbol { Parameters.Length: 0 } getEnumeratorMethod && IsValidStringEnumerator(getEnumeratorMethod.ReturnType));
-            }
-
-            static bool IsValidStringEnumerator(ITypeSymbol type)
-            {
-                return HasMember(type, "MoveNext", static m => m is IMethodSymbol { Parameters.Length: 0, ReturnType.SpecialType: SpecialType.System_Boolean }) &&
-                       HasMember(type, "Current", static c => c is IPropertySymbol { Type.SpecialType: SpecialType.System_String, GetMethod: not null });
-            }
-
-            static bool HasMember(ITypeSymbol type, string memberName, Func<ISymbol, bool> predicate)
-            {
-                if (type.GetMembers(memberName).Any(predicate))
-                {
-                    return true;
-                }
-
-                if (type.BaseType is { } baseType && HasMember(baseType, memberName, predicate))
-                {
-                    return true;
-                }
-
-                foreach (var @interface in type.AllInterfaces)
-                {
-                    if (HasMember(@interface, memberName, predicate))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
         }
 
         var returnTypeSyntax = argumentParserMethodSyntax.ReturnType;
         var returnType = argumentParserMethodSymbol.ReturnType;
 
-        if (returnType is not INamedTypeSymbol { Name: "ParseResult", TypeArguments: [var optionsType], ContainingNamespace: { Name: "Results", ContainingNamespace: { Name: "ArgumentParsing", ContainingNamespace.IsGlobalNamespace: true } } })
+        var compilation = context.SemanticModel.Compilation;
+        var parseResultOfTType = compilation.GetTypeByMetadataName("ArgumentParsing.Results.ParseResult`1")!;
+
+        if (returnType is not INamedTypeSymbol { TypeArguments: [var optionsType] } namedReturnType ||
+            !namedReturnType.ConstructedFrom.Equals(parseResultOfTType, SymbolEqualityComparer.Default))
         {
             hasErrors = true;
-
-            if (returnType.TypeKind != TypeKind.Error)
-            {
-                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.ReturnTypeMustBeParseResult, returnTypeSyntax));
-            }
         }
         else
         {
             if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType || !namedOptionsType.Constructors.Any(c => c.Parameters.Length == 0))
             {
                 hasErrors = true;
-
-                if (optionsType.TypeKind != TypeKind.Error)
-                {
-                    var errorNode = returnTypeSyntax is GenericNameSyntax { TypeArgumentList.Arguments: [var genericArgument] } genericName ? genericArgument : returnTypeSyntax;
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidOptionsType, errorNode));
-                }
             }
             else
             {
@@ -139,7 +86,7 @@ public partial class ArgumentParserGenerator
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var (optionsInfo, optionsHelpInfo, optionsDiagnostics) = AnalyzeOptionsType(validOptionsType, context.SemanticModel.Compilation, cancellationToken);
+        var (optionsInfo, optionsHelpInfo, optionsDiagnostics) = AnalyzeOptionsType(validOptionsType, compilation, cancellationToken);
         hasErrors |= optionsInfo is null;
         diagnosticsBuilder.AddRange(optionsDiagnostics);
 

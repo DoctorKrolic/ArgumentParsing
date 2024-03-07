@@ -40,7 +40,7 @@ internal static class DiagnosticDescriptors
 
     public static readonly DiagnosticDescriptor ReturnTypeMustBeParseResult = new(
         id: "ARGP0005",
-        title: "Invalid return type",
+        title: "Invalid parser's return type",
         messageFormat: "Return type of an argument parser must be a ParseResult<T>",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
