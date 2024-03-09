@@ -86,7 +86,7 @@ public partial class ArgumentParserGenerator
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var (optionsInfo, optionsHelpInfo, optionsDiagnostics) = AnalyzeOptionsType(validOptionsType, compilation, cancellationToken);
+        var (optionsInfo, optionsHelpInfo, optionsDiagnostics) = ExtractInfoFromOptionsType(validOptionsType, compilation, cancellationToken);
         hasErrors |= optionsInfo is null;
         diagnosticsBuilder.AddRange(optionsDiagnostics);
 
@@ -111,19 +111,17 @@ public partial class ArgumentParserGenerator
         return (argumentParserInfo, optionsHelpInfo, diagnosticsBuilder.ToImmutable());
     }
 
-    private static (OptionsInfo? OptionsInfo, OptionsHelpInfo? OptionsHelpInfo, ImmutableArray<DiagnosticInfo> Diagnostics) AnalyzeOptionsType(INamedTypeSymbol optionsType, Compilation compilation, CancellationToken cancellationToken)
+    private static (OptionsInfo? OptionsInfo, OptionsHelpInfo? OptionsHelpInfo, ImmutableArray<DiagnosticInfo> Diagnostics) ExtractInfoFromOptionsType(INamedTypeSymbol optionsType, Compilation compilation, CancellationToken cancellationToken)
     {
         var optionsBuilder = ImmutableArray.CreateBuilder<OptionInfo>();
         var optionsHelpBuilder = ImmutableArray.CreateBuilder<OptionHelpInfo>();
+
         var diagnosticsBuilder = ImmutableArray.CreateBuilder<DiagnosticInfo>();
 
         var hasErrors = false;
 
         var seenShortNames = new HashSet<char>();
         var seenLongNames = new HashSet<string>();
-
-        var firstPropertyOfShortNameWithNoError = new Dictionary<char, IPropertySymbol>();
-        var firstPropertyOfLongNameWithNoError = new Dictionary<string, IPropertySymbol>();
 
         var parameterMap = new Dictionary<int, ParameterInfo>();
         var parametersProperties = new Dictionary<ParameterInfo, IPropertySymbol>();
@@ -141,11 +139,6 @@ public partial class ArgumentParserGenerator
             if (member is IFieldSymbol { IsRequired: true })
             {
                 hasErrors = true;
-
-                if (member.DeclaredAccessibility >= optionsType.DeclaredAccessibility)
-                {
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredFieldInOptionsTypeIsNotAllowed, member));
-                }
             }
 
             if (member is not IPropertySymbol property)
@@ -153,8 +146,8 @@ public partial class ArgumentParserGenerator
                 continue;
             }
 
-            var hasOptionAttribute = false;
-            var hasParameterAttribute = false;
+            var isOption = false;
+            var isParameter = false;
             var hasRequiredAttribute = false;
             var hasLongNameFromAttribute = false;
 
@@ -210,8 +203,8 @@ public partial class ArgumentParserGenerator
                     continue;
                 }
 
-                hasOptionAttribute |= isOptionAttribute;
-                hasParameterAttribute |= isParameterAttribute;
+                isOption |= isOptionAttribute;
+                isParameter |= isParameterAttribute;
 
                 foreach (var constructorArg in attr.ConstructorArguments)
                 {
@@ -256,70 +249,38 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            if (!hasOptionAttribute && !hasParameterAttribute && !isRemainingParameters)
+            if (!isOption && !isParameter && !isRemainingParameters)
             {
                 if (property.IsRequired)
                 {
                     hasErrors = true;
-
-                    if (property.SetMethod is not null &&
-                        property.DeclaredAccessibility >= optionsType.DeclaredAccessibility &&
-                        property.SetMethod.DeclaredAccessibility >= optionsType.DeclaredAccessibility)
-                    {
-                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredPropertyMustBeOptionOrParameter, property));
-                    }
                 }
 
                 continue;
             }
 
-            if (property.DeclaredAccessibility < Accessibility.Internal)
+            if (property is not { DeclaredAccessibility: >= Accessibility.Internal, SetMethod.DeclaredAccessibility: >= Accessibility.Internal })
             {
                 hasErrors = true;
-                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.PropertyIsNotAccessible, property));
-            }
-            else if (property is not { SetMethod.DeclaredAccessibility: > Accessibility.Internal })
-            {
-                hasErrors = true;
-                diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.PropertyMustHaveAccessibleSetter, (ISymbol?)property.SetMethod ?? property));
             }
 
             var propertyName = property.Name;
             var propertyType = property.Type;
             var isRequired = hasRequiredAttribute || property.IsRequired;
 
-            if (hasOptionAttribute)
+            if (isOption)
             {
-                if (shortName.HasValue && !char.IsLetter(shortName.Value))
+                if (shortName.HasValue)
                 {
-                    hasErrors = true;
+                    var snv = shortName.Value;
 
-                    // '\uffff' is a special value which is produced when user doesn't specify any char ('').
-                    // This will be errored by the C# compiler, so we don't want to add our custom diagnostic
-                    if (shortName.Value != '\uffff')
-                    {
-                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidShortName, property, shortName!.Value));
-                    }
-                }
-                else if (shortName.HasValue)
-                {
-                    var sn = shortName.Value;
-
-                    if (seenShortNames.Add(sn))
-                    {
-                        firstPropertyOfShortNameWithNoError.Add(sn, property);
-                    }
-                    else
+                    if (!char.IsLetter(snv))
                     {
                         hasErrors = true;
-
-                        if (firstPropertyOfShortNameWithNoError.TryGetValue(sn, out var previousProperty))
-                        {
-                            diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateShortName, previousProperty, sn.ToString()));
-                            firstPropertyOfShortNameWithNoError.Remove(sn);
-                        }
-
-                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateShortName, property, sn.ToString()));
+                    }
+                    else if (!seenShortNames.Add(snv))
+                    {
+                        hasErrors = true;
                     }
                 }
 
@@ -334,46 +295,23 @@ public partial class ArgumentParserGenerator
                     diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.NoOptionNames, property));
                 }
 
-                if (longName is not null &&
-                    !(char.IsLetter(longName[0]) && longName.Replace("-", string.Empty).All(char.IsLetterOrDigit)))
+                if (longName is not null)
                 {
-                    hasErrors = true;
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidLongName, property, longName!));
-                }
-                else if (longName is not null)
-                {
-                    if (seenLongNames.Add(longName))
-                    {
-                        firstPropertyOfLongNameWithNoError.Add(longName, property);
-                    }
-                    else
+                    if (!char.IsLetter(longName[0]) || !longName.Replace("-", string.Empty).All(char.IsLetterOrDigit))
                     {
                         hasErrors = true;
-
-                        if (firstPropertyOfLongNameWithNoError.TryGetValue(longName, out var previousProperty))
-                        {
-                            diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateLongName, previousProperty, longName));
-                            firstPropertyOfLongNameWithNoError.Remove(longName);
-                        }
-
-                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateLongName, property, longName));
+                    }
+                    else if (!seenLongNames.Add(longName))
+                    {
+                        hasErrors = true;
                     }
                 }
 
-                (var possibleParseStrategy, var nullableUnderlyingType, var sequenceType, var sequenceUnderlyingType) = GetPotentialParseStrategyForOption(propertyType, compilation);
+                var (possibleParseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType) = GetPotentialParseStrategyForOption(propertyType, compilation);
 
                 if (!possibleParseStrategy.HasValue)
                 {
                     hasErrors = true;
-
-                    if (propertyType.TypeKind != TypeKind.Error)
-                    {
-                        var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken);
-                        var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
-
-                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidOptionPropertyType, diagnosticLocation, propertyType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
-                    }
-
                     continue;
                 }
 
@@ -382,12 +320,6 @@ public partial class ArgumentParserGenerator
                 if (isRequired && parseStrategy == ParseStrategy.Flag && nullableUnderlyingType is null)
                 {
                     hasErrors = true;
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredBoolOption, property));
-                }
-
-                if (isRequired && nullableUnderlyingType is not null)
-                {
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredNullableOption, property));
                 }
 
                 optionsBuilder.Add(new(
@@ -407,7 +339,7 @@ public partial class ArgumentParserGenerator
                     isRequired,
                     helpDescription));
             }
-            else if (hasParameterAttribute)
+            else if (isParameter)
             {
                 var hasParameter = parameterMap.ContainsKey(parameterIndex);
 
@@ -597,9 +529,9 @@ public partial class ArgumentParserGenerator
 
             if (type is INamedTypeSymbol namedType)
             {
-                var iEnumerableOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
-                var iReadOnlyCollectionOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
-                var iReadOnlyListOfTType = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1");
+                var iEnumerableOfTType = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T);
+                var iReadOnlyCollectionOfTType = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyCollection_T);
+                var iReadOnlyListOfTType = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyList_T);
                 var immutableArrayType = compilation.GetTypeByMetadataName("System.Collections.Immutable.ImmutableArray`1");
 
                 var constructedFrom = namedType.ConstructedFrom;
@@ -621,7 +553,7 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            var possibleParseStrategy = GetPotentialPrimaryParseStrategy(type);
+            var possibleParseStrategy = type.GetPotentialPrimaryParseStrategy();
             return (possibleParseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType);
         }
 
@@ -635,29 +567,9 @@ public partial class ArgumentParserGenerator
                 type = nullableUnderlyingTypeSymbol;
             }
 
-            var possibleParseStrategy = GetPotentialPrimaryParseStrategy(type);
+            var possibleParseStrategy = type.GetPotentialPrimaryParseStrategy();
             return (possibleParseStrategy, nullableUnderlyingType);
         }
-
-        static ParseStrategy? GetPotentialPrimaryParseStrategy(ITypeSymbol type) => type switch
-        {
-            { TypeKind: TypeKind.Enum } => ParseStrategy.Enum,
-            { SpecialType: SpecialType.System_String } => ParseStrategy.String,
-            {
-                SpecialType: SpecialType.System_Byte or
-                             SpecialType.System_SByte or
-                             SpecialType.System_Int16 or
-                             SpecialType.System_UInt16 or
-                             SpecialType.System_Int32 or
-                             SpecialType.System_UInt32 or
-                             SpecialType.System_Int64 or
-                             SpecialType.System_UInt64
-            } or { Name: "BigInteger", ContainingNamespace: { Name: "Numerics", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } => ParseStrategy.Integer,
-            { SpecialType: SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal } => ParseStrategy.Float,
-            { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
-            { SpecialType: SpecialType.System_Char } => ParseStrategy.Char,
-            _ => null,
-        };
     }
 
     private static (EnvironmentInfo EnvironmentInfo, AssemblyVersionInfo AssemblyVersionInfo) ExtractInfoFromCompilation(Compilation compilation, CancellationToken cancellationToken)

@@ -25,7 +25,7 @@ public partial class ArgumentParserAnalyzer
         }
         else
         {
-            var singleParameterSyntax = (BaseParameterSyntax)singleParameter.DeclaringSyntaxReferences.First().GetSyntax();
+            var singleParameterSyntax = (BaseParameterSyntax)singleParameter.DeclaringSyntaxReferences.First().GetSyntax(context.CancellationToken);
             var isInvalidParameter = false;
 
             if (singleParameter.IsParams ||
@@ -67,7 +67,7 @@ public partial class ArgumentParserAnalyzer
 
         if (returnType.TypeKind != TypeKind.Error)
         {
-            var returnTypeSyntax = ((MethodDeclarationSyntax)method.DeclaringSyntaxReferences.First().GetSyntax()).ReturnType;
+            var returnTypeSyntax = ((MethodDeclarationSyntax)method.DeclaringSyntaxReferences.First().GetSyntax(context.CancellationToken)).ReturnType;
 
             if (returnType is not INamedTypeSymbol { TypeArguments: [var optionsType] } namedReturnType ||
                 !namedReturnType.ConstructedFrom.Equals(knownTypes.ParseResultOfTType, SymbolEqualityComparer.Default))
@@ -76,14 +76,20 @@ public partial class ArgumentParserAnalyzer
                     Diagnostic.Create(
                         DiagnosticDescriptors.ReturnTypeMustBeParseResult, returnTypeSyntax.GetLocation()));
             }
-            else if ((optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType || !namedOptionsType.Constructors.Any(c => c.Parameters.Length == 0)) &&
-                     optionsType.TypeKind != TypeKind.Error)
+            else if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType || !namedOptionsType.Constructors.Any(c => c.Parameters.Length == 0))
             {
-                var errorNode = returnTypeSyntax is GenericNameSyntax { TypeArgumentList.Arguments: [var genericArgument] } ? genericArgument : returnTypeSyntax;
+                if (optionsType.TypeKind != TypeKind.Error)
+                {
+                    var errorNode = returnTypeSyntax is GenericNameSyntax { TypeArgumentList.Arguments: [var genericArgument] } ? genericArgument : returnTypeSyntax;
 
-                context.ReportDiagnostic(
-                    Diagnostic.Create(
-                        DiagnosticDescriptors.InvalidOptionsType, errorNode.GetLocation()));
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.InvalidOptionsType, errorNode.GetLocation()));
+                }
+            }
+            else
+            {
+                AnalyzeOptionsType(context, namedOptionsType, knownTypes);
             }
         }
     }

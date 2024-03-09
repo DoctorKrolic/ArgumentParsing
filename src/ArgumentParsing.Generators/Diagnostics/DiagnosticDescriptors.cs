@@ -56,16 +56,16 @@ internal static class DiagnosticDescriptors
 
     public static readonly DiagnosticDescriptor RequiredFieldInOptionsTypeIsNotAllowed = new(
         id: "ARGP0007",
-        title: "Required field is not allowed",
-        messageFormat: "Required fields are not allowed in options type",
+        title: "Required field in options type is not allowed",
+        messageFormat: "Required field is not allowed in options type",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static readonly DiagnosticDescriptor RequiredPropertyMustBeOptionOrParameter = new(
+    public static readonly DiagnosticDescriptor RequiredPropertyMustParticipateInArgumentParsing = new(
         id: "ARGP0008",
-        title: "Required property must be option or parameter",
-        messageFormat: "Required property must be marked wither with 'Option' or 'Parameter' attribute",
+        title: "Required property must participate in argument parsing",
+        messageFormat: "Required property must participate in argument parsing, meaning that it must be marked wither with 'Option', 'Parameter' or 'RemainingParameters' attribute",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);

@@ -9,7 +9,7 @@ namespace ArgumentParsing.Tests.Unit;
 public sealed class ArgumentParserGeneratorTests
 {
     [Fact]
-    public async Task NoGeneratedParserAttribute_NoCustomDiagnostics()
+    public async Task NoGeneratedParserAttribute()
     {
         var source = """
             partial class C
@@ -515,7 +515,7 @@ public sealed class ArgumentParserGeneratorTests
 
             {{optionsTypeAccessibility}} class MyOptions
             {
-                {{fieldAccessibility}} required int {|ARGP0007:a|};
+                {{fieldAccessibility}} required int a;
             }
             """;
 
@@ -534,7 +534,7 @@ public sealed class ArgumentParserGeneratorTests
     [InlineData("", "private")]
     [InlineData("", "protected")]
     [InlineData("", "private protected")]
-    public async Task OptionsType_RequiredField_TooLowFieldAccessibility_NoCustomDiagnostic(string optionsTypeAccessibility, string fieldAccessibility)
+    public async Task OptionsType_RequiredField_TooLowFieldAccessibility(string optionsTypeAccessibility, string fieldAccessibility)
     {
         var source = $$"""
             partial class C
@@ -553,7 +553,7 @@ public sealed class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task OptionsType_UnannotatedRequiredProperty_NoSetter_NoCustomDiagnostics()
+    public async Task OptionsType_UnannotatedRequiredProperty_NoSetter()
     {
         var source = """
             partial class C
@@ -583,7 +583,7 @@ public sealed class ArgumentParserGeneratorTests
     [InlineData("", "private")]
     [InlineData("", "protected")]
     [InlineData("", "private protected")]
-    public async Task OptionsType_UnannotatedRequiredProperty_TooLowPropertyAccessibility_NoCustomDiagnostics(string optionsTypeAccessibility, string propertyAccessibility)
+    public async Task OptionsType_UnannotatedRequiredProperty_TooLowPropertyAccessibility(string optionsTypeAccessibility, string propertyAccessibility)
     {
         var source = $$"""
             partial class C
@@ -613,7 +613,7 @@ public sealed class ArgumentParserGeneratorTests
     [InlineData("", "private")]
     [InlineData("", "protected")]
     [InlineData("", "private protected")]
-    public async Task OptionsType_UnannotatedRequiredProperty_TooLowSetterAccessibility_NoCustomDiagnostics(string optionsTypeAccessibility, string setterAccessibility)
+    public async Task OptionsType_UnannotatedRequiredProperty_TooLowSetterAccessibility(string optionsTypeAccessibility, string setterAccessibility)
     {
         var source = $$"""
             partial class C
@@ -649,7 +649,7 @@ public sealed class ArgumentParserGeneratorTests
 
             {{optionsTypeAccessibility}} class MyOptions
             {
-                {{propertyAccessibility}} required int {|ARGP0008:A|} { get; set; }
+                {{propertyAccessibility}} required int A { get; set; }
             }
             """;
 
@@ -672,7 +672,7 @@ public sealed class ArgumentParserGeneratorTests
 
             {{optionsTypeAccessibility}} class MyOptions
             {
-                public required int {|ARGP0008:A|} { get; {{setterAccessibility}} set; }
+                public required int A { get; {{setterAccessibility}} set; }
             }
             """;
 
@@ -693,7 +693,7 @@ public sealed class ArgumentParserGeneratorTests
 
             {{optionsTypeAccessibility}} class MyOptions
             {
-                public required int {|ARGP0008:A|} { get; {{setterAccessibility}} {|CS0273:set|}; }
+                public required int A { get; {{setterAccessibility}} {|CS0273:set|}; }
             }
             """;
 
@@ -716,7 +716,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option]
-                {{accessibility}} string {|ARGP0009:A|} { get; set; }
+                {{accessibility}} string A { get; set; }
             }
             """;
 
@@ -736,7 +736,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option]
-                public string {|ARGP0010:A|} { get; }
+                public string A { get; }
             }
             """;
 
@@ -759,7 +759,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option]
-                public string A { get; {{accessibility}} {|ARGP0010:set|}; }
+                public string A { get; {{accessibility}} set; }
             }
             """;
 
@@ -779,7 +779,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option('%')]
-                public string {|ARGP0012:A|} { get; set; }
+                public string A { get; set; }
             }
             """;
 
@@ -787,7 +787,7 @@ public sealed class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidShortName_FromAttribute_EmptyChar_NoCustomDiagnostics()
+    public async Task OptionsType_InvalidShortName_EmptyChar()
     {
         var source = """
             partial class C
@@ -819,7 +819,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option('a')]
-                public string {|ARGP0013:_A|} { get; set; }
+                public string _A { get; set; }
             }
             """;
 
@@ -839,7 +839,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option("my-long-$name$")]
-                public string {|ARGP0013:A|} { get; set; }
+                public string A { get; set; }
             }
             """;
 
@@ -859,7 +859,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option('&')]
-                public string {|ARGP0012:{|ARGP0013:_A|}|} { get; set; }
+                public string _A { get; set; }
             }
             """;
 
@@ -879,7 +879,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option('^', "my-long-$name$")]
-                public string {|ARGP0012:{|ARGP0013:A|}|} { get; set; }
+                public string A { get; set; }
             }
             """;
 
@@ -899,10 +899,10 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option('o')]
-                public string {|ARGP0014:OptionA|} { get; set; }
+                public string OptionA { get; set; }
 
                 [Option('o')]
-                public string {|ARGP0014:OptionB|} { get; set; }
+                public string OptionB { get; set; }
             }
             """;
 
@@ -922,13 +922,13 @@ public sealed class ArgumentParserGeneratorTests
             partial class MyOptions
             {
                 [Option('o')]
-                public string {|ARGP0014:OptionA|} { get; set; }
+                public string OptionA { get; set; }
             }
 
             partial class MyOptions
             {
                 [Option('o')]
-                public string {|ARGP0014:OptionB|} { get; set; }
+                public string OptionB { get; set; }
             }
             """;
 
@@ -948,13 +948,13 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option('o')]
-                public string {|ARGP0014:OptionA|} { get; set; }
+                public string OptionA { get; set; }
 
                 [Option('o')]
-                public string {|ARGP0014:OptionB|} { get; set; }
+                public string OptionB { get; set; }
 
                 [Option('o')]
-                public string {|ARGP0014:OptionC|} { get; set; }
+                public string OptionC { get; set; }
             }
             """;
 
@@ -974,10 +974,10 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option("option")]
-                public string {|ARGP0015:A|} { get; set; }
+                public string A { get; set; }
 
                 [Option("option")]
-                public string {|ARGP0015:B|} { get; set; }
+                public string B { get; set; }
             }
             """;
 
@@ -997,13 +997,13 @@ public sealed class ArgumentParserGeneratorTests
             partial class MyOptions
             {
                 [Option("option")]
-                public string {|ARGP0015:A|} { get; set; }
+                public string A { get; set; }
             }
 
             partial class MyOptions
             {
                 [Option("option")]
-                public string {|ARGP0015:B|} { get; set; }
+                public string B { get; set; }
             }
             """;
 
@@ -1023,13 +1023,13 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option("option")]
-                public string {|ARGP0015:A|} { get; set; }
+                public string A { get; set; }
 
                 [Option("option")]
-                public string {|ARGP0015:B|} { get; set; }
+                public string B { get; set; }
 
                 [Option("option")]
-                public string {|ARGP0015:C|} { get; set; }
+                public string C { get; set; }
             }
             """;
 
@@ -1052,7 +1052,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option]
-                public {|ARGP0016:{{invalidType}}|} OptionA { get; set; }
+                public {{invalidType}} OptionA { get; set; }
             }
             """;
 
@@ -1060,7 +1060,7 @@ public sealed class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidOptionType_ErrorType_NoCustomDiagnostics()
+    public async Task OptionsType_InvalidOptionType_ErrorType()
     {
         var source = """
             partial class C
@@ -1676,978 +1676,11 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Option]
-                public required bool {|ARGP0019:OptionA|} { get; set; }
+                public required bool OptionA { get; set; }
             }
             """;
 
         await VerifyGeneratorAsync(source);
-    }
-
-    [Theory]
-    [InlineData("byte")]
-    [InlineData("sbyte")]
-    [InlineData("short")]
-    [InlineData("ushort")]
-    [InlineData("int")]
-    [InlineData("uint")]
-    [InlineData("long")]
-    [InlineData("ulong")]
-    [InlineData("global::System.Numerics.BigInteger")]
-    public async Task OptionsType_RequiredNullableIntegerOption(string integerType)
-    {
-        var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> ParseArguments(string[] args);
-            }
-
-            class MyOptions
-            {
-                [Option]
-                public required {{integerType}}? {|ARGP0020:OptionA|} { get; set; }
-            }
-            """;
-
-        var generated = $$"""
-            // <auto-generated/>
-            #nullable disable
-            #pragma warning disable
-
-            namespace ArgumentParsing.Generated
-            {
-                internal static partial class ParseResultExtensions
-                {
-                    /// <summary>
-                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
-                    /// <list type="bullet">
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
-                    /// </list>
-                    /// </summary>
-                    /// <param name="result">Parse result</param>
-                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
-                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
-                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-                    public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
-                    {
-                        switch (result.State)
-                        {
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedOptions:
-                                action(result.Options);
-                                break;
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors:
-                                string errorScreenText = global::ArgumentParsing.Generated.HelpCommandHandler_MyOptions.GenerateHelpText(result.Errors);
-                                global::System.Console.Error.WriteLine(errorScreenText);
-                                global::System.Environment.Exit(1);
-                                break;
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:
-                                int exitCode = result.SpecialCommandHandler.HandleCommand();
-                                global::System.Environment.Exit(exitCode);
-                                break;
-                        }
-                    }
-                }
-            }
-
-            partial class C
-            {
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
-                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-                private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
-                {
-                    {{integerType}}? OptionA_val = default({{integerType}}?);
-
-                    int state = -3;
-                    int seenOptions = 0;
-                    global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
-                    global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
-                    string previousArgument = null;
-
-                    foreach (string arg in args)
-                    {
-                        if (state == -3)
-                        {
-                            switch (arg)
-                            {
-                                case "--help":
-                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.HelpCommandHandler_MyOptions());
-                                case "--version":
-                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.VersionCommandHandler());
-                            }
-
-                            state = 0;
-                        }
-
-                        global::System.ReadOnlySpan<char> val;
-
-                        bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
-                        bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
-
-                        if (state > 0 && startsOption)
-                        {
-                            errors ??= new();
-                            errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
-                            state = 0;
-                        }
-
-                        if (state != -2)
-                        {
-                            if (arg.StartsWith("--") && (hasLetters || arg.Length == 2 || arg.Contains('=')))
-                            {
-                                global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);
-                                int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');
-
-                                latestOptionName = slice[longArgSplit[0]];
-                                switch (latestOptionName)
-                                {
-                                    case "":
-                                        if (written == 1)
-                                        {
-                                            state = -2;
-                                        }
-                                        else
-                                        {
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
-                                        }
-                                        continue;
-                                    case "option-a":
-                                        if ((seenOptions & 0b1) > 0)
-                                        {
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError("option-a"));
-                                        }
-                                        state = 1;
-                                        seenOptions |= 0b1;
-                                        break;
-                                    default:
-                                        errors ??= new();
-                                        errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(latestOptionName.ToString(), arg));
-                                        if (written == 1)
-                                        {
-                                            state = -1;
-                                        }
-                                        goto continueMainLoop;
-                                }
-
-                                if (written == 2)
-                                {
-                                    val = slice[longArgSplit[1]];
-                                    goto decodeValue;
-                                }
-
-                                goto continueMainLoop;
-                            }
-
-                            if (startsOption)
-                            {
-                                global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);
-
-                                for (int i = 0; i < slice.Length; i++)
-                                {
-                                    if (state > 0)
-                                    {
-                                        val = slice.Slice(i);
-                                        goto decodeValue;
-                                    }
-
-                                    char shortOptionName = slice[i];
-                                    latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);
-                                    switch (shortOptionName)
-                                    {
-                                        default:
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(shortOptionName.ToString(), arg));
-                                            state = -1;
-                                            goto continueMainLoop;
-                                    }
-                                }
-
-                                goto continueMainLoop;
-                            }
-                        }
-
-                        val = global::System.MemoryExtensions.AsSpan(arg);
-
-                    decodeValue:
-                        switch (state)
-                        {
-                            case -1:
-                                break;
-                            case 1:
-                                {{integerType}} OptionA_underlying = default({{integerType}});
-                                if (!{{integerType}}.TryParse(val, global::System.Globalization.NumberStyles.Integer, global::System.Globalization.CultureInfo.InvariantCulture, out OptionA_underlying))
-                                {
-                                    errors ??= new();
-                                    errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));
-                                }
-                                OptionA_val = OptionA_underlying;
-                                break;
-                            default:
-                                errors ??= new();
-                                errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
-                                break;
-                        }
-
-                        state = 0;
-
-                    continueMainLoop:
-                        previousArgument = arg;
-                    }
-
-                    if (state > 0)
-                    {
-                        errors ??= new();
-                        errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
-                    }
-
-                    if ((seenOptions & 0b1) == 0)
-                    {
-                        errors ??= new();
-                        errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError("option-a"));
-                    }
-
-                    if (errors != null)
-                    {
-                        return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(global::ArgumentParsing.Results.Errors.ParseErrorCollection.AsErrorCollection(errors));
-                    }
-
-                    global::MyOptions options = new global::MyOptions
-                    {
-                        OptionA = OptionA_val,
-                    };
-
-                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(options);
-                }
-            }
-            """;
-
-        var helpCommandHandler = """
-            // <auto-generated/>
-            #nullable disable
-            #pragma warning disable
-
-            namespace ArgumentParsing.Generated
-            {
-                /// <summary>
-                /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
-                /// </summary>
-                [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
-                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-                internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
-                {
-                    /// <summary>
-                    /// Generates help text for <see cref="global::MyOptions"/> type.
-                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
-                    /// </summary>
-                    /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text</returns>
-                    public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
-                    {
-                        global::System.Text.StringBuilder helpBuilder = new();
-                        helpBuilder.AppendLine("TestProject 0.0.0");
-                        helpBuilder.AppendLine("Copyright (C) " + global::System.DateTime.UtcNow.Year.ToString());
-                        helpBuilder.AppendLine();
-                        if ((object)errors != null)
-                        {
-                            helpBuilder.AppendLine("ERROR(S):");
-                            foreach (global::ArgumentParsing.Results.Errors.ParseError error in errors)
-                            {
-                                helpBuilder.AppendLine("  " + error.GetMessage());
-                            }
-                            helpBuilder.AppendLine();
-                        }
-                        helpBuilder.AppendLine("OPTIONS:");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --option-a\tRequired");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("COMMANDS:");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --help\tShow help screen");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --version\tShow version information");
-                        return helpBuilder.ToString();
-                    }
-
-                    /// <inheritdoc/>
-                    public int HandleCommand()
-                    {
-                        global::System.Console.Out.WriteLine(GenerateHelpText());
-                        return 0;
-                    }
-                }
-            }
-            """;
-
-        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("HelpCommandHandler.MyOptions.g.cs", helpCommandHandler), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
-    }
-
-    [Theory]
-    [InlineData("float")]
-    [InlineData("double")]
-    [InlineData("decimal")]
-    public async Task OptionsType_RequiredNullableFloatOption(string floatType)
-    {
-        var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> ParseArguments(string[] args);
-            }
-
-            class MyOptions
-            {
-                [Option]
-                public required {{floatType}}? {|ARGP0020:OptionA|} { get; set; }
-            }
-            """;
-
-        var generated = $$"""
-            // <auto-generated/>
-            #nullable disable
-            #pragma warning disable
-
-            namespace ArgumentParsing.Generated
-            {
-                internal static partial class ParseResultExtensions
-                {
-                    /// <summary>
-                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
-                    /// <list type="bullet">
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
-                    /// </list>
-                    /// </summary>
-                    /// <param name="result">Parse result</param>
-                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
-                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
-                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-                    public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
-                    {
-                        switch (result.State)
-                        {
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedOptions:
-                                action(result.Options);
-                                break;
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors:
-                                string errorScreenText = global::ArgumentParsing.Generated.HelpCommandHandler_MyOptions.GenerateHelpText(result.Errors);
-                                global::System.Console.Error.WriteLine(errorScreenText);
-                                global::System.Environment.Exit(1);
-                                break;
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:
-                                int exitCode = result.SpecialCommandHandler.HandleCommand();
-                                global::System.Environment.Exit(exitCode);
-                                break;
-                        }
-                    }
-                }
-            }
-
-            partial class C
-            {
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
-                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-                private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
-                {
-                    {{floatType}}? OptionA_val = default({{floatType}}?);
-
-                    int state = -3;
-                    int seenOptions = 0;
-                    global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
-                    global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
-                    string previousArgument = null;
-
-                    foreach (string arg in args)
-                    {
-                        if (state == -3)
-                        {
-                            switch (arg)
-                            {
-                                case "--help":
-                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.HelpCommandHandler_MyOptions());
-                                case "--version":
-                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.VersionCommandHandler());
-                            }
-
-                            state = 0;
-                        }
-
-                        global::System.ReadOnlySpan<char> val;
-
-                        bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
-                        bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
-
-                        if (state > 0 && startsOption)
-                        {
-                            errors ??= new();
-                            errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
-                            state = 0;
-                        }
-
-                        if (state != -2)
-                        {
-                            if (arg.StartsWith("--") && (hasLetters || arg.Length == 2 || arg.Contains('=')))
-                            {
-                                global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);
-                                int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');
-
-                                latestOptionName = slice[longArgSplit[0]];
-                                switch (latestOptionName)
-                                {
-                                    case "":
-                                        if (written == 1)
-                                        {
-                                            state = -2;
-                                        }
-                                        else
-                                        {
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
-                                        }
-                                        continue;
-                                    case "option-a":
-                                        if ((seenOptions & 0b1) > 0)
-                                        {
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError("option-a"));
-                                        }
-                                        state = 1;
-                                        seenOptions |= 0b1;
-                                        break;
-                                    default:
-                                        errors ??= new();
-                                        errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(latestOptionName.ToString(), arg));
-                                        if (written == 1)
-                                        {
-                                            state = -1;
-                                        }
-                                        goto continueMainLoop;
-                                }
-
-                                if (written == 2)
-                                {
-                                    val = slice[longArgSplit[1]];
-                                    goto decodeValue;
-                                }
-
-                                goto continueMainLoop;
-                            }
-
-                            if (startsOption)
-                            {
-                                global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);
-
-                                for (int i = 0; i < slice.Length; i++)
-                                {
-                                    if (state > 0)
-                                    {
-                                        val = slice.Slice(i);
-                                        goto decodeValue;
-                                    }
-
-                                    char shortOptionName = slice[i];
-                                    latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);
-                                    switch (shortOptionName)
-                                    {
-                                        default:
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(shortOptionName.ToString(), arg));
-                                            state = -1;
-                                            goto continueMainLoop;
-                                    }
-                                }
-
-                                goto continueMainLoop;
-                            }
-                        }
-
-                        val = global::System.MemoryExtensions.AsSpan(arg);
-
-                    decodeValue:
-                        switch (state)
-                        {
-                            case -1:
-                                break;
-                            case 1:
-                                {{floatType}} OptionA_underlying = default({{floatType}});
-                                if (!{{floatType}}.TryParse(val, global::System.Globalization.NumberStyles.Float | global::System.Globalization.NumberStyles.AllowThousands, global::System.Globalization.CultureInfo.InvariantCulture, out OptionA_underlying))
-                                {
-                                    errors ??= new();
-                                    errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));
-                                }
-                                OptionA_val = OptionA_underlying;
-                                break;
-                            default:
-                                errors ??= new();
-                                errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
-                                break;
-                        }
-
-                        state = 0;
-
-                    continueMainLoop:
-                        previousArgument = arg;
-                    }
-
-                    if (state > 0)
-                    {
-                        errors ??= new();
-                        errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
-                    }
-
-                    if ((seenOptions & 0b1) == 0)
-                    {
-                        errors ??= new();
-                        errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError("option-a"));
-                    }
-
-                    if (errors != null)
-                    {
-                        return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(global::ArgumentParsing.Results.Errors.ParseErrorCollection.AsErrorCollection(errors));
-                    }
-
-                    global::MyOptions options = new global::MyOptions
-                    {
-                        OptionA = OptionA_val,
-                    };
-
-                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(options);
-                }
-            }
-            """;
-
-        var helpCommandHandler = """
-            // <auto-generated/>
-            #nullable disable
-            #pragma warning disable
-
-            namespace ArgumentParsing.Generated
-            {
-                /// <summary>
-                /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
-                /// </summary>
-                [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
-                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-                internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
-                {
-                    /// <summary>
-                    /// Generates help text for <see cref="global::MyOptions"/> type.
-                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
-                    /// </summary>
-                    /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text</returns>
-                    public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
-                    {
-                        global::System.Text.StringBuilder helpBuilder = new();
-                        helpBuilder.AppendLine("TestProject 0.0.0");
-                        helpBuilder.AppendLine("Copyright (C) " + global::System.DateTime.UtcNow.Year.ToString());
-                        helpBuilder.AppendLine();
-                        if ((object)errors != null)
-                        {
-                            helpBuilder.AppendLine("ERROR(S):");
-                            foreach (global::ArgumentParsing.Results.Errors.ParseError error in errors)
-                            {
-                                helpBuilder.AppendLine("  " + error.GetMessage());
-                            }
-                            helpBuilder.AppendLine();
-                        }
-                        helpBuilder.AppendLine("OPTIONS:");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --option-a\tRequired");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("COMMANDS:");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --help\tShow help screen");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --version\tShow version information");
-                        return helpBuilder.ToString();
-                    }
-
-                    /// <inheritdoc/>
-                    public int HandleCommand()
-                    {
-                        global::System.Console.Out.WriteLine(GenerateHelpText());
-                        return 0;
-                    }
-                }
-            }
-            """;
-
-        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("HelpCommandHandler.MyOptions.g.cs", helpCommandHandler), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
-    }
-
-    [Fact]
-    public async Task OptionsType_RequiredNullableFlagEnumAndCharOptions()
-    {
-        var source = $$"""
-            using System;
-
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> ParseArguments(string[] args);
-            }
-
-            class MyOptions
-            {
-                [Option]
-                public required bool? {|ARGP0020:OptionA|} { get; set; }
-
-                [Option]
-                public required DayOfWeek? {|ARGP0020:OptionB|} { get; set; }
-
-                [Option]
-                public required char? {|ARGP0020:OptionC|} { get; set; }
-            }
-            """;
-
-        var generated = """
-            // <auto-generated/>
-            #nullable disable
-            #pragma warning disable
-
-            namespace ArgumentParsing.Generated
-            {
-                internal static partial class ParseResultExtensions
-                {
-                    /// <summary>
-                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
-                    /// <list type="bullet">
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
-                    /// </list>
-                    /// </summary>
-                    /// <param name="result">Parse result</param>
-                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
-                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
-                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-                    public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
-                    {
-                        switch (result.State)
-                        {
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedOptions:
-                                action(result.Options);
-                                break;
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors:
-                                string errorScreenText = global::ArgumentParsing.Generated.HelpCommandHandler_MyOptions.GenerateHelpText(result.Errors);
-                                global::System.Console.Error.WriteLine(errorScreenText);
-                                global::System.Environment.Exit(1);
-                                break;
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:
-                                int exitCode = result.SpecialCommandHandler.HandleCommand();
-                                global::System.Environment.Exit(exitCode);
-                                break;
-                        }
-                    }
-                }
-            }
-
-            partial class C
-            {
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
-                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-                private static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
-                {
-                    bool? OptionA_val = default(bool?);
-                    global::System.DayOfWeek? OptionB_val = default(global::System.DayOfWeek?);
-                    char? OptionC_val = default(char?);
-
-                    int state = -3;
-                    int seenOptions = 0;
-                    global::System.Collections.Generic.HashSet<global::ArgumentParsing.Results.Errors.ParseError> errors = null;
-                    global::System.Span<global::System.Range> longArgSplit = stackalloc global::System.Range[2];
-                    global::System.ReadOnlySpan<char> latestOptionName = default(global::System.ReadOnlySpan<char>);
-                    string previousArgument = null;
-
-                    foreach (string arg in args)
-                    {
-                        if (state == -3)
-                        {
-                            switch (arg)
-                            {
-                                case "--help":
-                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.HelpCommandHandler_MyOptions());
-                                case "--version":
-                                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(new global::ArgumentParsing.Generated.VersionCommandHandler());
-                            }
-
-                            state = 0;
-                        }
-
-                        global::System.ReadOnlySpan<char> val;
-
-                        bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);
-                        bool startsOption = hasLetters && arg.Length > 1 && arg.StartsWith('-');
-
-                        if (state > 0 && startsOption)
-                        {
-                            errors ??= new();
-                            errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
-                            state = 0;
-                        }
-
-                        if (state != -2)
-                        {
-                            if (arg.StartsWith("--") && (hasLetters || arg.Length == 2 || arg.Contains('=')))
-                            {
-                                global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 2);
-                                int written = global::System.MemoryExtensions.Split(slice, longArgSplit, '=');
-
-                                latestOptionName = slice[longArgSplit[0]];
-                                switch (latestOptionName)
-                                {
-                                    case "":
-                                        if (written == 1)
-                                        {
-                                            state = -2;
-                                        }
-                                        else
-                                        {
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
-                                        }
-                                        continue;
-                                    case "option-a":
-                                        if ((seenOptions & 0b001) > 0)
-                                        {
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError("option-a"));
-                                        }
-                                        OptionA_val = true;
-                                        state = -2147483648;
-                                        seenOptions |= 0b001;
-                                        break;
-                                    case "option-b":
-                                        if ((seenOptions & 0b010) > 0)
-                                        {
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError("option-b"));
-                                        }
-                                        state = 2;
-                                        seenOptions |= 0b010;
-                                        break;
-                                    case "option-c":
-                                        if ((seenOptions & 0b100) > 0)
-                                        {
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError("option-c"));
-                                        }
-                                        state = 3;
-                                        seenOptions |= 0b100;
-                                        break;
-                                    default:
-                                        errors ??= new();
-                                        errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(latestOptionName.ToString(), arg));
-                                        if (written == 1)
-                                        {
-                                            state = -1;
-                                        }
-                                        goto continueMainLoop;
-                                }
-
-                                if (written == 2)
-                                {
-                                    val = slice[longArgSplit[1]];
-                                    goto decodeValue;
-                                }
-
-                                goto continueMainLoop;
-                            }
-
-                            if (startsOption)
-                            {
-                                global::System.ReadOnlySpan<char> slice = global::System.MemoryExtensions.AsSpan(arg, 1);
-
-                                for (int i = 0; i < slice.Length; i++)
-                                {
-                                    if (state > 0)
-                                    {
-                                        val = slice.Slice(i);
-                                        goto decodeValue;
-                                    }
-
-                                    char shortOptionName = slice[i];
-                                    latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i]);
-                                    switch (shortOptionName)
-                                    {
-                                        default:
-                                            if (state <= -10)
-                                            {
-                                                val = slice.Slice(i);
-                                                latestOptionName = new global::System.ReadOnlySpan<char>(in slice[i - 1]);
-                                                goto decodeValue;
-                                            }
-                                            errors ??= new();
-                                            errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(shortOptionName.ToString(), arg));
-                                            state = -1;
-                                            goto continueMainLoop;
-                                    }
-                                }
-
-                                goto continueMainLoop;
-                            }
-                        }
-
-                        val = global::System.MemoryExtensions.AsSpan(arg);
-
-                    decodeValue:
-                        switch (state)
-                        {
-                            case -1:
-                                break;
-                            case -2147483648:
-                                bool OptionA_underlying = default(bool);
-                                if (!bool.TryParse(val, out OptionA_underlying))
-                                {
-                                    errors ??= new();
-                                    errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));
-                                }
-                                OptionA_val = OptionA_underlying;
-                                break;
-                            case 2:
-                                global::System.DayOfWeek OptionB_underlying = default(global::System.DayOfWeek);
-                                if (!global::System.Enum.TryParse<global::System.DayOfWeek>(val, out OptionB_underlying))
-                                {
-                                    errors ??= new();
-                                    errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));
-                                }
-                                OptionB_val = OptionB_underlying;
-                                break;
-                            case 3:
-                                if (val.Length == 1)
-                                {
-                                    OptionC_val = val[0];
-                                }
-                                else
-                                {
-                                    errors ??= new();
-                                    errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val.ToString(), latestOptionName.ToString()));
-                                }
-                                break;
-                            default:
-                                errors ??= new();
-                                errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));
-                                break;
-                        }
-
-                        state = 0;
-
-                    continueMainLoop:
-                        previousArgument = arg;
-                    }
-
-                    if (state > 0)
-                    {
-                        errors ??= new();
-                        errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));
-                    }
-
-                    if ((seenOptions & 0b001) == 0)
-                    {
-                        errors ??= new();
-                        errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError("option-a"));
-                    }
-
-                    if ((seenOptions & 0b010) == 0)
-                    {
-                        errors ??= new();
-                        errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError("option-b"));
-                    }
-
-                    if ((seenOptions & 0b100) == 0)
-                    {
-                        errors ??= new();
-                        errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError("option-c"));
-                    }
-
-                    if (errors != null)
-                    {
-                        return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(global::ArgumentParsing.Results.Errors.ParseErrorCollection.AsErrorCollection(errors));
-                    }
-
-                    global::MyOptions options = new global::MyOptions
-                    {
-                        OptionA = OptionA_val,
-                        OptionB = OptionB_val,
-                        OptionC = OptionC_val,
-                    };
-
-                    return new global::ArgumentParsing.Results.ParseResult<global::MyOptions>(options);
-                }
-            }
-            """;
-
-        var helpCommandHandler = """
-            // <auto-generated/>
-            #nullable disable
-            #pragma warning disable
-
-            namespace ArgumentParsing.Generated
-            {
-                /// <summary>
-                /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
-                /// </summary>
-                [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
-                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-                internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
-                {
-                    /// <summary>
-                    /// Generates help text for <see cref="global::MyOptions"/> type.
-                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
-                    /// </summary>
-                    /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text</returns>
-                    public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
-                    {
-                        global::System.Text.StringBuilder helpBuilder = new();
-                        helpBuilder.AppendLine("TestProject 0.0.0");
-                        helpBuilder.AppendLine("Copyright (C) " + global::System.DateTime.UtcNow.Year.ToString());
-                        helpBuilder.AppendLine();
-                        if ((object)errors != null)
-                        {
-                            helpBuilder.AppendLine("ERROR(S):");
-                            foreach (global::ArgumentParsing.Results.Errors.ParseError error in errors)
-                            {
-                                helpBuilder.AppendLine("  " + error.GetMessage());
-                            }
-                            helpBuilder.AppendLine();
-                        }
-                        helpBuilder.AppendLine("OPTIONS:");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --option-a\tRequired");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --option-b\tRequired");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --option-c\tRequired");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("COMMANDS:");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --help\tShow help screen");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --version\tShow version information");
-                        return helpBuilder.ToString();
-                    }
-
-                    /// <inheritdoc/>
-                    public int HandleCommand()
-                    {
-                        global::System.Console.Out.WriteLine(GenerateHelpText());
-                        return 0;
-                    }
-                }
-            }
-            """;
-
-        await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("HelpCommandHandler.MyOptions.g.cs", helpCommandHandler), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 
     [Theory]
@@ -2666,7 +1699,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Parameter(0)]
-                {{accessibility}} string {|ARGP0009:A|} { get; set; }
+                {{accessibility}} string A { get; set; }
             }
             """;
 
@@ -2686,7 +1719,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Parameter(0)]
-                public string {|ARGP0010:A|} { get; }
+                public string A { get; }
             }
             """;
 
@@ -2709,7 +1742,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Parameter(0)]
-                public string A { get; {{accessibility}} {|ARGP0010:set|}; }
+                public string A { get; {{accessibility}} set; }
             }
             """;
 
