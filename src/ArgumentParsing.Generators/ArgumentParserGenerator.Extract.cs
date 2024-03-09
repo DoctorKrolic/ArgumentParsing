@@ -124,6 +124,7 @@ public partial class ArgumentParserGenerator
         var seenLongNames = new HashSet<string>();
 
         var parameterMap = new Dictionary<int, ParameterInfo>();
+        var parameterHelpDescriptionsMap = new Dictionary<ParameterInfo, string?>();
         var parametersProperties = new Dictionary<ParameterInfo, IPropertySymbol>();
         var firstIndexWithNoError = new Dictionary<int, IPropertySymbol>();
 
@@ -328,8 +329,7 @@ public partial class ArgumentParserGenerator
                     parseStrategy,
                     isRequired,
                     nullableUnderlyingType,
-                    sequenceType,
-                    helpDescription));
+                    sequenceType));
 
                 optionsHelpBuilder.Add(new(
                     shortName,
@@ -396,10 +396,10 @@ public partial class ArgumentParserGenerator
                         propertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         parseStrategy,
                         isRequired,
-                        nullableUnderlyingType,
-                        helpDescription);
+                        nullableUnderlyingType);
 
                     parameterMap.Add(parameterIndex, parameterInfo);
+                    parameterHelpDescriptionsMap.Add(parameterInfo, helpDescription);
                     parametersProperties.Add(parameterInfo, property);
                 }
             }
@@ -444,8 +444,7 @@ public partial class ArgumentParserGenerator
                     propertyName,
                     sequenceUnderlyingType!,
                     parseStrategy,
-                    sequenceType,
-                    helpDescription);
+                    sequenceType);
 
                 remainingParametersHelpInfo = new(helpDescription);
             }
@@ -475,7 +474,7 @@ public partial class ArgumentParserGenerator
 
             var parameterInfo = pair.Value;
             parametersBuilder.Add(parameterInfo);
-            parametersHelpBuilder.Add(new(parameterInfo.Name, parameterInfo.IsRequired, parameterInfo.HelpDescription));
+            parametersHelpBuilder.Add(new(parameterInfo.Name, parameterInfo.IsRequired, parameterHelpDescriptionsMap[parameterInfo]));
             lastSeenIndex = index;
         }
 

@@ -8,5 +8,4 @@ internal sealed record OptionInfo(
     ParseStrategy ParseStrategy,
     bool IsRequired,
     string? NullableUnderlyingType,
-    SequenceType SequenceType,
-    string? HelpDescription);
+    SequenceType SequenceType);

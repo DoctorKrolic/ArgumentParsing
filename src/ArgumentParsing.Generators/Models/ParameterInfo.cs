@@ -6,5 +6,4 @@ internal sealed record ParameterInfo(
     string Type,
     ParseStrategy ParseStrategy,
     bool IsRequired,
-    string? NullableUnderlyingType,
-    string? HelpDescription);
+    string? NullableUnderlyingType);
