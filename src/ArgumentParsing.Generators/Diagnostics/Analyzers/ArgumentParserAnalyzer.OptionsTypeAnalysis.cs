@@ -234,9 +234,9 @@ public partial class ArgumentParserAnalyzer
                 }
 
                 var propertyType = property.Type;
-                var (possibleParseStrategy, isNullable) = GetPotentialParseStrategy(propertyType, knownTypes);
+                var (parseStrategy, isNullable) = GetParseStrategy(propertyType, knownTypes);
 
-                if (!possibleParseStrategy.HasValue)
+                if (parseStrategy == ParseStrategy.None)
                 {
                     if (propertyType.TypeKind != TypeKind.Error)
                     {
@@ -251,8 +251,6 @@ public partial class ArgumentParserAnalyzer
 
                     continue;
                 }
-
-                var parseStrategy = possibleParseStrategy.Value;
 
                 if (isRequired && !isNullable && parseStrategy == ParseStrategy.Flag)
                 {
@@ -270,7 +268,7 @@ public partial class ArgumentParserAnalyzer
             }
         }
 
-        static (ParseStrategy? PotentialParseStrategy, bool IsNullable) GetPotentialParseStrategy(ITypeSymbol type, KnownTypes knownTypes)
+        static (ParseStrategy, bool IsNullable) GetParseStrategy(ITypeSymbol type, KnownTypes knownTypes)
         {
             if (type is not INamedTypeSymbol namedType)
             {
@@ -312,7 +310,7 @@ public partial class ArgumentParserAnalyzer
                 }
             }
 
-            return (namedType.GetPotentialPrimaryParseStrategy(), isNullable);
+            return (namedType.GetPrimaryParseStrategy(), isNullable);
         }
     }
 }

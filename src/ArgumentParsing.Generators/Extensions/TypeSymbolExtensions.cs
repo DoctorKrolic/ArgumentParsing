@@ -39,7 +39,7 @@ internal static class TypeSymbolExtensions
         return false;
     }
 
-    public static ParseStrategy? GetPotentialPrimaryParseStrategy(this ITypeSymbol type) => type switch
+    public static ParseStrategy GetPrimaryParseStrategy(this ITypeSymbol type) => type switch
     {
         { TypeKind: TypeKind.Enum } => ParseStrategy.Enum,
         { SpecialType: SpecialType.System_String } => ParseStrategy.String,
@@ -56,6 +56,6 @@ internal static class TypeSymbolExtensions
         { SpecialType: SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal } => ParseStrategy.Float,
         { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
         { SpecialType: SpecialType.System_Char } => ParseStrategy.Char,
-        _ => null,
+        _ => ParseStrategy.None,
     };
 }

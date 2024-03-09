@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ArgumentParsing.Generators.CodeGen;
 using ArgumentParsing.Generators.Models;
 using Microsoft.CodeAnalysis;
@@ -306,6 +307,7 @@ public partial class ArgumentParserGenerator
         for (var i = 0; i < optionInfos.Length; i++)
         {
             var info = optionInfos[i];
+            Debug.Assert(info.ParseStrategy != ParseStrategy.None);
 
             if (!info.ShortName.HasValue)
             {
@@ -494,6 +496,7 @@ public partial class ArgumentParserGenerator
                 var info = parameterInfos[i];
                 var propertyName = info.PropertyName;
                 var parseStrategy = info.ParseStrategy;
+                Debug.Assert(parseStrategy != ParseStrategy.None);
                 var nullableUnderlyingType = info.NullableUnderlyingType;
 
                 writer.WriteLine($"case {i}:");
@@ -592,6 +595,7 @@ public partial class ArgumentParserGenerator
                 var propertyName = remainingParametersInfo.PropertyName;
                 var type = remainingParametersInfo.Type;
                 var parseStrategy = remainingParametersInfo.ParseStrategy;
+                Debug.Assert(parseStrategy != ParseStrategy.None);
                 switch (parseStrategy)
                 {
                     case ParseStrategy.String:

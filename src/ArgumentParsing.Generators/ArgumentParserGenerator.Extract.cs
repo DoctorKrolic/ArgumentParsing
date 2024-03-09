@@ -307,15 +307,13 @@ public partial class ArgumentParserGenerator
                     }
                 }
 
-                var (possibleParseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType) = GetPotentialParseStrategyForOption(propertyType, compilation);
+                var (parseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType) = GetParseStrategyForOption(propertyType, compilation);
 
-                if (!possibleParseStrategy.HasValue)
+                if (parseStrategy == ParseStrategy.None)
                 {
                     hasErrors = true;
                     continue;
                 }
-
-                var parseStrategy = possibleParseStrategy.Value;
 
                 if (isRequired && parseStrategy == ParseStrategy.Flag && nullableUnderlyingType is null)
                 {
@@ -376,8 +374,8 @@ public partial class ArgumentParserGenerator
                     diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidParameterName, property, parameterName));
                 }
 
-                var (potentialParseStrategy, nullableUnderlyingType) = GetPotentialParseStrategyForParameter(propertyType);
-                if (!potentialParseStrategy.HasValue)
+                var (parseStrategy, nullableUnderlyingType) = GetParseStrategyForParameter(propertyType);
+                if (parseStrategy == ParseStrategy.None)
                 {
                     hasErrors = true;
 
@@ -396,7 +394,7 @@ public partial class ArgumentParserGenerator
                         parameterName,
                         propertyName,
                         propertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                        potentialParseStrategy ?? default,
+                        parseStrategy,
                         isRequired,
                         nullableUnderlyingType,
                         helpDescription);
@@ -428,8 +426,8 @@ public partial class ArgumentParserGenerator
 
                 declaredRemainingParameters = true;
 
-                var (possibleParseStrategy, _, sequenceType, sequenceUnderlyingType) = GetPotentialParseStrategyForOption(propertyType, compilation);
-                if (!possibleParseStrategy.HasValue || sequenceType == SequenceType.None)
+                var (parseStrategy, _, sequenceType, sequenceUnderlyingType) = GetParseStrategyForOption(propertyType, compilation);
+                if (parseStrategy == ParseStrategy.None || sequenceType == SequenceType.None)
                 {
                     hasErrors = true;
 
@@ -445,7 +443,7 @@ public partial class ArgumentParserGenerator
                 remainingParametersInfo = new(
                     propertyName,
                     sequenceUnderlyingType!,
-                    possibleParseStrategy ?? default,
+                    parseStrategy,
                     sequenceType,
                     helpDescription);
 
@@ -520,7 +518,7 @@ public partial class ArgumentParserGenerator
 
         return (optionsInfo, optionsHelpInfo, diagnosticsBuilder.ToImmutable());
 
-        static (ParseStrategy? possibleParseStrategy, string? nullableUnderlyingType, SequenceType sequenceType, string? sequenceUnderlyingType) GetPotentialParseStrategyForOption(ITypeSymbol type, Compilation compilation)
+        static (ParseStrategy, string? NullableUnderlyingType, SequenceType SequenceType, string? SequenceUnderlyingType) GetParseStrategyForOption(ITypeSymbol type, Compilation compilation)
         {
             string? nullableUnderlyingType = null;
 
@@ -553,11 +551,11 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            var possibleParseStrategy = type.GetPotentialPrimaryParseStrategy();
-            return (possibleParseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType);
+            var parseStrategy = type.GetPrimaryParseStrategy();
+            return (parseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType);
         }
 
-        static (ParseStrategy?, string? nullableUnderlyingType) GetPotentialParseStrategyForParameter(ITypeSymbol type)
+        static (ParseStrategy, string? NullableUnderlyingType) GetParseStrategyForParameter(ITypeSymbol type)
         {
             string? nullableUnderlyingType = null;
 
@@ -567,8 +565,8 @@ public partial class ArgumentParserGenerator
                 type = nullableUnderlyingTypeSymbol;
             }
 
-            var possibleParseStrategy = type.GetPotentialPrimaryParseStrategy();
-            return (possibleParseStrategy, nullableUnderlyingType);
+            var parseStrategy = type.GetPrimaryParseStrategy();
+            return (parseStrategy, nullableUnderlyingType);
         }
     }
 
