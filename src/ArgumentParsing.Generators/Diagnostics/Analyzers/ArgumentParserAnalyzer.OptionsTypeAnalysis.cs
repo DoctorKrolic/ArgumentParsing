@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using ArgumentParsing.Generators.Extensions;
 using ArgumentParsing.Generators.Models;
 using Microsoft.CodeAnalysis;
@@ -20,6 +21,9 @@ public partial class ArgumentParserAnalyzer
         var seenParametersWithTheirRequirements = new Dictionary<int, bool>();
         var firstPropertyOfParameterIndexWithNoError = new Dictionary<int, IPropertySymbol>();
         var parametersProperties = new Dictionary<int, IPropertySymbol>();
+
+        var declaredRemainingParameters = false;
+        IPropertySymbol? remainingParametersProperty = null;
 
         foreach (var member in optionsType.GetMembers())
         {
@@ -207,6 +211,13 @@ public partial class ArgumentParserAnalyzer
                     longName = property.Name.ToKebabCase();
                 }
 
+                if (!shortName.HasValue && longName is null)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.NoOptionNames, propertyLocation));
+                }
+
                 if (longName is not null)
                 {
                     if (!char.IsLetter(longName[0]) || !longName.Replace("-", string.Empty).All(char.IsLetterOrDigit))
@@ -333,6 +344,43 @@ public partial class ArgumentParserAnalyzer
                 {
                     seenParametersWithTheirRequirements.Add(parameterIndex, isRequired);
                     parametersProperties.Add(parameterIndex, property);
+                }
+            }
+            else
+            {
+                Debug.Assert(isRemainingParameters);
+
+                if (declaredRemainingParameters)
+                {
+                    if (remainingParametersProperty is not null)
+                    {
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(
+                                DiagnosticDescriptors.DuplicateRemainingParameters, remainingParametersProperty.Locations.First()));
+
+                        remainingParametersProperty = null;
+                    }
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.DuplicateRemainingParameters, propertyLocation));
+                }
+                else
+                {
+                    remainingParametersProperty = property;
+                }
+
+                declaredRemainingParameters = true;
+
+                var (parseStrategy, isNullable, isSequence) = GetParseStrategy(propertyType, knownTypes);
+                if ((parseStrategy == ParseStrategy.None || isNullable || !isSequence) && propertyType.TypeKind != TypeKind.Error)
+                {
+                    var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
+                    var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? propertyLocation;
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.InvalidRemainingParametersPropertyType, diagnosticLocation));
                 }
             }
         }

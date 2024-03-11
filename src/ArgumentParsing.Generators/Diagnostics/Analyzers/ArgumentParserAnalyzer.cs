@@ -36,7 +36,12 @@ public sealed partial class ArgumentParserAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.MissingParameterWithIndex,
             DiagnosticDescriptors.MissingParametersWithIndexes,
             DiagnosticDescriptors.RequiredCanOnlyBeFirstNParametersInARow,
-            DiagnosticDescriptors.InvalidParameterName);
+            DiagnosticDescriptors.InvalidParameterName,
+            DiagnosticDescriptors.DuplicateRemainingParameters,
+            DiagnosticDescriptors.InvalidRemainingParametersPropertyType,
+            // ARGP0031
+            DiagnosticDescriptors.TooLowAccessibilityOfOptionsType,
+            DiagnosticDescriptors.NoOptionNames);
 
     public override void Initialize(AnalysisContext context)
     {

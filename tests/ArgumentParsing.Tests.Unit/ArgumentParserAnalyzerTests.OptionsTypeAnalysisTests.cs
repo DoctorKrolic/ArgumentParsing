@@ -1125,4 +1125,173 @@ public partial class ArgumentParserAnalyzerTests
 
         await VerifyAnalyzerAsync(source);
     }
+
+    [Fact]
+    public async Task OptionsType_DuplicateRemainingParameters()
+    {
+        var source = """
+            using System.Collections.Generic;
+
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [RemainingParameters]
+                public IEnumerable<string> {|ARGP0029:A|} { get; set; }
+
+                [RemainingParameters]
+                public IEnumerable<string> {|ARGP0029:B|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateRemainingParameters_DuplicatesInDifferentPartialDeclarations()
+    {
+        var source = """
+            using System.Collections.Generic;
+
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            partial class MyOptions
+            {
+                [RemainingParameters]
+                public IEnumerable<string> {|ARGP0029:A|} { get; set; }
+            }
+
+            partial class MyOptions
+            {
+                [RemainingParameters]
+                public IEnumerable<string> {|ARGP0029:B|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateRemainingParameters_ThreeDuplicates()
+    {
+        var source = """
+            using System.Collections.Generic;
+
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [RemainingParameters]
+                public IEnumerable<string> {|ARGP0029:A|} { get; set; }
+
+                [RemainingParameters]
+                public IEnumerable<string> {|ARGP0029:B|} { get; set; }
+
+                [RemainingParameters]
+                public IEnumerable<string> {|ARGP0029:C|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("int")]
+    [InlineData("int?")]
+    [InlineData("string")]
+    [InlineData("object")]
+    [InlineData("dynamic")]
+    [InlineData("MyOptions")]
+    [InlineData("System.Collections.Generic.IEnumerable<int?>")]
+    public async Task OptionsType_InvalidRemainingParametersType(string invalidType)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [RemainingParameters]
+                public {|ARGP0030:{{invalidType}}|} RemainingParams { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidRemainingParametersType_ErrorType()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [RemainingParameters]
+                public {|CS0246:ErrorType|} OptionA { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("private")]
+    [InlineData("protected")]
+    public async Task OptionsType_TooLowOptionsTypeAccessibility(string accessibility)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<Options> {|CS8795:ParseArguments|}(string[] args);
+
+                {{accessibility}} class {|ARGP0032:Options|}
+                {
+                }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_NoShortAndLongName()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Option(null)]
+                public string {|ARGP0033:Option|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
 }

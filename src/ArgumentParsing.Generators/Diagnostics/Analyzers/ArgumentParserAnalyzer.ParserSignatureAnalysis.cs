@@ -89,6 +89,13 @@ public partial class ArgumentParserAnalyzer
             }
             else
             {
+                if (namedOptionsType.DeclaredAccessibility < Accessibility.Internal)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.TooLowAccessibilityOfOptionsType, namedOptionsType.Locations.First()));
+                }
+
                 AnalyzeOptionsType(context, namedOptionsType, knownTypes);
             }
         }

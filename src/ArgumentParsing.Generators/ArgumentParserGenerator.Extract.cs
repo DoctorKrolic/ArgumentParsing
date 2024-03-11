@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
-using ArgumentParsing.Generators.Diagnostics;
 using ArgumentParsing.Generators.Extensions;
 using ArgumentParsing.Generators.Models;
 using ArgumentParsing.Generators.Utils;
@@ -79,11 +78,6 @@ public partial class ArgumentParserGenerator
             return (null, null, diagnosticsBuilder.ToImmutable());
         }
 
-        if (validOptionsType.DeclaredAccessibility < Accessibility.Internal)
-        {
-            diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.TooLowAccessibilityOfOptionsType, validOptionsType));
-        }
-
         cancellationToken.ThrowIfCancellationRequested();
 
         var (optionsInfo, optionsHelpInfo, optionsDiagnostics) = ExtractInfoFromOptionsType(validOptionsType, compilation, cancellationToken);
@@ -130,7 +124,6 @@ public partial class ArgumentParserGenerator
         var declaredRemainingParameters = false;
         RemainingParametersInfo? remainingParametersInfo = null;
         RemainingParametersHelpInfo? remainingParametersHelpInfo = null;
-        IPropertySymbol? remainingParametersProperty = null;
 
         foreach (var member in optionsType.GetMembers())
         {
@@ -292,7 +285,6 @@ public partial class ArgumentParserGenerator
                 if (!shortName.HasValue && longName is null)
                 {
                     hasErrors = true;
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.NoOptionNames, property));
                 }
 
                 if (longName is not null)
@@ -384,18 +376,6 @@ public partial class ArgumentParserGenerator
                 if (declaredRemainingParameters)
                 {
                     hasErrors = true;
-
-                    if (remainingParametersProperty is not null)
-                    {
-                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateRemainingParameters, remainingParametersProperty));
-                        remainingParametersProperty = null;
-                    }
-
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateRemainingParameters, property));
-                }
-                else
-                {
-                    remainingParametersProperty = property;
                 }
 
                 declaredRemainingParameters = true;
@@ -404,14 +384,6 @@ public partial class ArgumentParserGenerator
                 if (parseStrategy == ParseStrategy.None || sequenceType == SequenceType.None)
                 {
                     hasErrors = true;
-
-                    if (propertyType.TypeKind != TypeKind.Error)
-                    {
-                        var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken);
-                        var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
-
-                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidRemainingParametersPropertyType, diagnosticLocation, propertyType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
-                    }
                 }
 
                 remainingParametersInfo = new(
