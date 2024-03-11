@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using ArgumentParsing.Generators.Extensions;
 using ArgumentParsing.Generators.Models;
 using Microsoft.CodeAnalysis;
@@ -15,6 +16,10 @@ public partial class ArgumentParserAnalyzer
 
         var firstPropertyOfShortNameWithNoError = new Dictionary<char, IPropertySymbol>();
         var firstPropertyOfLongNameWithNoError = new Dictionary<string, IPropertySymbol>();
+
+        var seenParametersWithTheirRequirements = new Dictionary<int, bool>();
+        var firstPropertyOfParameterIndexWithNoError = new Dictionary<int, IPropertySymbol>();
+        var parametersProperties = new Dictionary<int, IPropertySymbol>();
 
         foreach (var member in optionsType.GetMembers())
         {
@@ -122,6 +127,7 @@ public partial class ArgumentParserAnalyzer
                 }
             }
 
+            var propertyType = property.Type;
             var propertyLocation = property.Locations.First();
 
             if (!isOption && !isParameter && !isRemainingParameters)
@@ -233,8 +239,7 @@ public partial class ArgumentParserAnalyzer
                     }
                 }
 
-                var propertyType = property.Type;
-                var (parseStrategy, isNullable) = GetParseStrategy(propertyType, knownTypes);
+                var (parseStrategy, isNullable, _) = GetParseStrategy(propertyType, knownTypes);
 
                 if (parseStrategy == ParseStrategy.None)
                 {
@@ -266,9 +271,127 @@ public partial class ArgumentParserAnalyzer
                             DiagnosticDescriptors.RequiredNullableOption, propertyLocation));
                 }
             }
+            else if (isParameter)
+            {
+                var hasParameter = seenParametersWithTheirRequirements.ContainsKey(parameterIndex);
+
+                if (parameterIndex < 0)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.NegativeParameterIndex, propertyLocation));
+                }
+                else
+                {
+                    if (hasParameter)
+                    {
+                        if (firstPropertyOfParameterIndexWithNoError.TryGetValue(parameterIndex, out var previousProperty))
+                        {
+                            context.ReportDiagnostic(
+                                Diagnostic.Create(
+                                    DiagnosticDescriptors.DuplicateParameterIndex,
+                                    previousProperty.Locations.First(),
+                                    parameterIndex.ToString()));
+
+                            firstPropertyOfParameterIndexWithNoError.Remove(parameterIndex);
+                        }
+
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(
+                                DiagnosticDescriptors.DuplicateParameterIndex,
+                                propertyLocation,
+                                parameterIndex.ToString()));
+                    }
+                    else
+                    {
+                        firstPropertyOfParameterIndexWithNoError.Add(parameterIndex, property);
+                    }
+                }
+
+                parameterName ??= property.Name.ToKebabCase();
+
+                if (!char.IsLetter(parameterName[0]) || !parameterName.Replace("-", string.Empty).All(char.IsLetterOrDigit))
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.InvalidParameterName, propertyLocation, parameterName));
+                }
+
+                var (parseStrategy, isNullable, isSequence) = GetParseStrategy(propertyType, knownTypes);
+                if ((parseStrategy == ParseStrategy.None || isSequence) && propertyType.TypeKind != TypeKind.Error)
+                {
+                    var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.InvalidParameterPropertyType,
+                            propertySyntax?.Type.GetLocation() ?? propertyLocation,
+                            propertyType));
+                }
+
+                if (!hasParameter)
+                {
+                    seenParametersWithTheirRequirements.Add(parameterIndex, isRequired);
+                    parametersProperties.Add(parameterIndex, property);
+                }
+            }
         }
 
-        static (ParseStrategy, bool IsNullable) GetParseStrategy(ITypeSymbol type, KnownTypes knownTypes)
+        var lastSeenParameterIndex = 0;
+        var parameterRequirements = ImmutableArray.CreateBuilder<bool>();
+
+        foreach (var pair in seenParametersWithTheirRequirements.OrderBy(static p => p.Key))
+        {
+            var index = pair.Key;
+
+            if (index > (lastSeenParameterIndex + 1))
+            {
+                if (index - lastSeenParameterIndex == 2)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.MissingParameterWithIndex,
+                            optionsType.Locations.First(),
+                            (index - 1).ToString()));
+                }
+                else
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.MissingParametersWithIndexes,
+                            optionsType.Locations.First(),
+                            (lastSeenParameterIndex + 1).ToString(),
+                            (index - 1).ToString()));
+                }
+            }
+
+            lastSeenParameterIndex = index;
+            parameterRequirements.Add(pair.Value);
+        }
+
+        var canNextParameterBeRequired = true;
+
+        for (var i = 0; i < parameterRequirements.Count; i++)
+        {
+            var isRequired = parameterRequirements[i];
+
+            if (isRequired)
+            {
+                if (!canNextParameterBeRequired)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.RequiredCanOnlyBeFirstNParametersInARow,
+                            parametersProperties[i].Locations.First()));
+                }
+            }
+            else
+            {
+                canNextParameterBeRequired = false;
+            }
+        }
+
+        static (ParseStrategy, bool IsNullable, bool IsSequence) GetParseStrategy(ITypeSymbol type, KnownTypes knownTypes)
         {
             if (type is not INamedTypeSymbol namedType)
             {
@@ -276,6 +399,7 @@ public partial class ArgumentParserAnalyzer
             }
 
             var isNullable = false;
+            var isSequence = false;
 
             if (namedType is { ConstructedFrom.SpecialType: SpecialType.System_Nullable_T, TypeArguments: [var nullableUnderlyingType] })
             {
@@ -307,10 +431,12 @@ public partial class ArgumentParserAnalyzer
                     {
                         return default;
                     }
+
+                    isSequence = true;
                 }
             }
 
-            return (namedType.GetPrimaryParseStrategy(), isNullable);
+            return (namedType.GetPrimaryParseStrategy(), isNullable, isSequence);
         }
     }
 }

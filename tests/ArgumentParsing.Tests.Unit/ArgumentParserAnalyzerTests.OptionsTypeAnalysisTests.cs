@@ -1,3 +1,5 @@
+using Microsoft.CodeAnalysis.Testing;
+
 namespace ArgumentParsing.Tests.Unit;
 
 public partial class ArgumentParserAnalyzerTests
@@ -636,6 +638,488 @@ public partial class ArgumentParserAnalyzerTests
             {
                 [Option]
                 public required {{optionBaseType}}? {|ARGP0020:OptionA|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_NegativeParameterIndex()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(-1)]
+                public string {|ARGP0022:Parameter|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateParameterIndex()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public string {|ARGP0023:A|} { get; set; }
+
+                [Parameter(0)]
+                public string {|ARGP0023:B|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateParameterIndex_NotDefault()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public string A { get; set; }
+
+                [Parameter(1)]
+                public string {|ARGP0023:B|} { get; set; }
+
+                [Parameter(1)]
+                public string {|ARGP0023:C|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateParameter_DuplicatesInDifferentPartialDeclarations()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            partial class MyOptions
+            {
+                [Parameter(0)]
+                public string {|ARGP0023:A|} { get; set; }
+            }
+
+            partial class MyOptions
+            {
+                [Parameter(0)]
+                public string {|ARGP0023:B|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_DuplicateParameterIndex_ThreeDuplicates()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public string {|ARGP0023:A|} { get; set; }
+
+                [Parameter(0)]
+                public string {|ARGP0023:B|} { get; set; }
+
+                [Parameter(0)]
+                public string {|ARGP0023:C|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("object")]
+    [InlineData("dynamic")]
+    [InlineData("MyOptions")]
+    [InlineData("System.Collections.Generic.IEnumerable<string>")]
+    public async Task OptionsType_InvalidParameterType(string invalidType)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public {|ARGP0024:{{invalidType}}|} Parameter { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidParameterType_ErrorType()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public {|CS0246:ErrorType|} Parameter { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_MissingParameterWithIndex1()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class {|#0:MyOptions|}
+            {
+                [Parameter(0)]
+                public string A { get; set; }
+
+                [Parameter(2)]
+                public string B { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult.CompilerError("ARGP0025")
+                .WithLocation(0)
+                .WithArguments(1)
+        ]);
+    }
+
+    [Fact]
+    public async Task OptionsType_MissingParameterWithIndex2()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class {|#0:MyOptions|}
+            {
+                [Parameter(0)]
+                public string A { get; set; }
+
+                [Parameter(1)]
+                public string B { get; set; }
+
+                [Parameter(3)]
+                public string C { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult.CompilerError("ARGP0025")
+                .WithLocation(0)
+                .WithArguments(2)
+        ]);
+    }
+
+    [Fact]
+    public async Task OptionsType_MissingParameterWithIndex1And2()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class {|#0:MyOptions|}
+            {
+                [Parameter(0)]
+                public string A { get; set; }
+
+                [Parameter(3)]
+                public string B { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult.CompilerError("ARGP0026")
+                .WithLocation(0)
+                .WithArguments(1, 2)
+        ]);
+    }
+
+    [Fact]
+    public async Task OptionsType_MissingParameterWithIndex1And3()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class {|#0:MyOptions|}
+            {
+                [Parameter(0)]
+                public string A { get; set; }
+
+                [Parameter(2)]
+                public string B { get; set; }
+
+                [Parameter(4)]
+                public string C { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult.CompilerError("ARGP0025")
+                .WithLocation(0)
+                .WithArguments(1),
+            DiagnosticResult.CompilerError("ARGP0025")
+                .WithLocation(0)
+                .WithArguments(3)
+        ]);
+    }
+
+    [Fact]
+    public async Task OptionsType_MissingParameterWithIndexFrom1To3()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class {|#0:MyOptions|}
+            {
+                [Parameter(0)]
+                public string A { get; set; }
+
+                [Parameter(4)]
+                public string B { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult.CompilerError("ARGP0026")
+                .WithLocation(0)
+                .WithArguments(1, 3)
+        ]);
+    }
+
+    [Fact]
+    public async Task OptionsType_MissingParameterWithIndexFrom2To3()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class {|#0:MyOptions|}
+            {
+                [Parameter(0)]
+                public string A { get; set; }
+
+                [Parameter(1)]
+                public string B { get; set; }
+
+                [Parameter(4)]
+                public string C { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult.CompilerError("ARGP0026")
+                .WithLocation(0)
+                .WithArguments(2, 3)
+        ]);
+    }
+
+    [Fact]
+    public async Task OptionsType_MissingParameterWithIndexFrom1To2AndFrom4To5()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class {|#0:MyOptions|}
+            {
+                [Parameter(0)]
+                public string A { get; set; }
+
+                [Parameter(3)]
+                public string B { get; set; }
+
+                [Parameter(6)]
+                public string C { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult.CompilerError("ARGP0026")
+                .WithLocation(0)
+                .WithArguments(1, 2),
+            DiagnosticResult.CompilerError("ARGP0026")
+                .WithLocation(0)
+                .WithArguments(4, 5)
+        ]);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidRequiredParameter_RequiredProperty()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public string Parameter1 { get; set; }
+
+                [Parameter(1)]
+                public required string {|ARGP0027:Parameter2|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_InvalidRequiredParameter_RequiredAttribute()
+    {
+        var source = """
+            using System.ComponentModel.DataAnnotations;
+
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public string Parameter1 { get; set; }
+
+                [Parameter(1)]
+                [Required]
+                public string {|ARGP0027:Parameter2|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsType_TwoInvalidRequiredParameters()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0)]
+                public string Parameter1 { get; set; }
+
+                [Parameter(1)]
+                public string Parameter2 { get; set; }
+
+                [Parameter(2)]
+                public required string {|ARGP0027:Parameter3|} { get; set; }
+
+                [Parameter(3)]
+                public required string {|ARGP0027:Parameter4|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("5param")]
+    [InlineData("-param")]
+    [InlineData("$param")]
+    [InlineData("param name")]
+    [InlineData("invalid&name")]
+    public async Task OptionsType_InvalidParameterName(string invalidName)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+                [Parameter(0, Name = "{{invalidName}}")]
+                public string {|ARGP0028:Param|} { get; set; }
             }
             """;
 

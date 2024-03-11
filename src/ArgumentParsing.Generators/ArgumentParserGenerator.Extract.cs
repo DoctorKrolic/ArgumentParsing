@@ -126,7 +126,6 @@ public partial class ArgumentParserGenerator
         var parameterMap = new Dictionary<int, ParameterInfo>();
         var parameterHelpDescriptionsMap = new Dictionary<ParameterInfo, string?>();
         var parametersProperties = new Dictionary<ParameterInfo, IPropertySymbol>();
-        var firstIndexWithNoError = new Dictionary<int, IPropertySymbol>();
 
         var declaredRemainingParameters = false;
         RemainingParametersInfo? remainingParametersInfo = null;
@@ -344,26 +343,10 @@ public partial class ArgumentParserGenerator
                 if (parameterIndex < 0)
                 {
                     hasErrors = true;
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.NegativeParameterIndex, property));
                 }
-                else
+                else if (hasParameter)
                 {
-                    if (hasParameter)
-                    {
-                        hasErrors = true;
-
-                        if (firstIndexWithNoError.TryGetValue(parameterIndex, out var previousProperty))
-                        {
-                            diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateParameterIndex, previousProperty, parameterIndex));
-                            firstIndexWithNoError.Remove(parameterIndex);
-                        }
-
-                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.DuplicateParameterIndex, property, parameterIndex));
-                    }
-                    else
-                    {
-                        firstIndexWithNoError.Add(parameterIndex, property);
-                    }
+                    hasErrors = true;
                 }
 
                 parameterName ??= propertyName.ToKebabCase();
@@ -371,21 +354,12 @@ public partial class ArgumentParserGenerator
                 if (!char.IsLetter(parameterName[0]) || !parameterName.Replace("-", string.Empty).All(char.IsLetterOrDigit))
                 {
                     hasErrors = true;
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidParameterName, property, parameterName));
                 }
 
                 var (parseStrategy, nullableUnderlyingType) = GetParseStrategyForParameter(propertyType);
                 if (parseStrategy == ParseStrategy.None)
                 {
                     hasErrors = true;
-
-                    if (propertyType.TypeKind != TypeKind.Error)
-                    {
-                        var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken);
-                        var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? property.Locations.First();
-
-                        diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.InvalidParameterPropertyType, diagnosticLocation, propertyType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
-                    }
                 }
 
                 if (!hasParameter)
@@ -461,15 +435,6 @@ public partial class ArgumentParserGenerator
             if (index > (lastSeenIndex + 1))
             {
                 hasErrors = true;
-
-                if (index - lastSeenIndex == 2)
-                {
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.MissingParameterWithIndex, optionsType, index - 1));
-                }
-                else
-                {
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.MissingParametersWithIndexes, optionsType, lastSeenIndex + 1, index - 1));
-                }
             }
 
             var parameterInfo = pair.Value;
@@ -487,7 +452,6 @@ public partial class ArgumentParserGenerator
                 if (!canNextParameterBeRequired)
                 {
                     hasErrors = true;
-                    diagnosticsBuilder.Add(DiagnosticInfo.Create(DiagnosticDescriptors.RequiredCanOnlyBeFirstNParametersInARow, parametersProperties[info]));
                 }
             }
             else
@@ -517,7 +481,7 @@ public partial class ArgumentParserGenerator
 
         return (optionsInfo, optionsHelpInfo, diagnosticsBuilder.ToImmutable());
 
-        static (ParseStrategy, string? NullableUnderlyingType, SequenceType SequenceType, string? SequenceUnderlyingType) GetParseStrategyForOption(ITypeSymbol type, Compilation compilation)
+        static (ParseStrategy, string? NullableUnderlyingType, SequenceType, string? SequenceUnderlyingType) GetParseStrategyForOption(ITypeSymbol type, Compilation compilation)
         {
             string? nullableUnderlyingType = null;
 

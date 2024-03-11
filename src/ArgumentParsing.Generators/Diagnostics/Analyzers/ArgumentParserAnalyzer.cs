@@ -19,6 +19,7 @@ public sealed partial class ArgumentParserAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.RequiredPropertyMustParticipateInArgumentParsing,
             DiagnosticDescriptors.PropertyIsNotAccessible,
             DiagnosticDescriptors.PropertyMustHaveAccessibleSetter,
+            // ARGP0011
             DiagnosticDescriptors.InvalidShortName,
             DiagnosticDescriptors.InvalidLongName,
             DiagnosticDescriptors.DuplicateShortName,
@@ -27,7 +28,15 @@ public sealed partial class ArgumentParserAnalyzer : DiagnosticAnalyzer
             // ARGP0017
             // ARGP0018
             DiagnosticDescriptors.RequiredBoolOption,
-            DiagnosticDescriptors.RequiredNullableOption);
+            DiagnosticDescriptors.RequiredNullableOption,
+            // ARGP0021
+            DiagnosticDescriptors.NegativeParameterIndex,
+            DiagnosticDescriptors.DuplicateParameterIndex,
+            DiagnosticDescriptors.InvalidParameterPropertyType,
+            DiagnosticDescriptors.MissingParameterWithIndex,
+            DiagnosticDescriptors.MissingParametersWithIndexes,
+            DiagnosticDescriptors.RequiredCanOnlyBeFirstNParametersInARow,
+            DiagnosticDescriptors.InvalidParameterName);
 
     public override void Initialize(AnalysisContext context)
     {

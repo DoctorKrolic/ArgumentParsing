@@ -1762,7 +1762,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Parameter(-1)]
-                public string {|ARGP0022:Parameter|} { get; set; }
+                public string Parameter { get; set; }
             }
             """;
 
@@ -1782,10 +1782,10 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Parameter(0)]
-                public string {|ARGP0023:A|} { get; set; }
+                public string A { get; set; }
 
                 [Parameter(0)]
-                public string {|ARGP0023:B|} { get; set; }
+                public string B { get; set; }
             }
             """;
 
@@ -1808,10 +1808,10 @@ public sealed class ArgumentParserGeneratorTests
                 public string A { get; set; }
 
                 [Parameter(1)]
-                public string {|ARGP0023:B|} { get; set; }
+                public string B { get; set; }
 
                 [Parameter(1)]
-                public string {|ARGP0023:C|} { get; set; }
+                public string C { get; set; }
             }
             """;
 
@@ -1831,13 +1831,13 @@ public sealed class ArgumentParserGeneratorTests
             partial class MyOptions
             {
                 [Parameter(0)]
-                public string {|ARGP0023:A|} { get; set; }
+                public string A { get; set; }
             }
 
             partial class MyOptions
             {
                 [Parameter(0)]
-                public string {|ARGP0023:B|} { get; set; }
+                public string B { get; set; }
             }
             """;
 
@@ -1857,13 +1857,13 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Parameter(0)]
-                public string {|ARGP0023:A|} { get; set; }
+                public string A { get; set; }
 
                 [Parameter(0)]
-                public string {|ARGP0023:B|} { get; set; }
+                public string B { get; set; }
 
                 [Parameter(0)]
-                public string {|ARGP0023:C|} { get; set; }
+                public string C { get; set; }
             }
             """;
 
@@ -1887,7 +1887,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Parameter(0)]
-                public {|ARGP0024:{{invalidType}}|} Parameter { get; set; }
+                public {{invalidType}} Parameter { get; set; }
             }
             """;
 
@@ -1895,7 +1895,7 @@ public sealed class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidParameterType_ErrorType_NoCustomDiagnostics()
+    public async Task OptionsType_InvalidParameterType_ErrorType()
     {
         var source = """
             partial class C
@@ -1924,7 +1924,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
-            class {|#0:MyOptions|}
+            class MyOptions
             {
                 [Parameter(0)]
                 public string A { get; set; }
@@ -1934,12 +1934,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source,
-        [
-            DiagnosticResult.CompilerError("ARGP0025")
-                .WithLocation(0)
-                .WithArguments(1)
-        ]);
+        await VerifyGeneratorAsync(source);
     }
 
     [Fact]
@@ -1952,7 +1947,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
-            class {|#0:MyOptions|}
+            class MyOptions
             {
                 [Parameter(0)]
                 public string A { get; set; }
@@ -1965,12 +1960,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source,
-        [
-            DiagnosticResult.CompilerError("ARGP0025")
-                .WithLocation(0)
-                .WithArguments(2)
-        ]);
+        await VerifyGeneratorAsync(source);
     }
 
     [Fact]
@@ -1983,7 +1973,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
-            class {|#0:MyOptions|}
+            class MyOptions
             {
                 [Parameter(0)]
                 public string A { get; set; }
@@ -1993,12 +1983,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source,
-        [
-            DiagnosticResult.CompilerError("ARGP0026")
-                .WithLocation(0)
-                .WithArguments(1, 2)
-        ]);
+        await VerifyGeneratorAsync(source);
     }
 
     [Fact]
@@ -2011,7 +1996,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
-            class {|#0:MyOptions|}
+            class MyOptions
             {
                 [Parameter(0)]
                 public string A { get; set; }
@@ -2024,15 +2009,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source,
-        [
-            DiagnosticResult.CompilerError("ARGP0025")
-                .WithLocation(0)
-                .WithArguments(1),
-            DiagnosticResult.CompilerError("ARGP0025")
-                .WithLocation(0)
-                .WithArguments(3)
-        ]);
+        await VerifyGeneratorAsync(source);
     }
 
     [Fact]
@@ -2045,7 +2022,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
-            class {|#0:MyOptions|}
+            class MyOptions
             {
                 [Parameter(0)]
                 public string A { get; set; }
@@ -2055,12 +2032,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source,
-        [
-            DiagnosticResult.CompilerError("ARGP0026")
-                .WithLocation(0)
-                .WithArguments(1, 3)
-        ]);
+        await VerifyGeneratorAsync(source);
     }
 
     [Fact]
@@ -2073,7 +2045,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
-            class {|#0:MyOptions|}
+            class MyOptions
             {
                 [Parameter(0)]
                 public string A { get; set; }
@@ -2086,12 +2058,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source,
-        [
-            DiagnosticResult.CompilerError("ARGP0026")
-                .WithLocation(0)
-                .WithArguments(2, 3)
-        ]);
+        await VerifyGeneratorAsync(source);
     }
 
     [Fact]
@@ -2104,7 +2071,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
-            class {|#0:MyOptions|}
+            class MyOptions
             {
                 [Parameter(0)]
                 public string A { get; set; }
@@ -2117,15 +2084,7 @@ public sealed class ArgumentParserGeneratorTests
             }
             """;
 
-        await VerifyGeneratorAsync(source,
-        [
-            DiagnosticResult.CompilerError("ARGP0026")
-                .WithLocation(0)
-                .WithArguments(1, 2),
-            DiagnosticResult.CompilerError("ARGP0026")
-                .WithLocation(0)
-                .WithArguments(4, 5)
-        ]);
+        await VerifyGeneratorAsync(source);
     }
 
     [Fact]
@@ -2144,7 +2103,7 @@ public sealed class ArgumentParserGeneratorTests
                 public string Parameter1 { get; set; }
 
                 [Parameter(1)]
-                public required string {|ARGP0027:Parameter2|} { get; set; }
+                public required string Parameter2 { get; set; }
             }
             """;
 
@@ -2170,7 +2129,7 @@ public sealed class ArgumentParserGeneratorTests
 
                 [Parameter(1)]
                 [Required]
-                public string {|ARGP0027:Parameter2|} { get; set; }
+                public string Parameter2 { get; set; }
             }
             """;
 
@@ -2196,10 +2155,10 @@ public sealed class ArgumentParserGeneratorTests
                 public string Parameter2 { get; set; }
 
                 [Parameter(2)]
-                public required string {|ARGP0027:Parameter3|} { get; set; }
+                public required string Parameter3 { get; set; }
 
                 [Parameter(3)]
-                public required string {|ARGP0027:Parameter4|} { get; set; }
+                public required string Parameter4 { get; set; }
             }
             """;
 
@@ -2224,7 +2183,7 @@ public sealed class ArgumentParserGeneratorTests
             class MyOptions
             {
                 [Parameter(0, Name = "{{invalidName}}")]
-                public string {|ARGP0028:Param|} { get; set; }
+                public string Param { get; set; }
             }
             """;
 
