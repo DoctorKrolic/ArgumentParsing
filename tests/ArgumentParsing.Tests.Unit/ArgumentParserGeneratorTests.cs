@@ -2338,13 +2338,7 @@ public sealed class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
-    private static async Task VerifyGeneratorAsync(string source, DiagnosticResult[] diagnostics)
-        => await VerifyGeneratorAsync(source, diagnostics, []);
-
     private static async Task VerifyGeneratorAsync(string source, params (string Hint, string Content)[] generatedDocuments)
-        => await VerifyGeneratorAsync(source, [], generatedDocuments);
-
-    private static async Task VerifyGeneratorAsync(string source, DiagnosticResult[] diagnostics, (string Hint, string Content)[] generatedDocuments)
     {
         var test = new CSharpSourceGeneratorTest<ArgumentParserGenerator>()
         {
@@ -2368,8 +2362,6 @@ public sealed class ArgumentParserGeneratorTests
             LanguageVersion = LanguageVersion.Latest,
             ReferenceAssemblies = ReferenceAssemblies.Net.Net80
         };
-
-        test.TestState.ExpectedDiagnostics.AddRange(diagnostics);
 
         foreach (var (hint, content) in generatedDocuments)
         {

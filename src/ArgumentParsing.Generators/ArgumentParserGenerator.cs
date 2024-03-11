@@ -1,4 +1,3 @@
-using ArgumentParsing.Generators.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -13,13 +12,8 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .ForAttributeWithMetadataName(
                 "ArgumentParsing.GeneratedArgumentParserAttribute",
                     static (node, _) => node is MethodDeclarationSyntax,
-                    ExtractMainInfo);
-
-        var diagnostics = extractedInfosProvider
-            .Where(info => !info.Diagnostics.IsDefaultOrEmpty)
-            .Select((info, _) => info.Diagnostics);
-
-        context.ReportDiagnostics(diagnostics);
+                    ExtractMainInfo)
+            .Where(info => info != default);
 
         var infoFromCompilation = context.CompilationProvider
             .Select(ExtractInfoFromCompilation);
@@ -28,7 +22,6 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .Select((info, _) => info.EnvironmentInfo);
 
         var argumentParserInfos = extractedInfosProvider
-            .Where(info => info.ArgumentParserInfo is not null)
             .Select((info, _) => info.ArgumentParserInfo!)
             .Combine(environmentInfo);
 
@@ -38,7 +31,6 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .Select((info, _) => info.AssemblyVersionInfo);
 
         var optionsHelpInfos = extractedInfosProvider
-            .Where(info => info.OptionsHelpInfo is not null)
             .Select((info, _) => info.OptionsHelpInfo!)
             .Combine(assemblyVersionInfo);
 
