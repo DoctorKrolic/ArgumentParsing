@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34414.90
@@ -20,6 +20,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArgumentParsing", "src\Argu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArgumentParsing.Generators", "src\ArgumentParsing.Generators\ArgumentParsing.Generators.csproj", "{40A37207-8F5A-4289-86AA-CAD12F76CDD4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArgumentParsing.CodeFixes", "src\ArgumentParsing.CodeFixes\ArgumentParsing.CodeFixes.csproj", "{1D4CE478-AC09-4A5E-A784-7830F8C2B0A9}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{75866132-EEF7-4DFB-B353-23A2A132B519}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArgumentParsing.Tests.Unit", "tests\ArgumentParsing.Tests.Unit\ArgumentParsing.Tests.Unit.csproj", "{F1DE9D21-CC10-4E79-AE07-917919473620}"
@@ -40,6 +42,10 @@ Global
 		{40A37207-8F5A-4289-86AA-CAD12F76CDD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40A37207-8F5A-4289-86AA-CAD12F76CDD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40A37207-8F5A-4289-86AA-CAD12F76CDD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D4CE478-AC09-4A5E-A784-7830F8C2B0A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D4CE478-AC09-4A5E-A784-7830F8C2B0A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D4CE478-AC09-4A5E-A784-7830F8C2B0A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D4CE478-AC09-4A5E-A784-7830F8C2B0A9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F1DE9D21-CC10-4E79-AE07-917919473620}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F1DE9D21-CC10-4E79-AE07-917919473620}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1DE9D21-CC10-4E79-AE07-917919473620}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -55,6 +61,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{D4C9F2B0-E066-4ADA-AECD-833E91E0A0AE} = {46554B19-7D88-4A3E-8844-D31E8971AE30}
 		{40A37207-8F5A-4289-86AA-CAD12F76CDD4} = {46554B19-7D88-4A3E-8844-D31E8971AE30}
+		{1D4CE478-AC09-4A5E-A784-7830F8C2B0A9} = {46554B19-7D88-4A3E-8844-D31E8971AE30}
 		{F1DE9D21-CC10-4E79-AE07-917919473620} = {75866132-EEF7-4DFB-B353-23A2A132B519}
 		{D9DBBC55-0513-4447-ACDA-FA9343E864F0} = {75866132-EEF7-4DFB-B353-23A2A132B519}
 	EndGlobalSection

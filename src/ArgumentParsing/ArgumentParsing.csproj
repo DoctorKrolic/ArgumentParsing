@@ -12,10 +12,12 @@
   <!-- Reference source generator without referencing the actual binary so we can be sure it is up to date when packaging this project -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <ProjectReference Include="..\ArgumentParsing.Generators\ArgumentParsing.Generators.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ArgumentParsing.CodeFixes\ArgumentParsing.CodeFixes.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <!-- Pack the source generator to the right folder -->
   <ItemGroup>
     <None Include="..\ArgumentParsing.Generators\bin\$(Configuration)\netstandard2.0\ArgumentParsing.Generators.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
+    <None Include="..\ArgumentParsing.CodeFixes\bin\$(Configuration)\netstandard2.0\ArgumentParsing.CodeFixes.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
   </ItemGroup>
 </Project>
