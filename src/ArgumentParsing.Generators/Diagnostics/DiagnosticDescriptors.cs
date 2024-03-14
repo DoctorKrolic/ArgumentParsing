@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace ArgumentParsing.Generators.Diagnostics;
 
-internal static class DiagnosticDescriptors
+public static class DiagnosticDescriptors
 {
     private const string ArgumentParsingCategoryName = "ArgumentParsing";
 

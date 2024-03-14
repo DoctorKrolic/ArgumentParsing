@@ -1,3 +1,4 @@
+using ArgumentParsing.CodeFixes;
 using ArgumentParsing.Generators.Diagnostics.Analyzers;
 using ArgumentParsing.Tests.Unit.Utilities;
 
@@ -148,7 +149,15 @@ public sealed partial class ArgumentParserAnalyzerTests : AnalyzerTestBase<Argum
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<UseArgsParameterNameCodeFixProvider>(source, fixedSource);
     }
 
     [Theory]
