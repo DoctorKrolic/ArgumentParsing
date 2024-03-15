@@ -4,7 +4,7 @@ using ArgumentParsing.Tests.Unit.Utilities;
 
 namespace ArgumentParsing.Tests.Unit;
 
-public sealed partial class ArgumentParserAnalyzerTests : AnalyzerTestBase<ArgumentParserAnalyzer>
+public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignatureAnalyzer>
 {
     [Fact]
     public async Task InvalidParameterCount_NoParameters()

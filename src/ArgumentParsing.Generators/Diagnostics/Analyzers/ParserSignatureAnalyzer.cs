@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using ArgumentParsing.Generators.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -5,8 +6,38 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace ArgumentParsing.Generators.Diagnostics.Analyzers;
 
-public partial class ArgumentParserAnalyzer
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
+public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
 {
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+        ImmutableArray.Create(
+            DiagnosticDescriptors.InvalidParserParameterCount,
+            DiagnosticDescriptors.InvalidArgsParameter,
+            DiagnosticDescriptors.InvalidArgsParameterType,
+            DiagnosticDescriptors.PreferArgsParameterName,
+            DiagnosticDescriptors.ReturnTypeMustBeParseResult,
+            DiagnosticDescriptors.InvalidOptionsType,
+            DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute);
+
+    public override void Initialize(AnalysisContext context)
+    {
+        context.EnableConcurrentExecution();
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+
+        context.RegisterCompilationStartAction(static context =>
+        {
+            var comp = context.Compilation;
+            var knownTypes = new KnownTypes
+            {
+                GeneratedArgumentParserAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.GeneratedArgumentParserAttribute")!,
+                ParseResultOfTType = comp.GetTypeByMetadataName("ArgumentParsing.Results.ParseResult`1")!,
+                OptionsTypeAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.OptionsTypeAttribute")!,
+            };
+
+            context.RegisterSymbolAction(context => AnalyzeParserSignature(context, knownTypes), SymbolKind.Method);
+        });
+    }
+
     private static void AnalyzeParserSignature(SymbolAnalysisContext context, KnownTypes knownTypes)
     {
         var method = (IMethodSymbol)context.Symbol;
@@ -92,17 +123,15 @@ public partial class ArgumentParserAnalyzer
                     Diagnostic.Create(
                         DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute, genericArgumentErrorSyntax.GetLocation()));
             }
-            else
-            {
-                if (namedOptionsType.DeclaredAccessibility < Accessibility.Internal)
-                {
-                    context.ReportDiagnostic(
-                        Diagnostic.Create(
-                            DiagnosticDescriptors.TooLowAccessibilityOfOptionsType, namedOptionsType.Locations.First()));
-                }
-
-                AnalyzeOptionsType(context, namedOptionsType, knownTypes);
-            }
         }
+    }
+
+    private readonly struct KnownTypes
+    {
+        public required INamedTypeSymbol GeneratedArgumentParserAttributeType { get; init; }
+
+        public required INamedTypeSymbol ParseResultOfTType { get; init; }
+
+        public required INamedTypeSymbol OptionsTypeAttributeType { get; init; }
     }
 }

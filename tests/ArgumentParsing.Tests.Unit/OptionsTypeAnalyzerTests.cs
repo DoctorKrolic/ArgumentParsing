@@ -1,8 +1,10 @@
+using ArgumentParsing.Generators.Diagnostics.Analyzers;
+using ArgumentParsing.Tests.Unit.Utilities;
 using Microsoft.CodeAnalysis.Testing;
 
 namespace ArgumentParsing.Tests.Unit;
 
-public partial class ArgumentParserAnalyzerTests
+public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnalyzer>
 {
     [Theory]
     [InlineData("public", "public")]
@@ -11,7 +13,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("internal", "protected internal")]
     [InlineData("", "internal")]
     [InlineData("", "protected internal")]
-    public async Task OptionsType_RequiredField(string optionsTypeAccessibility, string fieldAccessibility)
+    public async Task RequiredField(string optionsTypeAccessibility, string fieldAccessibility)
     {
         var source = $$"""
             partial class C
@@ -42,7 +44,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("", "private")]
     [InlineData("", "protected")]
     [InlineData("", "private protected")]
-    public async Task OptionsType_RequiredField_TooLowFieldAccessibility(string optionsTypeAccessibility, string fieldAccessibility)
+    public async Task RequiredField_TooLowFieldAccessibility(string optionsTypeAccessibility, string fieldAccessibility)
     {
         var source = $$"""
             partial class C
@@ -62,7 +64,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_UnannotatedRequiredProperty_NoSetter()
+    public async Task UnannotatedRequiredProperty_NoSetter()
     {
         var source = """
             partial class C
@@ -93,7 +95,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("", "private")]
     [InlineData("", "protected")]
     [InlineData("", "private protected")]
-    public async Task OptionsType_UnannotatedRequiredProperty_TooLowPropertyAccessibility(string optionsTypeAccessibility, string propertyAccessibility)
+    public async Task UnannotatedRequiredProperty_TooLowPropertyAccessibility(string optionsTypeAccessibility, string propertyAccessibility)
     {
         var source = $$"""
             partial class C
@@ -124,7 +126,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("", "private")]
     [InlineData("", "protected")]
     [InlineData("", "private protected")]
-    public async Task OptionsType_UnannotatedRequiredProperty_TooLowSetterAccessibility(string optionsTypeAccessibility, string setterAccessibility)
+    public async Task UnannotatedRequiredProperty_TooLowSetterAccessibility(string optionsTypeAccessibility, string setterAccessibility)
     {
         var source = $$"""
             partial class C
@@ -150,7 +152,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("internal", "protected internal")]
     [InlineData("", "internal")]
     [InlineData("", "protected internal")]
-    public async Task OptionsType_UnannotatedRequiredProperty_ValidPropertyAccessibility(string optionsTypeAccessibility, string propertyAccessibility)
+    public async Task UnannotatedRequiredProperty_ValidPropertyAccessibility(string optionsTypeAccessibility, string propertyAccessibility)
     {
         var source = $$"""
             partial class C
@@ -174,7 +176,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("internal", "protected internal")]
     [InlineData("", "internal")]
     [InlineData("", "protected internal")]
-    public async Task OptionsType_UnannotatedRequiredProperty_ValidSetterAccessibility(string optionsTypeAccessibility, string setterAccessibility)
+    public async Task UnannotatedRequiredProperty_ValidSetterAccessibility(string optionsTypeAccessibility, string setterAccessibility)
     {
         var source = $$"""
             partial class C
@@ -196,7 +198,7 @@ public partial class ArgumentParserAnalyzerTests
     [Theory]
     [InlineData("public", "public")]
     [InlineData("internal", "public")]
-    public async Task OptionsType_UnannotatedRequiredProperty_SetterIsMoreAccessibleThanProperty(string optionsTypeAccessibility, string setterAccessibility)
+    public async Task UnannotatedRequiredProperty_SetterIsMoreAccessibleThanProperty(string optionsTypeAccessibility, string setterAccessibility)
     {
         var source = $$"""
             partial class C
@@ -219,7 +221,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("private")]
     [InlineData("protected")]
     [InlineData("private protected")]
-    public async Task OptionsType_TooLowAccessibilityOfOptionProperty(string accessibility)
+    public async Task TooLowAccessibilityOfOptionProperty(string accessibility)
     {
         var source = $$"""
             partial class C
@@ -240,7 +242,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_NoSetterOfOptionProperty()
+    public async Task NoSetterOfOptionProperty()
     {
         var source = """
             partial class C
@@ -264,7 +266,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("private")]
     [InlineData("protected")]
     [InlineData("private protected")]
-    public async Task OptionsType_TooLowAccessibilityOfASetterOfOptionProperty(string accessibility)
+    public async Task TooLowAccessibilityOfASetterOfOptionProperty(string accessibility)
     {
         var source = $$"""
             partial class C
@@ -285,7 +287,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidShortName()
+    public async Task InvalidShortName()
     {
         var source = """
             partial class C
@@ -306,7 +308,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidShortName_EmptyChar()
+    public async Task InvalidShortName_EmptyChar()
     {
         var source = """
             partial class C
@@ -327,7 +329,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidLongName_FromPropertyName()
+    public async Task InvalidLongName_FromPropertyName()
     {
         var source = """
             partial class C
@@ -348,7 +350,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidLongName_FromAttribute()
+    public async Task InvalidLongName_FromAttribute()
     {
         var source = """
             partial class C
@@ -369,7 +371,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidShortAndLongName_FromPropertyName()
+    public async Task InvalidShortAndLongName_FromPropertyName()
     {
         var source = """
             partial class C
@@ -390,7 +392,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidShortAndLongName_FromAttribute()
+    public async Task InvalidShortAndLongName_FromAttribute()
     {
         var source = """
             partial class C
@@ -411,7 +413,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateShortName()
+    public async Task DuplicateShortName()
     {
         var source = """
             partial class C
@@ -435,7 +437,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateShortName_DuplicatesInDifferentPartialDeclarations()
+    public async Task DuplicateShortName_DuplicatesInDifferentPartialDeclarations()
     {
         var source = """
             partial class C
@@ -462,7 +464,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateShortName_ThreeDuplicates()
+    public async Task DuplicateShortName_ThreeDuplicates()
     {
         var source = """
             partial class C
@@ -489,7 +491,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateLongName()
+    public async Task DuplicateLongName()
     {
         var source = """
             partial class C
@@ -513,7 +515,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateLongName_DuplicatesInDifferentPartialDeclarations()
+    public async Task DuplicateLongName_DuplicatesInDifferentPartialDeclarations()
     {
         var source = """
             partial class C
@@ -540,7 +542,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateLongName_ThreeDuplicates()
+    public async Task DuplicateLongName_ThreeDuplicates()
     {
         var source = """
             partial class C
@@ -570,7 +572,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("object")]
     [InlineData("dynamic")]
     [InlineData("MyOptions")]
-    public async Task OptionsType_InvalidOptionType(string invalidType)
+    public async Task InvalidOptionType(string invalidType)
     {
         var source = $$"""
             partial class C
@@ -591,7 +593,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidOptionType_ErrorType()
+    public async Task InvalidOptionType_ErrorType()
     {
         var source = """
             partial class C
@@ -612,7 +614,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_RequiredBoolOption()
+    public async Task RequiredBoolOption()
     {
         var source = """
             partial class C
@@ -648,7 +650,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("bool")]
     [InlineData("DayOfWeek")]
     [InlineData("char")]
-    public async Task OptionsType_RequiredNullableOption(string optionBaseType)
+    public async Task RequiredNullableOption(string optionBaseType)
     {
         var source = $$"""
             using System;
@@ -672,7 +674,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_NegativeParameterIndex()
+    public async Task NegativeParameterIndex()
     {
         var source = """
             partial class C
@@ -693,7 +695,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateParameterIndex()
+    public async Task DuplicateParameterIndex()
     {
         var source = """
             partial class C
@@ -717,7 +719,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateParameterIndex_NotDefault()
+    public async Task DuplicateParameterIndex_NotDefault()
     {
         var source = """
             partial class C
@@ -744,7 +746,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateParameter_DuplicatesInDifferentPartialDeclarations()
+    public async Task DuplicateParameter_DuplicatesInDifferentPartialDeclarations()
     {
         var source = """
             partial class C
@@ -771,7 +773,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateParameterIndex_ThreeDuplicates()
+    public async Task DuplicateParameterIndex_ThreeDuplicates()
     {
         var source = """
             partial class C
@@ -802,7 +804,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("dynamic")]
     [InlineData("MyOptions")]
     [InlineData("System.Collections.Generic.IEnumerable<string>")]
-    public async Task OptionsType_InvalidParameterType(string invalidType)
+    public async Task InvalidParameterType(string invalidType)
     {
         var source = $$"""
             partial class C
@@ -823,7 +825,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidParameterType_ErrorType()
+    public async Task InvalidParameterType_ErrorType()
     {
         var source = """
             partial class C
@@ -844,7 +846,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_MissingParameterWithIndex1()
+    public async Task MissingParameterWithIndex1()
     {
         var source = """
             partial class C
@@ -873,7 +875,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_MissingParameterWithIndex2()
+    public async Task MissingParameterWithIndex2()
     {
         var source = """
             partial class C
@@ -905,7 +907,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_MissingParameterWithIndex1And2()
+    public async Task MissingParameterWithIndex1And2()
     {
         var source = """
             partial class C
@@ -934,7 +936,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_MissingParameterWithIndex1And3()
+    public async Task MissingParameterWithIndex1And3()
     {
         var source = """
             partial class C
@@ -969,7 +971,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_MissingParameterWithIndexFrom1To3()
+    public async Task MissingParameterWithIndexFrom1To3()
     {
         var source = """
             partial class C
@@ -998,7 +1000,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_MissingParameterWithIndexFrom2To3()
+    public async Task MissingParameterWithIndexFrom2To3()
     {
         var source = """
             partial class C
@@ -1030,7 +1032,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_MissingParameterWithIndexFrom1To2AndFrom4To5()
+    public async Task MissingParameterWithIndexFrom1To2AndFrom4To5()
     {
         var source = """
             partial class C
@@ -1065,7 +1067,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidRequiredParameter_RequiredProperty()
+    public async Task InvalidRequiredParameter_RequiredProperty()
     {
         var source = """
             partial class C
@@ -1089,7 +1091,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidRequiredParameter_RequiredAttribute()
+    public async Task InvalidRequiredParameter_RequiredAttribute()
     {
         var source = """
             using System.ComponentModel.DataAnnotations;
@@ -1116,7 +1118,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_TwoInvalidRequiredParameters()
+    public async Task TwoInvalidRequiredParameters()
     {
         var source = """
             partial class C
@@ -1151,7 +1153,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("$param")]
     [InlineData("param name")]
     [InlineData("invalid&name")]
-    public async Task OptionsType_InvalidParameterName(string invalidName)
+    public async Task InvalidParameterName(string invalidName)
     {
         var source = $$"""
             partial class C
@@ -1172,7 +1174,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateRemainingParameters()
+    public async Task DuplicateRemainingParameters()
     {
         var source = """
             using System.Collections.Generic;
@@ -1198,7 +1200,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateRemainingParameters_DuplicatesInDifferentPartialDeclarations()
+    public async Task DuplicateRemainingParameters_DuplicatesInDifferentPartialDeclarations()
     {
         var source = """
             using System.Collections.Generic;
@@ -1227,7 +1229,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_DuplicateRemainingParameters_ThreeDuplicates()
+    public async Task DuplicateRemainingParameters_ThreeDuplicates()
     {
         var source = """
             using System.Collections.Generic;
@@ -1263,7 +1265,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("dynamic")]
     [InlineData("MyOptions")]
     [InlineData("System.Collections.Generic.IEnumerable<int?>")]
-    public async Task OptionsType_InvalidRemainingParametersType(string invalidType)
+    public async Task InvalidRemainingParametersType(string invalidType)
     {
         var source = $$"""
             partial class C
@@ -1284,7 +1286,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_InvalidRemainingParametersType_ErrorType()
+    public async Task InvalidRemainingParametersType_ErrorType()
     {
         var source = """
             partial class C
@@ -1308,7 +1310,7 @@ public partial class ArgumentParserAnalyzerTests
     [InlineData("")]
     [InlineData("private")]
     [InlineData("protected")]
-    public async Task OptionsType_TooLowOptionsTypeAccessibility(string accessibility)
+    public async Task TooLowOptionsTypeAccessibility(string accessibility)
     {
         var source = $$"""
             partial class C
@@ -1327,7 +1329,7 @@ public partial class ArgumentParserAnalyzerTests
     }
 
     [Fact]
-    public async Task OptionsType_NoShortAndLongName()
+    public async Task NoShortAndLongName()
     {
         var source = """
             partial class C
