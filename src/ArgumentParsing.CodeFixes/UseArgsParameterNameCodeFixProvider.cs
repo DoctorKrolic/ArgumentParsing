@@ -14,6 +14,9 @@ public sealed class UseArgsParameterNameCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DiagnosticDescriptors.PreferArgsParameterName.Id);
 
+    public override FixAllProvider? GetFixAllProvider()
+        => WellKnownFixAllProviders.BatchFixer;
+
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
         var document = context.Document;
