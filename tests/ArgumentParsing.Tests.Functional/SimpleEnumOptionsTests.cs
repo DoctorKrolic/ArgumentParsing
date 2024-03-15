@@ -11,6 +11,7 @@ public sealed partial class SimpleEnumOptionsTests
         EnumValue1, EnumValue2
     }
 
+    [OptionsType]
     private sealed class Options
     {
         [Option('e')]

@@ -5,6 +5,7 @@ namespace ArgumentParsing.Tests.Functional;
 public sealed partial class MixedNullableOptionsTests
 {
     #region OptionsAndParser
+    [OptionsType]
     private sealed class Options
     {
         [Option('b')]

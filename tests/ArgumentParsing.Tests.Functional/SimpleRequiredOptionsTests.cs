@@ -7,6 +7,7 @@ namespace ArgumentParsing.Tests.Functional;
 public sealed partial class SimpleRequiredOptionsTests
 {
     #region OptionsAndParser
+    [OptionsType]
     private sealed class Options
     {
         [Option('r')]

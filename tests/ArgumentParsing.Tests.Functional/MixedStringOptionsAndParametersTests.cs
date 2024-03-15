@@ -7,6 +7,7 @@ namespace ArgumentParsing.Tests.Functional;
 public sealed partial class MixedStringOptionsAndParametersTests
 {
     #region OptionsAndParser
+    [OptionsType]
     private sealed class Options
     {
         [Option('o')]

@@ -55,7 +55,11 @@ public partial class ArgumentParserGenerator
             return default;
         }
 
-        if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType || !namedOptionsType.Constructors.Any(c => c.Parameters.Length == 0))
+        var optionsTypeAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.OptionsTypeAttribute")!;
+
+        if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType ||
+            !namedOptionsType.Constructors.Any(c => c.Parameters.Length == 0) ||
+            !namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(optionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
         {
             return default;
         }

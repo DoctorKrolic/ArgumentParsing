@@ -6,6 +6,7 @@ namespace ArgumentParsing.Tests.Functional;
 public sealed partial class SimpleFlagOptionsTests
 {
     #region OptionsAndParser
+    [OptionsType]
     private sealed class Options
     {
         [Option('a')]

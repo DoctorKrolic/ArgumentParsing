@@ -6,6 +6,7 @@ namespace ArgumentParsing.Tests.Functional;
 public sealed partial class SimpleEnumParametersTests
 {
     #region OptionsAndParser
+    [OptionsType]
     private sealed class Options
     {
         [Parameter(0)]

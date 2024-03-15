@@ -55,6 +55,7 @@ partial class Program
     }
 }
 
+[OptionsType]
 class Options
 {
     [Option('v'), HelpInfo("Enables verbose logging")]

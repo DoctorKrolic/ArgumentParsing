@@ -7,6 +7,7 @@ namespace ArgumentParsing.Tests.Functional;
 public sealed partial class SimpleCharParametersTests
 {
     #region OptionsAndParser
+    [OptionsType]
     private sealed class Options
     {
         [Parameter(0)]

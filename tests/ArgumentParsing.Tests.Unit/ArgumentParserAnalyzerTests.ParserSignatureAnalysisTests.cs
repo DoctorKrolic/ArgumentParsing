@@ -265,4 +265,42 @@ public sealed partial class ArgumentParserAnalyzerTests : AnalyzerTestBase<Argum
 
         await VerifyAnalyzerAsync(source);
     }
+
+    [Fact]
+    public async Task OptionsTypeNotAnnotatedWithOptionsTypeAttribute()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<{|ARGP0034:MyOptions|}> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsTypeNotAnnotatedWithOptionsTypeAttribute_NotGenericName()
+    {
+        var source = """
+            using UnannotatedOptionsType = ArgumentParsing.Results.ParseResult<MyOptions>;
+
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial {|ARGP0034:UnannotatedOptionsType|} {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
 }

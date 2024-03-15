@@ -244,4 +244,12 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor OptionsTypeMustBeAnnotatedWithAttribute = new(
+        id: "ARGP0034",
+        title: "Option type must be annotated with [OptionsType] attribute",
+        messageFormat: "Option type must be annotated with [OptionsType] attribute",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

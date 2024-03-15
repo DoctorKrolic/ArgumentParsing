@@ -10,6 +10,7 @@ namespace ArgumentParsing.Tests.Functional;
 public sealed partial class SimpleHelpCommandTest
 {
     #region OptionsAndParser
+    [OptionsType]
     private sealed class Options
     {
         [Option('o'), HelpInfo("Option help description")]

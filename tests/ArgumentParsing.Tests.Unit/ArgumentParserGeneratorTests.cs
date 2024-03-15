@@ -420,6 +420,7 @@ public sealed class ArgumentParserGeneratorTests
                 public static partial {{invalidType}} {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 public string S { get; set; }
@@ -458,6 +459,7 @@ public sealed class ArgumentParserGeneratorTests
                 public static partial ParseResult<{{invalidType}}> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class ClassWithoutParameterlessConstructor
             {
                 public ClassWithoutParameterlessConstructor(int a)
@@ -477,6 +479,24 @@ public sealed class ArgumentParserGeneratorTests
             {
                 [GeneratedArgumentParser]
                 public static partial ParseResult<{|CS0246:ErrorType|}> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task OptionsTypeNotAnnotatedWithOptionsTypeAttribute()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class MyOptions
+            {
             }
             """;
 
@@ -513,6 +533,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
                 {{fieldAccessibility}} required int a;
@@ -543,6 +564,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
                 {{fieldAccessibility}} required int {|CS9032:a|};
@@ -562,6 +584,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 public required int {|CS9034:A|} { get; }
@@ -592,6 +615,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
                 {{propertyAccessibility}} required int {|CS9032:A|} { get; set; }
@@ -622,6 +646,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
                 public required int {|CS9032:A|} { get; {{setterAccessibility}} set; }
@@ -647,6 +672,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
                 {{propertyAccessibility}} required int A { get; set; }
@@ -670,6 +696,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
                 public required int A { get; {{setterAccessibility}} set; }
@@ -691,6 +718,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
                 public required int A { get; {{setterAccessibility}} {|CS0273:set|}; }
@@ -713,6 +741,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option]
@@ -733,6 +762,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option]
@@ -756,6 +786,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option]
@@ -776,6 +807,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option('%')]
@@ -796,6 +828,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option({|CS1011:|}'')]
@@ -816,6 +849,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option('a')]
@@ -836,6 +870,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option("my-long-$name$")]
@@ -856,6 +891,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option('&')]
@@ -876,6 +912,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option('^', "my-long-$name$")]
@@ -896,6 +933,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option('o')]
@@ -919,6 +957,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             partial class MyOptions
             {
                 [Option('o')]
@@ -945,6 +984,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option('o')]
@@ -971,6 +1011,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option("option")]
@@ -994,6 +1035,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             partial class MyOptions
             {
                 [Option("option")]
@@ -1020,6 +1062,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option("option")]
@@ -1049,6 +1092,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option]
@@ -1069,6 +1113,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option]
@@ -1098,6 +1143,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> ParseArguments(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option]
@@ -1387,6 +1433,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> ParseArguments(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option]
@@ -1673,6 +1720,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option]
@@ -1696,6 +1744,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1716,6 +1765,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1739,6 +1789,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1759,6 +1810,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(-1)]
@@ -1779,6 +1831,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1802,6 +1855,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1828,6 +1882,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             partial class MyOptions
             {
                 [Parameter(0)]
@@ -1854,6 +1909,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1884,6 +1940,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1904,6 +1961,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1924,6 +1982,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1947,6 +2006,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1973,6 +2033,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -1996,6 +2057,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -2022,6 +2084,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -2045,6 +2108,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -2071,6 +2135,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -2097,6 +2162,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -2122,6 +2188,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -2146,6 +2213,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0)]
@@ -2180,6 +2248,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Parameter(0, Name = "{{invalidName}}")]
@@ -2202,6 +2271,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [RemainingParameters]
@@ -2227,6 +2297,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             partial class MyOptions
             {
                 [RemainingParameters]
@@ -2255,6 +2326,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [RemainingParameters]
@@ -2288,6 +2360,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [RemainingParameters]
@@ -2308,6 +2381,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [RemainingParameters]
@@ -2328,6 +2402,7 @@ public sealed class ArgumentParserGeneratorTests
                 private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 [Option(null)]
@@ -2351,8 +2426,10 @@ public sealed class ArgumentParserGeneratorTests
                     global using ArgumentParsing;
                     global using ArgumentParsing.Results;
                     global using System;
-                    """,
-                    "class EmptyOptions { }"
+
+                    [OptionsType]
+                    class EmptyOptions { }
+                    """
                 },
                 AdditionalReferences =
                 {

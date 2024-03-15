@@ -41,7 +41,8 @@ public sealed partial class ArgumentParserAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.InvalidRemainingParametersPropertyType,
             // ARGP0031
             DiagnosticDescriptors.TooLowAccessibilityOfOptionsType,
-            DiagnosticDescriptors.NoOptionNames);
+            DiagnosticDescriptors.NoOptionNames,
+            DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -55,6 +56,7 @@ public sealed partial class ArgumentParserAnalyzer : DiagnosticAnalyzer
             {
                 GeneratedArgumentParserAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.GeneratedArgumentParserAttribute")!,
                 ParseResultOfTType = comp.GetTypeByMetadataName("ArgumentParsing.Results.ParseResult`1")!,
+                OptionsTypeAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.OptionsTypeAttribute")!,
                 OptionAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.OptionAttribute")!,
                 ParameterAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.ParameterAttribute")!,
                 RemainingParametersAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.RemainingParametersAttribute")!,
@@ -74,6 +76,8 @@ public sealed partial class ArgumentParserAnalyzer : DiagnosticAnalyzer
         public required INamedTypeSymbol GeneratedArgumentParserAttributeType { get; init; }
 
         public required INamedTypeSymbol ParseResultOfTType { get; init; }
+
+        public required INamedTypeSymbol OptionsTypeAttributeType { get; init; }
 
         public required INamedTypeSymbol OptionAttributeType { get; init; }
 

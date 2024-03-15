@@ -29,6 +29,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
             global using ArgumentParsing.Results;
             global using System;
 
+            [OptionsType]
             class EmptyOptions { }
             """;
 

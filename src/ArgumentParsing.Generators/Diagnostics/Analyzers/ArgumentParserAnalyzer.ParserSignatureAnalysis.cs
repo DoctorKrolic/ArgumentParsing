@@ -68,6 +68,7 @@ public partial class ArgumentParserAnalyzer
         if (returnType.TypeKind != TypeKind.Error)
         {
             var returnTypeSyntax = ((MethodDeclarationSyntax)method.DeclaringSyntaxReferences.First().GetSyntax(context.CancellationToken)).ReturnType;
+            var genericArgumentErrorSyntax = returnTypeSyntax is GenericNameSyntax { TypeArgumentList.Arguments: [var genericArgument] } ? genericArgument : returnTypeSyntax;
 
             if (returnType is not INamedTypeSymbol { TypeArguments: [var optionsType] } namedReturnType ||
                 !namedReturnType.ConstructedFrom.Equals(knownTypes.ParseResultOfTType, SymbolEqualityComparer.Default))
@@ -80,12 +81,16 @@ public partial class ArgumentParserAnalyzer
             {
                 if (optionsType.TypeKind != TypeKind.Error)
                 {
-                    var errorNode = returnTypeSyntax is GenericNameSyntax { TypeArgumentList.Arguments: [var genericArgument] } ? genericArgument : returnTypeSyntax;
-
                     context.ReportDiagnostic(
                         Diagnostic.Create(
-                            DiagnosticDescriptors.InvalidOptionsType, errorNode.GetLocation()));
+                            DiagnosticDescriptors.InvalidOptionsType, genericArgumentErrorSyntax.GetLocation()));
                 }
+            }
+            else if (!namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(knownTypes.OptionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
+            {
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute, genericArgumentErrorSyntax.GetLocation()));
             }
             else
             {
