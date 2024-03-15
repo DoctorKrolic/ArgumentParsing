@@ -27,7 +27,8 @@ public sealed class UseArgsParameterNameCodeFixProvider : CodeFixProvider
             context.RegisterCodeFix(
                 CodeAction.Create(
                     "Use 'args' name for the parameter",
-                    _ => ChangeNameToArgs(document, root, parameter)),
+                    _ => ChangeNameToArgs(document, root, parameter),
+                    nameof(UseArgsParameterNameCodeFixProvider)),
                 context.Diagnostics[0]);
         }
     }
