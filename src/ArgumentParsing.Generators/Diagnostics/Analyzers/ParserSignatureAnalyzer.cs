@@ -96,33 +96,34 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
 
         var returnType = method.ReturnType;
 
-        if (returnType.TypeKind != TypeKind.Error)
-        {
-            var returnTypeSyntax = ((MethodDeclarationSyntax)method.DeclaringSyntaxReferences.First().GetSyntax(context.CancellationToken)).ReturnType;
-            var genericArgumentErrorSyntax = returnTypeSyntax is GenericNameSyntax { TypeArgumentList.Arguments: [var genericArgument] } ? genericArgument : returnTypeSyntax;
+        var returnTypeSyntax = ((MethodDeclarationSyntax)method.DeclaringSyntaxReferences.First().GetSyntax(context.CancellationToken)).ReturnType;
+        var genericArgumentErrorSyntax = returnTypeSyntax is GenericNameSyntax { TypeArgumentList.Arguments: [var genericArgument] } ? genericArgument : returnTypeSyntax;
 
-            if (returnType is not INamedTypeSymbol { TypeArguments: [var optionsType] } namedReturnType ||
-                !namedReturnType.ConstructedFrom.Equals(knownTypes.ParseResultOfTType, SymbolEqualityComparer.Default))
+        if (returnType is not INamedTypeSymbol { TypeArguments: [var optionsType] } namedReturnType ||
+            !namedReturnType.ConstructedFrom.Equals(knownTypes.ParseResultOfTType, SymbolEqualityComparer.Default))
+        {
+            context.ReportDiagnostic(
+                Diagnostic.Create(
+                    DiagnosticDescriptors.ReturnTypeMustBeParseResult,
+                    returnTypeSyntax.GetLocation(),
+                    effectiveSeverity: returnType.TypeKind == TypeKind.Error ? DiagnosticSeverity.Hidden : DiagnosticDescriptors.ReturnTypeMustBeParseResult.DefaultSeverity,
+                    additionalLocations: null,
+                    properties: null));
+        }
+        else if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType || !namedOptionsType.Constructors.Any(c => c.Parameters.Length == 0))
+        {
+            if (optionsType.TypeKind != TypeKind.Error)
             {
                 context.ReportDiagnostic(
                     Diagnostic.Create(
-                        DiagnosticDescriptors.ReturnTypeMustBeParseResult, returnTypeSyntax.GetLocation()));
+                        DiagnosticDescriptors.InvalidOptionsType, genericArgumentErrorSyntax.GetLocation()));
             }
-            else if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType || !namedOptionsType.Constructors.Any(c => c.Parameters.Length == 0))
-            {
-                if (optionsType.TypeKind != TypeKind.Error)
-                {
-                    context.ReportDiagnostic(
-                        Diagnostic.Create(
-                            DiagnosticDescriptors.InvalidOptionsType, genericArgumentErrorSyntax.GetLocation()));
-                }
-            }
-            else if (!namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(knownTypes.OptionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
-            {
-                context.ReportDiagnostic(
-                    Diagnostic.Create(
-                        DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute, genericArgumentErrorSyntax.GetLocation()));
-            }
+        }
+        else if (!namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(knownTypes.OptionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
+        {
+            context.ReportDiagnostic(
+                Diagnostic.Create(
+                    DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute, genericArgumentErrorSyntax.GetLocation()));
         }
     }
 

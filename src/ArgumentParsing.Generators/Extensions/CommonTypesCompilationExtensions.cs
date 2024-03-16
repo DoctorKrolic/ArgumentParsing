@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace ArgumentParsing.Generators.Extensions;
 
-internal static class CommonTypesCompilationExtensions
+public static class CommonTypesCompilationExtensions
 {
     public static INamedTypeSymbol? ParseResultOfTType(this Compilation compilation) => compilation.GetTypeByMetadataName("ArgumentParsing.Results.ParseResult`1");
 

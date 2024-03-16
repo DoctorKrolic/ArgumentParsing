@@ -1,6 +1,8 @@
 using ArgumentParsing.CodeFixes;
 using ArgumentParsing.Generators.Diagnostics.Analyzers;
 using ArgumentParsing.Tests.Unit.Utilities;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 
 namespace ArgumentParsing.Tests.Unit;
 
@@ -161,27 +163,63 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Theory]
-    [InlineData("C")]
-    [InlineData("int")]
-    [InlineData("string")]
     [InlineData("MyOptions")]
     [InlineData("EmptyOptions")]
-    public async Task InvalidReturnType(string invalidType)
+    public async Task InvalidReturnType_ResultsInValidOptionsTypeAfterFix(string returnType)
     {
         var source = $$"""
             partial class C
             {
                 [GeneratedArgumentParser]
-                public static partial {|ARGP0005:{{invalidType}}|} {|CS8795:ParseArguments|}(string[] args);
+                public static partial {|ARGP0005:{{returnType}}|} {|CS8795:ParseArguments|}(string[] args);
             }
 
+            [OptionsType]
             class MyOptions
             {
                 public string S { get; set; }
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<{{returnType}}> {|CS8795:ParseArguments|}(string[] args);
+            }
+            
+            [OptionsType]
+            class MyOptions
+            {
+                public string S { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<WrapReturnTypeIntoParseResultCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("int")]
+    [InlineData("string")]
+    public async Task InvalidReturnType_ResultsInInvalidOptionsTypeAfterFix(string returnType)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial {|ARGP0005:{{returnType}}|} {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        var fixedSource = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<{|ARGP0006:{{returnType}}|}> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<WrapReturnTypeIntoParseResultCodeFixProvider>(source, fixedSource);
     }
 
     [Fact]
@@ -191,11 +229,23 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
             partial class C
             {
                 [GeneratedArgumentParser]
-                public static partial {|CS0246:ErrorType|} {|CS8795:ParseArguments|}(string[] args);
+                public static partial {|#0:{|CS0246:ErrorType|}|} {|CS8795:ParseArguments|}(string[] args);
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<{|CS0246:ErrorType|}> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<WrapReturnTypeIntoParseResultCodeFixProvider>(source, fixedSource,
+        [
+            new DiagnosticResult("ARGP0005", DiagnosticSeverity.Hidden)
+                .WithLocation(0)
+        ]);
     }
 
     [Theory]
