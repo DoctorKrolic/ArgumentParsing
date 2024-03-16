@@ -252,4 +252,12 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor ParserRelatedPropertyInNonOptionsType = new(
+        id: "ARGP0035",
+        title: "Usage of parser-related property in non-options type",
+        messageFormat: "Property is annotated with parser-related attribute, but the containing type is not annotated with [OptionsType] attribute",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }
