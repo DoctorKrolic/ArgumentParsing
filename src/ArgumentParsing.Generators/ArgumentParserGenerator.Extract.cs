@@ -47,19 +47,16 @@ public partial class ArgumentParserGenerator
         var returnType = argumentParserMethodSymbol.ReturnType;
 
         var compilation = context.SemanticModel.Compilation;
-        var parseResultOfTType = compilation.GetTypeByMetadataName("ArgumentParsing.Results.ParseResult`1")!;
 
         if (returnType is not INamedTypeSymbol { TypeArguments: [var optionsType] } namedReturnType ||
-            !namedReturnType.ConstructedFrom.Equals(parseResultOfTType, SymbolEqualityComparer.Default))
+            !namedReturnType.ConstructedFrom.Equals(compilation.ParseResultOfTType(), SymbolEqualityComparer.Default))
         {
             return default;
         }
 
-        var optionsTypeAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.OptionsTypeAttribute")!;
-
         if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType ||
             !namedOptionsType.Constructors.Any(c => c.Parameters.Length == 0) ||
-            !namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(optionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
+            !namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(compilation.OptionsTypeAttributeType(), SymbolEqualityComparer.Default) == true))
         {
             return default;
         }
@@ -134,10 +131,10 @@ public partial class ArgumentParserGenerator
 
             string? helpDescription = null;
 
-            var optionAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.OptionAttribute")!;
-            var parameterAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.ParameterAttribute");
-            var remainingParametersAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.RemainingParametersAttribute");
-            var requiredAttributeType = compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.RequiredAttribute")!;
+            var optionAttributeType = compilation.OptionAttributeType();
+            var parameterAttributeType = compilation.ParameterAttributeType();
+            var remainingParametersAttributeType = compilation.RemainingParametersAttributeType();
+            var requiredAttributeType = compilation.SystemComponentModelDataAnnotationsRequiredAttributeType();
             var helpInfoAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Help.HelpInfoAttribute")!;
 
             foreach (var attr in property.GetAttributes())
@@ -427,7 +424,7 @@ public partial class ArgumentParserGenerator
                 var iEnumerableOfTType = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T);
                 var iReadOnlyCollectionOfTType = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyCollection_T);
                 var iReadOnlyListOfTType = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyList_T);
-                var immutableArrayType = compilation.GetTypeByMetadataName("System.Collections.Immutable.ImmutableArray`1");
+                var immutableArrayType = compilation.ImmutableArrayOfTType();
 
                 var constructedFrom = namedType.ConstructedFrom;
                 var isImmutableArray = constructedFrom.Equals(immutableArrayType, SymbolEqualityComparer.Default);

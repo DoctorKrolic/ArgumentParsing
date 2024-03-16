@@ -29,9 +29,9 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             var comp = context.Compilation;
             var knownTypes = new KnownTypes
             {
-                GeneratedArgumentParserAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.GeneratedArgumentParserAttribute")!,
-                ParseResultOfTType = comp.GetTypeByMetadataName("ArgumentParsing.Results.ParseResult`1")!,
-                OptionsTypeAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.OptionsTypeAttribute")!,
+                GeneratedArgumentParserAttributeType = comp.GetTypeByMetadataName(ArgumentParserGenerator.GeneratedArgumentParserAttributeName),
+                ParseResultOfTType = comp.ParseResultOfTType(),
+                OptionsTypeAttributeType = comp.OptionsTypeAttributeType(),
             };
 
             context.RegisterSymbolAction(context => AnalyzeParserSignature(context, knownTypes), SymbolKind.Method);
@@ -128,10 +128,10 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
 
     private readonly struct KnownTypes
     {
-        public required INamedTypeSymbol GeneratedArgumentParserAttributeType { get; init; }
+        public required INamedTypeSymbol? GeneratedArgumentParserAttributeType { get; init; }
 
-        public required INamedTypeSymbol ParseResultOfTType { get; init; }
+        public required INamedTypeSymbol? ParseResultOfTType { get; init; }
 
-        public required INamedTypeSymbol OptionsTypeAttributeType { get; init; }
+        public required INamedTypeSymbol? OptionsTypeAttributeType { get; init; }
     }
 }

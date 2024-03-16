@@ -6,13 +6,15 @@ namespace ArgumentParsing.Generators;
 [Generator]
 public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
 {
+    public const string GeneratedArgumentParserAttributeName = "ArgumentParsing.GeneratedArgumentParserAttribute";
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var extractedInfosProvider = context.SyntaxProvider
             .ForAttributeWithMetadataName(
-                "ArgumentParsing.GeneratedArgumentParserAttribute",
-                    static (node, _) => node is MethodDeclarationSyntax,
-                    ExtractMainInfo)
+                GeneratedArgumentParserAttributeName,
+                static (node, _) => node is MethodDeclarationSyntax,
+                ExtractMainInfo)
             .Where(info => info != default);
 
         var infoFromCompilation = context.CompilationProvider

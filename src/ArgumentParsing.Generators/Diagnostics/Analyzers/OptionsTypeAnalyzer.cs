@@ -50,15 +50,15 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             var comp = context.Compilation;
             var knownTypes = new KnownTypes
             {
-                OptionsTypeAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.OptionsTypeAttribute")!,
-                OptionAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.OptionAttribute")!,
-                ParameterAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.ParameterAttribute")!,
-                RemainingParametersAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.RemainingParametersAttribute")!,
-                RequiredAttributeType = comp.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.RequiredAttribute")!,
+                OptionsTypeAttributeType = comp.OptionsTypeAttributeType(),
+                OptionAttributeType = comp.OptionAttributeType(),
+                ParameterAttributeType = comp.ParameterAttributeType(),
+                RemainingParametersAttributeType = comp.RemainingParametersAttributeType(),
+                RequiredAttributeType = comp.SystemComponentModelDataAnnotationsRequiredAttributeType(),
                 IEnumerableOfTType = comp.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T),
                 IReadOnlyCollectionOfTType = comp.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyCollection_T),
                 IReadOnlyListOfTType = comp.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyList_T),
-                ImmutableArrayOfTType = comp.GetTypeByMetadataName("System.Collections.Immutable.ImmutableArray`1"),
+                ImmutableArrayOfTType = comp.ImmutableArrayOfTType(),
             };
 
             context.RegisterSymbolAction(context => AnalyzeOptionsType(context, knownTypes), SymbolKind.NamedType);
@@ -560,15 +560,15 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
 
     private readonly struct KnownTypes
     {
-        public required INamedTypeSymbol OptionsTypeAttributeType { get; init; }
+        public required INamedTypeSymbol? OptionsTypeAttributeType { get; init; }
 
-        public required INamedTypeSymbol OptionAttributeType { get; init; }
+        public required INamedTypeSymbol? OptionAttributeType { get; init; }
 
-        public required INamedTypeSymbol ParameterAttributeType { get; init; }
+        public required INamedTypeSymbol? ParameterAttributeType { get; init; }
 
-        public required INamedTypeSymbol RemainingParametersAttributeType { get; init; }
+        public required INamedTypeSymbol? RemainingParametersAttributeType { get; init; }
 
-        public required INamedTypeSymbol RequiredAttributeType { get; init; }
+        public required INamedTypeSymbol? RequiredAttributeType { get; init; }
 
         public required INamedTypeSymbol IEnumerableOfTType { get; init; }
 

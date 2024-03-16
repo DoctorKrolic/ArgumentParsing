@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using ArgumentParsing.Generators.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -20,10 +21,10 @@ public sealed class ParserRelatedPropertyInNonOptionsTypeAnalyzer : DiagnosticAn
             var comp = context.Compilation;
             var knownTypes = new KnownTypes
             {
-                OptionsTypeAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.OptionsTypeAttribute")!,
-                OptionAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.OptionAttribute")!,
-                ParameterAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.ParameterAttribute")!,
-                RemainingParametersAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.RemainingParametersAttribute")!,
+                OptionsTypeAttributeType = comp.OptionsTypeAttributeType(),
+                OptionAttributeType = comp.OptionAttributeType(),
+                ParameterAttributeType = comp.ParameterAttributeType(),
+                RemainingParametersAttributeType = comp.RemainingParametersAttributeType(),
             };
 
             context.RegisterSymbolAction(context => AnalyzeProperty(context, knownTypes), SymbolKind.Property);
@@ -55,12 +56,12 @@ public sealed class ParserRelatedPropertyInNonOptionsTypeAnalyzer : DiagnosticAn
 
     private readonly struct KnownTypes
     {
-        public required INamedTypeSymbol OptionsTypeAttributeType { get; init; }
+        public required INamedTypeSymbol? OptionsTypeAttributeType { get; init; }
 
-        public required INamedTypeSymbol OptionAttributeType { get; init; }
+        public required INamedTypeSymbol? OptionAttributeType { get; init; }
 
-        public required INamedTypeSymbol ParameterAttributeType { get; init; }
+        public required INamedTypeSymbol? ParameterAttributeType { get; init; }
 
-        public required INamedTypeSymbol RemainingParametersAttributeType { get; init; }
+        public required INamedTypeSymbol? RemainingParametersAttributeType { get; init; }
     }
 }
