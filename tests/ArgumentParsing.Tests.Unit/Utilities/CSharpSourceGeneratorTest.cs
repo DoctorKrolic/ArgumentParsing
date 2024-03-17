@@ -1,11 +1,11 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
+using Microsoft.CodeAnalysis.Testing;
 
 namespace ArgumentParsing.Tests.Unit.Utilities;
 
-public sealed class CSharpSourceGeneratorTest<TGenerator> : CSharpSourceGeneratorTest<TGenerator, XUnitVerifier>
+public sealed class CSharpSourceGeneratorTest<TGenerator> : CSharpSourceGeneratorTest<TGenerator, DefaultVerifier>
     where TGenerator : new()
 {
     public LanguageVersion LanguageVersion { get; init; }

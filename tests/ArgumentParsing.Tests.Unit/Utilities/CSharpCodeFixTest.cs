@@ -3,11 +3,11 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
+using Microsoft.CodeAnalysis.Testing;
 
 namespace ArgumentParsing.Tests.Unit.Utilities;
 
-public sealed class CSharpCodeFixTest<TAnalyzer, TCodeFixProvider> : CSharpCodeFixTest<TAnalyzer, TCodeFixProvider, XUnitVerifier>
+public sealed class CSharpCodeFixTest<TAnalyzer, TCodeFixProvider> : CSharpCodeFixTest<TAnalyzer, TCodeFixProvider, DefaultVerifier>
     where TAnalyzer: DiagnosticAnalyzer, new()
     where TCodeFixProvider: CodeFixProvider, new()
 {

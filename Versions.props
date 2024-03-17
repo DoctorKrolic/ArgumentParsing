@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
     <MicrosoftCodeAnalysisVersion>4.8.0</MicrosoftCodeAnalysisVersion>
-    <MicrosoftCodeAnalysisTestingVersion>1.1.2-beta1.23627.1</MicrosoftCodeAnalysisTestingVersion>
+    <MicrosoftCodeAnalysisTestingVersion>1.1.2-beta1.24163.6</MicrosoftCodeAnalysisTestingVersion>
   </PropertyGroup>
 </Project>
