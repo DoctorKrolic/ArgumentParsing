@@ -158,7 +158,13 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
-    // ARGP0021 - suggest switching sequence option to immutable array if possible
+    public static readonly DiagnosticDescriptor PreferImmutableArrayAsSequenceType = new(
+        id: "ARGP0021",
+        title: "Prefer ImmutableArray<T> as a sequence type",
+        messageFormat: "Prefer ImmutableArray<T> type for sequence options and remaining parameters",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor NegativeParameterIndex = new(
         id: "ARGP0022",

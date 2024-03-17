@@ -631,6 +631,39 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
         await VerifyAnalyzerAsync(source);
     }
 
+    [Theory]
+    [InlineData("IEnumerable", "string")]
+    [InlineData("IReadOnlyCollection", "int")]
+    [InlineData("IReadOnlyList", "char")]
+    public async Task SuggestImmutableArrayForSequenceOptionType(string sequenceBaseType, string sequenceUnderlyingType)
+    {
+        var source = $$"""
+            using System.Collections.Generic;
+            using System.Collections.Immutable;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public required {|ARGP0021:{{sequenceBaseType}}<{{sequenceUnderlyingType}}>|} Option { get; init; }
+            }
+            """;
+
+        var fixedSource = $$"""
+            using System.Collections.Generic;
+            using System.Collections.Immutable;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public required ImmutableArray<{{sequenceUnderlyingType}}> Option { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<ChangePropertyTypeToImmutableArrayCodeFixProvider>(source, fixedSource);
+    }
+
     [Fact]
     public async Task NegativeParameterIndex()
     {
@@ -1027,16 +1060,16 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateRemainingParameters()
     {
         var source = """
-            using System.Collections.Generic;
+            using System.Collections.Immutable;
 
             [OptionsType]
             class MyOptions
             {
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:A|} { get; init; }
+                public ImmutableArray<string> {|ARGP0029:A|} { get; init; }
 
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:B|} { get; init; }
+                public ImmutableArray<string> {|ARGP0029:B|} { get; init; }
             }
             """;
 
@@ -1047,19 +1080,19 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateRemainingParameters_DuplicatesInDifferentPartialDeclarations()
     {
         var source = """
-            using System.Collections.Generic;
+            using System.Collections.Immutable;
 
             [OptionsType]
             partial class MyOptions
             {
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:A|} { get; init; }
+                public ImmutableArray<string> {|ARGP0029:A|} { get; init; }
             }
 
             partial class MyOptions
             {
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:B|} { get; init; }
+                public ImmutableArray<string> {|ARGP0029:B|} { get; init; }
             }
             """;
 
@@ -1070,19 +1103,19 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateRemainingParameters_ThreeDuplicates()
     {
         var source = """
-            using System.Collections.Generic;
+            using System.Collections.Immutable;
 
             [OptionsType]
             class MyOptions
             {
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:A|} { get; init; }
+                public ImmutableArray<string> {|ARGP0029:A|} { get; init; }
 
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:B|} { get; init; }
+                public ImmutableArray<string> {|ARGP0029:B|} { get; init; }
 
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:C|} { get; init; }
+                public ImmutableArray<string> {|ARGP0029:C|} { get; init; }
             }
             """;
 
@@ -1124,6 +1157,39 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             """;
 
         await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("IEnumerable", "string")]
+    [InlineData("IReadOnlyCollection", "int")]
+    [InlineData("IReadOnlyList", "char")]
+    public async Task SuggestImmutableArrayForRemainingParametersType(string sequenceBaseType, string sequenceUnderlyingType)
+    {
+        var source = $$"""
+            using System.Collections.Generic;
+            using System.Collections.Immutable;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [RemainingParameters]
+                public required {|ARGP0021:{{sequenceBaseType}}<{{sequenceUnderlyingType}}>|} Option { get; init; }
+            }
+            """;
+
+        var fixedSource = $$"""
+            using System.Collections.Generic;
+            using System.Collections.Immutable;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [RemainingParameters]
+                public required ImmutableArray<{{sequenceUnderlyingType}}> Option { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<ChangePropertyTypeToImmutableArrayCodeFixProvider>(source, fixedSource);
     }
 
     [Theory]

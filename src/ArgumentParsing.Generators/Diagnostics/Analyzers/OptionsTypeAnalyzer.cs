@@ -28,7 +28,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             // ARGP0018
             DiagnosticDescriptors.RequiredBoolOption,
             DiagnosticDescriptors.RequiredNullableOption,
-            // ARGP0021
+            DiagnosticDescriptors.PreferImmutableArrayAsSequenceType,
             DiagnosticDescriptors.NegativeParameterIndex,
             DiagnosticDescriptors.DuplicateParameterIndex,
             DiagnosticDescriptors.InvalidParameterPropertyType,
@@ -38,6 +38,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.InvalidParameterName,
             DiagnosticDescriptors.DuplicateRemainingParameters,
             DiagnosticDescriptors.InvalidRemainingParametersPropertyType,
+            // ARGP0031
             DiagnosticDescriptors.TooLowAccessibilityOfOptionsType,
             DiagnosticDescriptors.NoOptionNames,
             DiagnosticDescriptors.PropertyCannotHaveMultipleParserRoles);
@@ -340,18 +341,18 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                     }
                 }
 
-                var (parseStrategy, isNullable, _) = GetParseStrategy(propertyType, knownTypes);
+                var (parseStrategy, isNullable, sequenceType) = GetParseStrategy(propertyType, knownTypes);
+                var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
+                var locationForTypeRelatedDiagnostics = propertySyntax?.Type.GetLocation() ?? propertyLocation;
 
                 if (parseStrategy == ParseStrategy.None)
                 {
                     if (propertyType.TypeKind != TypeKind.Error)
                     {
-                        var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
-
                         context.ReportDiagnostic(
                             Diagnostic.Create(
                                 DiagnosticDescriptors.InvalidOptionPropertyType,
-                                propertySyntax?.Type.GetLocation() ?? propertyLocation,
+                                locationForTypeRelatedDiagnostics,
                                 propertyType));
                     }
 
@@ -370,6 +371,13 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                     context.ReportDiagnostic(
                         Diagnostic.Create(
                             DiagnosticDescriptors.RequiredNullableOption, propertyLocation));
+                }
+
+                if (sequenceType == SequenceType.List && knownTypes.ImmutableArrayOfTType is not null)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.PreferImmutableArrayAsSequenceType, locationForTypeRelatedDiagnostics));
                 }
             }
             else if (isParameter)
@@ -418,8 +426,8 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.InvalidParameterName, propertyLocation, parameterName));
                 }
 
-                var (parseStrategy, isNullable, isSequence) = GetParseStrategy(propertyType, knownTypes);
-                if ((parseStrategy == ParseStrategy.None || isSequence) && propertyType.TypeKind != TypeKind.Error)
+                var (parseStrategy, isNullable, sequenceType) = GetParseStrategy(propertyType, knownTypes);
+                if ((parseStrategy == ParseStrategy.None || sequenceType != SequenceType.None) && propertyType.TypeKind != TypeKind.Error)
                 {
                     var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
 
@@ -462,15 +470,24 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
 
                 declaredRemainingParameters = true;
 
-                var (parseStrategy, isNullable, isSequence) = GetParseStrategy(propertyType, knownTypes);
-                if ((parseStrategy == ParseStrategy.None || isNullable || !isSequence) && propertyType.TypeKind != TypeKind.Error)
-                {
-                    var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
-                    var diagnosticLocation = propertySyntax?.Type.GetLocation() ?? propertyLocation;
+                var (parseStrategy, isNullable, sequenceType) = GetParseStrategy(propertyType, knownTypes);
+                var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
+                var locationForTypeRelatedDiagnostics = propertySyntax?.Type.GetLocation() ?? propertyLocation;
 
+                if (parseStrategy == ParseStrategy.None || isNullable || sequenceType == SequenceType.None)
+                {
+                    if (propertyType.TypeKind != TypeKind.Error)
+                    {
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(
+                                DiagnosticDescriptors.InvalidRemainingParametersPropertyType, locationForTypeRelatedDiagnostics));
+                    }
+                }
+                else if (sequenceType != SequenceType.ImmutableArray)
+                {
                     context.ReportDiagnostic(
                         Diagnostic.Create(
-                            DiagnosticDescriptors.InvalidRemainingParametersPropertyType, diagnosticLocation));
+                            DiagnosticDescriptors.PreferImmutableArrayAsSequenceType, locationForTypeRelatedDiagnostics));
                 }
             }
         }
@@ -529,7 +546,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        static (ParseStrategy, bool IsNullable, bool IsSequence) GetParseStrategy(ITypeSymbol type, KnownTypes knownTypes)
+        static (ParseStrategy, bool IsNullable, SequenceType) GetParseStrategy(ITypeSymbol type, KnownTypes knownTypes)
         {
             if (type is not INamedTypeSymbol namedType)
             {
@@ -537,7 +554,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             }
 
             var isNullable = false;
-            var isSequence = false;
+            var sequenceType = SequenceType.None;
 
             if (namedType is { ConstructedFrom.SpecialType: SpecialType.System_Nullable_T, TypeArguments: [var nullableUnderlyingType] })
             {
@@ -555,11 +572,12 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             else
             {
                 var constructedFrom = namedType.ConstructedFrom;
+                var isImmutableArray = constructedFrom.Equals(knownTypes.ImmutableArrayOfTType, SymbolEqualityComparer.Default);
 
-                if (constructedFrom.Equals(knownTypes.IEnumerableOfTType, SymbolEqualityComparer.Default) ||
+                if (isImmutableArray ||
+                    constructedFrom.Equals(knownTypes.IEnumerableOfTType, SymbolEqualityComparer.Default) ||
                     constructedFrom.Equals(knownTypes.IReadOnlyCollectionOfTType, SymbolEqualityComparer.Default) ||
-                    constructedFrom.Equals(knownTypes.IReadOnlyListOfTType, SymbolEqualityComparer.Default) ||
-                    constructedFrom.Equals(knownTypes.ImmutableArrayOfTType, SymbolEqualityComparer.Default))
+                    constructedFrom.Equals(knownTypes.IReadOnlyListOfTType, SymbolEqualityComparer.Default))
                 {
                     if (namedType.TypeArguments is [INamedTypeSymbol namedSequenceUnderlyingType])
                     {
@@ -570,11 +588,11 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                         return default;
                     }
 
-                    isSequence = true;
+                    sequenceType = isImmutableArray ? SequenceType.ImmutableArray : SequenceType.List;
                 }
             }
 
-            return (namedType.GetPrimaryParseStrategy(), isNullable, isSequence);
+            return (namedType.GetPrimaryParseStrategy(), isNullable, sequenceType);
         }
     }
 
