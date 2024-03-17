@@ -260,4 +260,12 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor PropertyCannotHaveMultipleParserRoles = new(
+        id: "ARGP0036",
+        title: "Property cannot have multiple parser roles",
+        messageFormat: "Property cannot have multiple parser roles, meaning it cannot be annotated with multiple parser-related attributes",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

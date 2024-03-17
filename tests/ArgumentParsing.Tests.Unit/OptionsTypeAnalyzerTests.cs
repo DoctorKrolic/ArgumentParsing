@@ -1348,4 +1348,35 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
 
         await VerifyAnalyzerAsync(source);
     }
+
+    [Fact]
+    public async Task MultipleParserRelatedAttributes()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                [Parameter(0)]
+                public string {|ARGP0036:Prop1|} { get; set; }
+
+                [Parameter(1)]
+                [RemainingParameters]
+                public string {|ARGP0036:Prop2|} { get; set; }
+
+                [Option]
+                [Parameter(2)]
+                [RemainingParameters]
+                public string {|ARGP0036:Prop3|} { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
 }

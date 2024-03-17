@@ -219,7 +219,9 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            if (!isOption && !isParameter && !isRemainingParameters)
+            var countOfParserRelatedAttributes = (isOption ? 1 : 0) + (isParameter ? 1 : 0) + (isRemainingParameters ? 1 : 0);
+
+            if (countOfParserRelatedAttributes == 0)
             {
                 if (property.IsRequired)
                 {
@@ -227,6 +229,10 @@ public partial class ArgumentParserGenerator
                 }
 
                 continue;
+            }
+            else if (countOfParserRelatedAttributes > 1)
+            {
+                return default;
             }
 
             if (property is not { DeclaredAccessibility: >= Accessibility.Internal, SetMethod.DeclaredAccessibility: >= Accessibility.Internal })

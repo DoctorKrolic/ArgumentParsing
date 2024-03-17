@@ -2413,6 +2413,37 @@ public sealed class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
+    [Fact]
+    public async Task OptionsType_MultipleParserRelatedAttributes()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                [Parameter(0)]
+                public string Prop1 { get; set; }
+
+                [Parameter(1)]
+                [RemainingParameters]
+                public string Prop2 { get; set; }
+
+                [Option]
+                [Parameter(2)]
+                [RemainingParameters]
+                public string Prop3 { get; set; }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     private static async Task VerifyGeneratorAsync(string source, params (string Hint, string Content)[] generatedDocuments)
     {
         var test = new CSharpSourceGeneratorTest<ArgumentParserGenerator>()

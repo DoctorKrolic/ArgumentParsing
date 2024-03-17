@@ -38,7 +38,8 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.DuplicateRemainingParameters,
             DiagnosticDescriptors.InvalidRemainingParametersPropertyType,
             DiagnosticDescriptors.TooLowAccessibilityOfOptionsType,
-            DiagnosticDescriptors.NoOptionNames);
+            DiagnosticDescriptors.NoOptionNames,
+            DiagnosticDescriptors.PropertyCannotHaveMultipleParserRoles);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -204,7 +205,9 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             var propertyType = property.Type;
             var propertyLocation = property.Locations.First();
 
-            if (!isOption && !isParameter && !isRemainingParameters)
+            var countOfParserRelatedAttributes = (isOption ? 1 : 0) + (isParameter ? 1 : 0) + (isRemainingParameters ? 1 : 0);
+
+            if (countOfParserRelatedAttributes == 0)
             {
                 if (property.IsRequired &&
                     property.SetMethod is not null &&
@@ -217,6 +220,12 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 }
 
                 continue;
+            }
+            else if (countOfParserRelatedAttributes > 1)
+            {
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.PropertyCannotHaveMultipleParserRoles, propertyLocation));
             }
 
             if (property.DeclaredAccessibility < Accessibility.Internal)
