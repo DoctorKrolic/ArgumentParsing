@@ -17,4 +17,6 @@ public static class CommonTypesCompilationExtensions
     public static INamedTypeSymbol? SystemComponentModelDataAnnotationsRequiredAttributeType(this Compilation compilation) => compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.RequiredAttribute");
 
     public static INamedTypeSymbol? ImmutableArrayOfTType(this Compilation compilation) => compilation.GetTypeByMetadataName("System.Collections.Immutable.ImmutableArray`1");
+
+    public static INamedTypeSymbol? IsExternalInitType(this Compilation compilation) => compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.IsExternalInit");
 }

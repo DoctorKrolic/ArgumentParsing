@@ -24,10 +24,14 @@ public abstract class AnalyzerTestBase<TAnalyzer>
     protected static async Task VerifyAnalyzerWithCodeFixAsync<TCodeFix>(string source, string fixedSource, DiagnosticResult[] diagnostics, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null)
         where TCodeFix : CodeFixProvider, new()
     {
-        var additionalDoc = """
+        var usings = """
             global using ArgumentParsing;
             global using ArgumentParsing.Results;
             global using System;
+            """;
+
+        var emptyOptions = """
+            using ArgumentParsing;
 
             [OptionsType]
             class EmptyOptions { }
@@ -42,7 +46,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
                 Sources =
                 {
                     source,
-                    additionalDoc,
+                    emptyOptions
                 },
                 AdditionalReferences =
                 {
@@ -53,12 +57,22 @@ public abstract class AnalyzerTestBase<TAnalyzer>
             ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net80,
         };
 
+        if (languageVersion >= LanguageVersion.CSharp10)
+        {
+            test.TestState.Sources.Add(usings);
+        }
+
         test.ExpectedDiagnostics.AddRange(diagnostics);
 
         if (fixedSource is not null)
         {
             test.FixedState.Sources.Add(fixedSource);
-            test.FixedState.Sources.Add(additionalDoc);
+            test.FixedState.Sources.Add(emptyOptions);
+            if (languageVersion >= LanguageVersion.CSharp10)
+            {
+                test.FixedState.Sources.Add(usings);
+            }
+
             test.FixedState.AdditionalReferences.Add(mainLibraryReference);
         }
 

@@ -1,5 +1,7 @@
+using ArgumentParsing.CodeFixes;
 using ArgumentParsing.Generators.Diagnostics.Analyzers;
 using ArgumentParsing.Tests.Unit.Utilities;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 
 namespace ArgumentParsing.Tests.Unit;
@@ -242,14 +244,34 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     }
 
     [Fact]
-    public async Task NoSetterOfOptionProperty()
+    public async Task NoSetterOfOptionProperty_CanAddInitSetter()
     {
         var source = """
-            partial class C
+            [OptionsType]
+            class MyOptions
             {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+                [Option]
+                public string {|ARGP0010:A|} { get; }
             }
+            """;
+
+        var fixedSource = """
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public string A { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<AddSetAccessorCodeFixProvider>(source, fixedSource);
+    }
+
+    [Fact]
+    public async Task NoSetterOfOptionProperty_LanguageVersionLessThan9()
+    {
+        var source = """
+            using ArgumentParsing;
 
             [OptionsType]
             class MyOptions
@@ -259,7 +281,46 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = """
+            using ArgumentParsing;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public string A { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<AddSetAccessorCodeFixProvider>(source, fixedSource, LanguageVersion.CSharp8);
+    }
+
+    [Fact]
+    public async Task NoSetterOfOptionProperty_NoIsExternalInit()
+    {
+        var source = """
+            using ArgumentParsing;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public string {|ARGP0010:A|} { get; }
+            }
+            """;
+
+        var fixedSource = """
+            using ArgumentParsing;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public string A { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<AddSetAccessorCodeFixProvider>(source, fixedSource, LanguageVersion.Latest, ReferenceAssemblies.NetFramework.Net48.Default);
     }
 
     [Theory]
@@ -269,12 +330,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task TooLowAccessibilityOfASetterOfOptionProperty(string accessibility)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -283,7 +338,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        await VerifyAnalyzerWithCodeFixAsync<AddSetAccessorCodeFixProvider>(source, source);
     }
 
     [Fact]
