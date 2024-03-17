@@ -86,7 +86,13 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    // Reserve ARGP0011 to suggest to use `init` for option property if possible (will be implemented as an analyzer)
+    public static readonly DiagnosticDescriptor PreferInitPropertyAccessor = new(
+        id: "ARGP0011",
+        title: "Prefer 'init' property accessor",
+        messageFormat: "Prefer 'init' property accessor for parser-related properties",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor InvalidShortName = new(
         id: "ARGP0012",

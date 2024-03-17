@@ -85,7 +85,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
-                {{propertyAccessibility}} required int {|CS9032:A|} { get; set; }
+                {{propertyAccessibility}} required int {|CS9032:A|} { get; init; }
             }
             """;
 
@@ -110,7 +110,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
-                public required int {|CS9032:A|} { get; {{setterAccessibility}} set; }
+                public required int {|CS9032:A|} { get; {{setterAccessibility}} init; }
             }
             """;
 
@@ -130,7 +130,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
-                {{propertyAccessibility}} required int {|ARGP0008:A|} { get; set; }
+                {{propertyAccessibility}} required int {|ARGP0008:A|} { get; init; }
             }
             """;
 
@@ -148,7 +148,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
-                public required int {|ARGP0008:A|} { get; {{setterAccessibility}} set; }
+                public required int {|ARGP0008:A|} { get; {{setterAccessibility}} init; }
             }
             """;
 
@@ -182,7 +182,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option]
-                {{accessibility}} string {|ARGP0009:A|} { get; set; }
+                {{accessibility}} string {|ARGP0009:A|} { get; init; }
             }
             """;
 
@@ -284,6 +284,64 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     }
 
     [Fact]
+    public async Task SuggestInitAccessorForParserProperty()
+    {
+        var source = """
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public string A { get; {|ARGP0011:set|}; }
+            }
+            """;
+
+        var fixedSource = """
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public string A { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<ChangeToInitAccessorCodeFixProvider>(source, fixedSource);
+    }
+
+    [Fact]
+    public async Task DoNotSuggestInitAccessorForParserPropertyForLanguageVersionLessThan9()
+    {
+        var source = """
+            using ArgumentParsing;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public string A { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source, LanguageVersion.CSharp8);
+    }
+
+    [Fact]
+    public async Task DoNotSuggestInitAccessorForParserPropertyWhenNoIsExternalInit()
+    {
+        var source = """
+            using ArgumentParsing;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public string A { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source, LanguageVersion.Latest, ReferenceAssemblies.NetFramework.Net48.Default);
+    }
+
+    [Fact]
     public async Task InvalidShortName()
     {
         var source = """
@@ -291,7 +349,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option('%')]
-                public string {|ARGP0012:A|} { get; set; }
+                public string {|ARGP0012:A|} { get; init; }
             }
             """;
 
@@ -306,7 +364,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option({|CS1011:|}'')]
-                public string A { get; set; }
+                public string A { get; init; }
             }
             """;
 
@@ -321,7 +379,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option('a')]
-                public string {|ARGP0013:_A|} { get; set; }
+                public string {|ARGP0013:_A|} { get; init; }
             }
             """;
 
@@ -336,7 +394,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option("my-long-$name$")]
-                public string {|ARGP0013:A|} { get; set; }
+                public string {|ARGP0013:A|} { get; init; }
             }
             """;
 
@@ -351,7 +409,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option('&')]
-                public string {|ARGP0012:{|ARGP0013:_A|}|} { get; set; }
+                public string {|ARGP0012:{|ARGP0013:_A|}|} { get; init; }
             }
             """;
 
@@ -366,7 +424,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option('^', "my-long-$name$")]
-                public string {|ARGP0012:{|ARGP0013:A|}|} { get; set; }
+                public string {|ARGP0012:{|ARGP0013:A|}|} { get; init; }
             }
             """;
 
@@ -381,10 +439,10 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option('o')]
-                public string {|ARGP0014:OptionA|} { get; set; }
+                public string {|ARGP0014:OptionA|} { get; init; }
 
                 [Option('o')]
-                public string {|ARGP0014:OptionB|} { get; set; }
+                public string {|ARGP0014:OptionB|} { get; init; }
             }
             """;
 
@@ -399,13 +457,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             partial class MyOptions
             {
                 [Option('o')]
-                public string {|ARGP0014:OptionA|} { get; set; }
+                public string {|ARGP0014:OptionA|} { get; init; }
             }
 
             partial class MyOptions
             {
                 [Option('o')]
-                public string {|ARGP0014:OptionB|} { get; set; }
+                public string {|ARGP0014:OptionB|} { get; init; }
             }
             """;
 
@@ -420,13 +478,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option('o')]
-                public string {|ARGP0014:OptionA|} { get; set; }
+                public string {|ARGP0014:OptionA|} { get; init; }
 
                 [Option('o')]
-                public string {|ARGP0014:OptionB|} { get; set; }
+                public string {|ARGP0014:OptionB|} { get; init; }
 
                 [Option('o')]
-                public string {|ARGP0014:OptionC|} { get; set; }
+                public string {|ARGP0014:OptionC|} { get; init; }
             }
             """;
 
@@ -441,10 +499,10 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option("option")]
-                public string {|ARGP0015:A|} { get; set; }
+                public string {|ARGP0015:A|} { get; init; }
 
                 [Option("option")]
-                public string {|ARGP0015:B|} { get; set; }
+                public string {|ARGP0015:B|} { get; init; }
             }
             """;
 
@@ -459,13 +517,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             partial class MyOptions
             {
                 [Option("option")]
-                public string {|ARGP0015:A|} { get; set; }
+                public string {|ARGP0015:A|} { get; init; }
             }
 
             partial class MyOptions
             {
                 [Option("option")]
-                public string {|ARGP0015:B|} { get; set; }
+                public string {|ARGP0015:B|} { get; init; }
             }
             """;
 
@@ -480,13 +538,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option("option")]
-                public string {|ARGP0015:A|} { get; set; }
+                public string {|ARGP0015:A|} { get; init; }
 
                 [Option("option")]
-                public string {|ARGP0015:B|} { get; set; }
+                public string {|ARGP0015:B|} { get; init; }
 
                 [Option("option")]
-                public string {|ARGP0015:C|} { get; set; }
+                public string {|ARGP0015:C|} { get; init; }
             }
             """;
 
@@ -504,7 +562,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option]
-                public {|ARGP0016:{{invalidType}}|} OptionA { get; set; }
+                public {|ARGP0016:{{invalidType}}|} OptionA { get; init; }
             }
             """;
 
@@ -519,7 +577,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option]
-                public {|CS0246:ErrorType|} OptionA { get; set; }
+                public {|CS0246:ErrorType|} OptionA { get; init; }
             }
             """;
 
@@ -534,7 +592,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option]
-                public required bool {|ARGP0019:OptionA|} { get; set; }
+                public required bool {|ARGP0019:OptionA|} { get; init; }
             }
             """;
 
@@ -566,7 +624,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option]
-                public required {{optionBaseType}}? {|ARGP0020:OptionA|} { get; set; }
+                public required {{optionBaseType}}? {|ARGP0020:OptionA|} { get; init; }
             }
             """;
 
@@ -581,7 +639,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Parameter(-1)]
-                public string {|ARGP0022:Parameter|} { get; set; }
+                public string {|ARGP0022:Parameter|} { get; init; }
             }
             """;
 
@@ -596,10 +654,10 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Parameter(0)]
-                public string {|ARGP0023:A|} { get; set; }
+                public string {|ARGP0023:A|} { get; init; }
 
                 [Parameter(0)]
-                public string {|ARGP0023:B|} { get; set; }
+                public string {|ARGP0023:B|} { get; init; }
             }
             """;
 
@@ -614,13 +672,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Parameter(0)]
-                public string A { get; set; }
+                public string A { get; init; }
 
                 [Parameter(1)]
-                public string {|ARGP0023:B|} { get; set; }
+                public string {|ARGP0023:B|} { get; init; }
 
                 [Parameter(1)]
-                public string {|ARGP0023:C|} { get; set; }
+                public string {|ARGP0023:C|} { get; init; }
             }
             """;
 
@@ -635,13 +693,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             partial class MyOptions
             {
                 [Parameter(0)]
-                public string {|ARGP0023:A|} { get; set; }
+                public string {|ARGP0023:A|} { get; init; }
             }
 
             partial class MyOptions
             {
                 [Parameter(0)]
-                public string {|ARGP0023:B|} { get; set; }
+                public string {|ARGP0023:B|} { get; init; }
             }
             """;
 
@@ -656,13 +714,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Parameter(0)]
-                public string {|ARGP0023:A|} { get; set; }
+                public string {|ARGP0023:A|} { get; init; }
 
                 [Parameter(0)]
-                public string {|ARGP0023:B|} { get; set; }
+                public string {|ARGP0023:B|} { get; init; }
 
                 [Parameter(0)]
-                public string {|ARGP0023:C|} { get; set; }
+                public string {|ARGP0023:C|} { get; init; }
             }
             """;
 
@@ -681,7 +739,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Parameter(0)]
-                public {|ARGP0024:{{invalidType}}|} Parameter { get; set; }
+                public {|ARGP0024:{{invalidType}}|} Parameter { get; init; }
             }
             """;
 
@@ -696,7 +754,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Parameter(0)]
-                public {|CS0246:ErrorType|} Parameter { get; set; }
+                public {|CS0246:ErrorType|} Parameter { get; init; }
             }
             """;
 
@@ -711,10 +769,10 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class {|#0:MyOptions|}
             {
                 [Parameter(0)]
-                public string A { get; set; }
+                public string A { get; init; }
 
                 [Parameter(2)]
-                public string B { get; set; }
+                public string B { get; init; }
             }
             """;
 
@@ -734,13 +792,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class {|#0:MyOptions|}
             {
                 [Parameter(0)]
-                public string A { get; set; }
+                public string A { get; init; }
 
                 [Parameter(1)]
-                public string B { get; set; }
+                public string B { get; init; }
 
                 [Parameter(3)]
-                public string C { get; set; }
+                public string C { get; init; }
             }
             """;
 
@@ -760,10 +818,10 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class {|#0:MyOptions|}
             {
                 [Parameter(0)]
-                public string A { get; set; }
+                public string A { get; init; }
 
                 [Parameter(3)]
-                public string B { get; set; }
+                public string B { get; init; }
             }
             """;
 
@@ -783,13 +841,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class {|#0:MyOptions|}
             {
                 [Parameter(0)]
-                public string A { get; set; }
+                public string A { get; init; }
 
                 [Parameter(2)]
-                public string B { get; set; }
+                public string B { get; init; }
 
                 [Parameter(4)]
-                public string C { get; set; }
+                public string C { get; init; }
             }
             """;
 
@@ -812,10 +870,10 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class {|#0:MyOptions|}
             {
                 [Parameter(0)]
-                public string A { get; set; }
+                public string A { get; init; }
 
                 [Parameter(4)]
-                public string B { get; set; }
+                public string B { get; init; }
             }
             """;
 
@@ -835,13 +893,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class {|#0:MyOptions|}
             {
                 [Parameter(0)]
-                public string A { get; set; }
+                public string A { get; init; }
 
                 [Parameter(1)]
-                public string B { get; set; }
+                public string B { get; init; }
 
                 [Parameter(4)]
-                public string C { get; set; }
+                public string C { get; init; }
             }
             """;
 
@@ -861,13 +919,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class {|#0:MyOptions|}
             {
                 [Parameter(0)]
-                public string A { get; set; }
+                public string A { get; init; }
 
                 [Parameter(3)]
-                public string B { get; set; }
+                public string B { get; init; }
 
                 [Parameter(6)]
-                public string C { get; set; }
+                public string C { get; init; }
             }
             """;
 
@@ -890,10 +948,10 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Parameter(0)]
-                public string Parameter1 { get; set; }
+                public string Parameter1 { get; init; }
 
                 [Parameter(1)]
-                public required string {|ARGP0027:Parameter2|} { get; set; }
+                public required string {|ARGP0027:Parameter2|} { get; init; }
             }
             """;
 
@@ -910,11 +968,11 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Parameter(0)]
-                public string Parameter1 { get; set; }
+                public string Parameter1 { get; init; }
 
                 [Parameter(1)]
                 [Required]
-                public string {|ARGP0027:Parameter2|} { get; set; }
+                public string {|ARGP0027:Parameter2|} { get; init; }
             }
             """;
 
@@ -929,16 +987,16 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Parameter(0)]
-                public string Parameter1 { get; set; }
+                public string Parameter1 { get; init; }
 
                 [Parameter(1)]
-                public string Parameter2 { get; set; }
+                public string Parameter2 { get; init; }
 
                 [Parameter(2)]
-                public required string {|ARGP0027:Parameter3|} { get; set; }
+                public required string {|ARGP0027:Parameter3|} { get; init; }
 
                 [Parameter(3)]
-                public required string {|ARGP0027:Parameter4|} { get; set; }
+                public required string {|ARGP0027:Parameter4|} { get; init; }
             }
             """;
 
@@ -958,7 +1016,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Parameter(0, Name = "{{invalidName}}")]
-                public string {|ARGP0028:Param|} { get; set; }
+                public string {|ARGP0028:Param|} { get; init; }
             }
             """;
 
@@ -975,10 +1033,10 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:A|} { get; set; }
+                public IEnumerable<string> {|ARGP0029:A|} { get; init; }
 
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:B|} { get; set; }
+                public IEnumerable<string> {|ARGP0029:B|} { get; init; }
             }
             """;
 
@@ -995,13 +1053,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             partial class MyOptions
             {
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:A|} { get; set; }
+                public IEnumerable<string> {|ARGP0029:A|} { get; init; }
             }
 
             partial class MyOptions
             {
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:B|} { get; set; }
+                public IEnumerable<string> {|ARGP0029:B|} { get; init; }
             }
             """;
 
@@ -1018,13 +1076,13 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:A|} { get; set; }
+                public IEnumerable<string> {|ARGP0029:A|} { get; init; }
 
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:B|} { get; set; }
+                public IEnumerable<string> {|ARGP0029:B|} { get; init; }
 
                 [RemainingParameters]
-                public IEnumerable<string> {|ARGP0029:C|} { get; set; }
+                public IEnumerable<string> {|ARGP0029:C|} { get; init; }
             }
             """;
 
@@ -1046,7 +1104,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [RemainingParameters]
-                public {|ARGP0030:{{invalidType}}|} RemainingParams { get; set; }
+                public {|ARGP0030:{{invalidType}}|} RemainingParams { get; init; }
             }
             """;
 
@@ -1061,7 +1119,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [RemainingParameters]
-                public {|CS0246:ErrorType|} OptionA { get; set; }
+                public {|CS0246:ErrorType|} OptionA { get; init; }
             }
             """;
 
@@ -1095,7 +1153,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [Option(null)]
-                public string {|ARGP0033:Option|} { get; set; }
+                public string {|ARGP0033:Option|} { get; init; }
             }
             """;
 
@@ -1111,16 +1169,16 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             {
                 [Option]
                 [Parameter(0)]
-                public string {|ARGP0036:Prop1|} { get; set; }
+                public string {|ARGP0036:Prop1|} { get; init; }
 
                 [Parameter(1)]
                 [RemainingParameters]
-                public string {|ARGP0036:Prop2|} { get; set; }
+                public string {|ARGP0036:Prop2|} { get; init; }
 
                 [Option]
                 [Parameter(2)]
                 [RemainingParameters]
-                public string {|ARGP0036:Prop3|} { get; set; }
+                public string {|ARGP0036:Prop3|} { get; init; }
             }
             """;
 

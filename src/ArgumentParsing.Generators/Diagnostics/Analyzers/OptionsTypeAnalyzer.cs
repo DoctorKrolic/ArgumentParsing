@@ -3,6 +3,7 @@ using System.Diagnostics;
 using ArgumentParsing.Generators.Extensions;
 using ArgumentParsing.Generators.Models;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -17,7 +18,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.RequiredPropertyMustParticipateInArgumentParsing,
             DiagnosticDescriptors.PropertyIsNotAccessible,
             DiagnosticDescriptors.PropertyMustHaveAccessibleSetter,
-            // ARGP0011
+            DiagnosticDescriptors.PreferInitPropertyAccessor,
             DiagnosticDescriptors.InvalidShortName,
             DiagnosticDescriptors.InvalidLongName,
             DiagnosticDescriptors.DuplicateShortName,
@@ -52,6 +53,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             var knownTypes = new KnownTypes
             {
                 OptionsTypeAttributeType = comp.OptionsTypeAttributeType(),
+                IsExternalInitType = comp.IsExternalInitType(),
                 OptionAttributeType = comp.OptionAttributeType(),
                 ParameterAttributeType = comp.ParameterAttributeType(),
                 RemainingParametersAttributeType = comp.RemainingParametersAttributeType(),
@@ -62,11 +64,12 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 ImmutableArrayOfTType = comp.ImmutableArrayOfTType(),
             };
 
-            context.RegisterSymbolAction(context => AnalyzeOptionsType(context, knownTypes), SymbolKind.NamedType);
+            var languageVersion = ((CSharpCompilation)comp).LanguageVersion;
+            context.RegisterSymbolAction(context => AnalyzeOptionsType(context, languageVersion, knownTypes), SymbolKind.NamedType);
         });
     }
 
-    private static void AnalyzeOptionsType(SymbolAnalysisContext context, KnownTypes knownTypes)
+    private static void AnalyzeOptionsType(SymbolAnalysisContext context, LanguageVersion languageVersion, KnownTypes knownTypes)
     {
         var optionsType = (INamedTypeSymbol)context.Symbol;
 
@@ -240,6 +243,14 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                     Diagnostic.Create(
                         DiagnosticDescriptors.PropertyMustHaveAccessibleSetter,
                         property.SetMethod?.Locations.First() ?? propertyLocation));
+            }
+            else if (property is { SetMethod: { IsInitOnly: false } setMethod } &&
+                languageVersion >= LanguageVersion.CSharp9 &&
+                knownTypes.IsExternalInitType is not null)
+            {
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.PreferInitPropertyAccessor, setMethod.Locations.First()));
             }
 
             var isRequired = hasRequiredAttribute || property.IsRequired;
@@ -570,6 +581,8 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
     private readonly struct KnownTypes
     {
         public required INamedTypeSymbol? OptionsTypeAttributeType { get; init; }
+
+        public required INamedTypeSymbol? IsExternalInitType { get; init; }
 
         public required INamedTypeSymbol? OptionAttributeType { get; init; }
 

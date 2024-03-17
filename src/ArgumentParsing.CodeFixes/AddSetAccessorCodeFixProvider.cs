@@ -42,8 +42,6 @@ public sealed class AddSetAccessorCodeFixProvider : CodeFixProvider
             return;
         }
 
-        var diagnostic = context.Diagnostics[0];
-
         var canHaveInitAccessor = ((CSharpParseOptions)root.SyntaxTree.Options).LanguageVersion >= LanguageVersion.CSharp9 && semanticModel.Compilation.IsExternalInitType() is not null;
         var keyword = canHaveInitAccessor ? SyntaxKind.InitKeyword : SyntaxKind.SetKeyword;
         var keywordText = SyntaxFacts.GetText(keyword);
@@ -53,7 +51,7 @@ public sealed class AddSetAccessorCodeFixProvider : CodeFixProvider
                 $"Add '{keywordText}' accessor",
                 _ => AddAccessor(document, root, propertySyntax, SyntaxFacts.GetAccessorDeclarationKind(keyword)),
                 nameof(AddSetAccessorCodeFixProvider) + ";" + keywordText),
-            diagnostic);
+            context.Diagnostics[0]);
     }
 
     private static Task<Document> AddAccessor(Document document, SyntaxNode root, PropertyDeclarationSyntax propertySyntax, SyntaxKind accessorKind)
