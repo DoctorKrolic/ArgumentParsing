@@ -18,12 +18,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task RequiredField(string optionsTypeAccessibility, string fieldAccessibility)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
@@ -49,12 +43,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task RequiredField_TooLowFieldAccessibility(string optionsTypeAccessibility, string fieldAccessibility)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
@@ -69,12 +57,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task UnannotatedRequiredProperty_NoSetter()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -100,12 +82,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task UnannotatedRequiredProperty_TooLowPropertyAccessibility(string optionsTypeAccessibility, string propertyAccessibility)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
@@ -131,12 +107,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task UnannotatedRequiredProperty_TooLowSetterAccessibility(string optionsTypeAccessibility, string setterAccessibility)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
@@ -157,12 +127,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task UnannotatedRequiredProperty_ValidPropertyAccessibility(string optionsTypeAccessibility, string propertyAccessibility)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
@@ -181,12 +145,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task UnannotatedRequiredProperty_ValidSetterAccessibility(string optionsTypeAccessibility, string setterAccessibility)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
@@ -203,12 +161,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task UnannotatedRequiredProperty_SetterIsMoreAccessibleThanProperty(string optionsTypeAccessibility, string setterAccessibility)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             {{optionsTypeAccessibility}} class MyOptions
             {
@@ -226,12 +178,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task TooLowAccessibilityOfOptionProperty(string accessibility)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -299,8 +245,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task NoSetterOfOptionProperty_NoIsExternalInit()
     {
         var source = """
-            using ArgumentParsing;
-
             [OptionsType]
             class MyOptions
             {
@@ -310,8 +254,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             """;
 
         var fixedSource = """
-            using ArgumentParsing;
-
             [OptionsType]
             class MyOptions
             {
@@ -345,12 +287,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidShortName()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -366,12 +302,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidShortName_EmptyChar()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -387,12 +317,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidLongName_FromPropertyName()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -408,12 +332,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidLongName_FromAttribute()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -429,12 +347,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidShortAndLongName_FromPropertyName()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -450,12 +362,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidShortAndLongName_FromAttribute()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -471,12 +377,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateShortName()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -495,12 +395,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateShortName_DuplicatesInDifferentPartialDeclarations()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             partial class MyOptions
             {
@@ -522,12 +416,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateShortName_ThreeDuplicates()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -549,12 +437,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateLongName()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -573,12 +455,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateLongName_DuplicatesInDifferentPartialDeclarations()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             partial class MyOptions
             {
@@ -600,12 +476,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateLongName_ThreeDuplicates()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -630,12 +500,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidOptionType(string invalidType)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -651,12 +515,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidOptionType_ErrorType()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -672,12 +530,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task RequiredBoolOption()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -708,14 +560,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task RequiredNullableOption(string optionBaseType)
     {
         var source = $$"""
-            using System;
             using System.Numerics;
-
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
 
             [OptionsType]
             class MyOptions
@@ -732,12 +577,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task NegativeParameterIndex()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -753,12 +592,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateParameterIndex()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -777,12 +610,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateParameterIndex_NotDefault()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -804,12 +631,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateParameter_DuplicatesInDifferentPartialDeclarations()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             partial class MyOptions
             {
@@ -831,12 +652,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task DuplicateParameterIndex_ThreeDuplicates()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -862,12 +677,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidParameterType(string invalidType)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -883,12 +692,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidParameterType_ErrorType()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -904,12 +707,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task MissingParameterWithIndex1()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class {|#0:MyOptions|}
             {
@@ -933,12 +730,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task MissingParameterWithIndex2()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class {|#0:MyOptions|}
             {
@@ -965,12 +756,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task MissingParameterWithIndex1And2()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class {|#0:MyOptions|}
             {
@@ -994,12 +779,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task MissingParameterWithIndex1And3()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class {|#0:MyOptions|}
             {
@@ -1029,12 +808,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task MissingParameterWithIndexFrom1To3()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class {|#0:MyOptions|}
             {
@@ -1058,12 +831,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task MissingParameterWithIndexFrom2To3()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class {|#0:MyOptions|}
             {
@@ -1090,12 +857,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task MissingParameterWithIndexFrom1To2AndFrom4To5()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class {|#0:MyOptions|}
             {
@@ -1125,12 +886,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidRequiredParameter_RequiredProperty()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -1151,12 +906,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
         var source = """
             using System.ComponentModel.DataAnnotations;
 
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -1176,12 +925,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task TwoInvalidRequiredParameters()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -1211,12 +954,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidParameterName(string invalidName)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -1233,12 +970,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     {
         var source = """
             using System.Collections.Generic;
-
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
 
             [OptionsType]
             class MyOptions
@@ -1259,12 +990,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     {
         var source = """
             using System.Collections.Generic;
-
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
 
             [OptionsType]
             partial class MyOptions
@@ -1288,12 +1013,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     {
         var source = """
             using System.Collections.Generic;
-
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
 
             [OptionsType]
             class MyOptions
@@ -1323,12 +1042,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidRemainingParametersType(string invalidType)
     {
         var source = $$"""
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -1344,12 +1057,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task InvalidRemainingParametersType_ErrorType()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -1368,11 +1075,8 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task TooLowOptionsTypeAccessibility(string accessibility)
     {
         var source = $$"""
-            partial class C
+            class C
             {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<Options> {|CS8795:ParseArguments|}(string[] args);
-
                 [OptionsType]
                 {{accessibility}} class {|ARGP0032:Options|}
                 {
@@ -1387,12 +1091,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task NoShortAndLongName()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
@@ -1408,12 +1106,6 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     public async Task MultipleParserRelatedAttributes()
     {
         var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                private static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
             [OptionsType]
             class MyOptions
             {
