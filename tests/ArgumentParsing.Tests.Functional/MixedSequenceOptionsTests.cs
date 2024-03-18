@@ -10,6 +10,8 @@ public sealed partial class MixedSequenceOptionsTests
     [OptionsType]
     private sealed class Options
     {
+        // Different types of sequences are intentional, do not replace them with immutable arrays
+
         [Option('s')]
         public IEnumerable<string> Strings { get; init; } = null!;
 
