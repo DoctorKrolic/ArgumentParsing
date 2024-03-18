@@ -138,7 +138,15 @@ public static class DiagnosticDescriptors
 
     // Implement as an analyzer:
     // ARGP0017 - suggest changing `[Required]` attribute to `required` property in case it is an option
-    // ARGP0018 - fade out `[Required]` attribute if already a `required` property
+
+    public static readonly DiagnosticDescriptor UnnecessaryRequiredAttribute = new(
+        id: "ARGP0018",
+        title: "Unnecessary [Required] attribute",
+        messageFormat: "[Required] attribute is unnecessary since the property is already required",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Hidden,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Unnecessary]);
 
     public static readonly DiagnosticDescriptor RequiredBoolOption = new(
         id: "ARGP0019",

@@ -25,7 +25,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.DuplicateLongName,
             DiagnosticDescriptors.InvalidOptionPropertyType,
             // ARGP0017
-            // ARGP0018
+            DiagnosticDescriptors.UnnecessaryRequiredAttribute,
             DiagnosticDescriptors.RequiredBoolOption,
             DiagnosticDescriptors.RequiredNullableOption,
             DiagnosticDescriptors.PreferImmutableArrayAsSequenceType,
@@ -131,6 +131,8 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
 
             var hasRequiredAttribute = false;
 
+            var propertyLocation = property.Locations.First();
+
             foreach (var attr in property.GetAttributes())
             {
                 var attrType = attr.AttributeClass;
@@ -143,6 +145,22 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 if (attrType.Equals(knownTypes.RequiredAttributeType, SymbolEqualityComparer.Default))
                 {
                     hasRequiredAttribute = true;
+
+                    if (property.IsRequired)
+                    {
+                        var syntax = attr.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
+
+                        if (syntax?.Parent is AttributeListSyntax { Attributes.Count: 1 } attributeList)
+                        {
+                            syntax = attributeList;
+                        }
+
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(
+                                DiagnosticDescriptors.UnnecessaryRequiredAttribute,
+                                syntax?.GetLocation() ?? propertyLocation));
+                    }
+
                     continue;
                 }
 
@@ -207,7 +225,6 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             }
 
             var propertyType = property.Type;
-            var propertyLocation = property.Locations.First();
 
             var countOfParserRelatedAttributes = (isOption ? 1 : 0) + (isParameter ? 1 : 0) + (isRemainingParameters ? 1 : 0);
 

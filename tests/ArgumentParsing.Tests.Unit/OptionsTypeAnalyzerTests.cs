@@ -585,6 +585,63 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     }
 
     [Fact]
+    public async Task UnnecessaryRequiredAttribute_SeparateAttributeList()
+    {
+        var source = """
+            using System.ComponentModel.DataAnnotations;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                {|ARGP0018:[Required]|}
+                public required string Option { get; init; }
+            }
+            """;
+
+        var fixedSource = """
+            using System.ComponentModel.DataAnnotations;
+            
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public required string Option { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<RemoveUnnecessaryRequiredAttributeCodeFixProvider>(source, fixedSource);
+    }
+
+    [Fact]
+    public async Task UnnecessaryRequiredAttribute_SameAttributeList()
+    {
+        var source = """
+            using System.ComponentModel.DataAnnotations;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option, {|ARGP0018:Required|}]
+                public required string Option { get; init; }
+            }
+            """;
+
+        var fixedSource = """
+            using System.ComponentModel.DataAnnotations;
+            
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public required string Option { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<RemoveUnnecessaryRequiredAttributeCodeFixProvider>(source, fixedSource);
+    }
+
+    [Fact]
     public async Task RequiredBoolOption()
     {
         var source = """
