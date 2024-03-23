@@ -23,13 +23,15 @@ public sealed class RemoveUnnecessaryRequiredAttributeCodeFixProvider : CodeFixP
         var cancellationToken = context.CancellationToken;
 
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        var diagnosticNode = root?.FindNode(context.Span);
 
-        if (root?.FindNode(context.Span) is { } diagnosticNode)
+        if (diagnosticNode is AttributeSyntax or AttributeListSyntax)
         {
             context.RegisterCodeFix(
                 CodeAction.Create(
                     "Remove unnecessary [Required] attribute",
-                    _ => RemoveUnnecessaryRequiredAttribute(document, root, diagnosticNode)),
+                    _ => RemoveUnnecessaryRequiredAttribute(document, root!, diagnosticNode),
+                    nameof(RemoveUnnecessaryRequiredAttributeCodeFixProvider)),
                 context.Diagnostics[0]);
         }
     }

@@ -32,7 +32,8 @@ public sealed class ChangeToInitAccessorCodeFixProvider : CodeFixProvider
         context.RegisterCodeFix(
             CodeAction.Create(
                 "Change to 'init' accessor",
-                _ => ChangeToInitAccessor(document, root, accessor)),
+                _ => ChangeToInitAccessor(document, root, accessor),
+                nameof(ChangeToInitAccessorCodeFixProvider)),
             context.Diagnostics[0]);
     }
 

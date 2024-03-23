@@ -24,7 +24,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.DuplicateShortName,
             DiagnosticDescriptors.DuplicateLongName,
             DiagnosticDescriptors.InvalidOptionPropertyType,
-            // ARGP0017
+            DiagnosticDescriptors.UseRequiredProperty,
             DiagnosticDescriptors.UnnecessaryRequiredAttribute,
             DiagnosticDescriptors.RequiredBoolOption,
             DiagnosticDescriptors.RequiredNullableOption,
@@ -58,7 +58,8 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 OptionAttributeType = comp.OptionAttributeType(),
                 ParameterAttributeType = comp.ParameterAttributeType(),
                 RemainingParametersAttributeType = comp.RemainingParametersAttributeType(),
-                RequiredAttributeType = comp.SystemComponentModelDataAnnotationsRequiredAttributeType(),
+                SystemComponentModelDataAnnotationsRequiredAttributeType = comp.SystemComponentModelDataAnnotationsRequiredAttributeType(),
+                SystemRuntimeCompilerServicesRequiredMemberAttributeType = comp.GetTypeByMetadataName("System.Runtime.CompilerServices.RequiredMemberAttribute"),
                 IEnumerableOfTType = comp.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T),
                 IReadOnlyCollectionOfTType = comp.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyCollection_T),
                 IReadOnlyListOfTType = comp.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyList_T),
@@ -142,7 +143,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                     continue;
                 }
 
-                if (attrType.Equals(knownTypes.RequiredAttributeType, SymbolEqualityComparer.Default))
+                if (attrType.Equals(knownTypes.SystemComponentModelDataAnnotationsRequiredAttributeType, SymbolEqualityComparer.Default))
                 {
                     hasRequiredAttribute = true;
 
@@ -158,6 +159,20 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                         context.ReportDiagnostic(
                             Diagnostic.Create(
                                 DiagnosticDescriptors.UnnecessaryRequiredAttribute,
+                                syntax?.GetLocation() ?? propertyLocation));
+                    }
+                    else if (languageVersion >= LanguageVersion.CSharp11 && knownTypes.SystemRuntimeCompilerServicesRequiredMemberAttributeType is not null)
+                    {
+                        var syntax = attr.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
+
+                        if (syntax?.Parent is AttributeListSyntax { Attributes.Count: 1 } attributeList)
+                        {
+                            syntax = attributeList;
+                        }
+
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(
+                                DiagnosticDescriptors.UseRequiredProperty,
                                 syntax?.GetLocation() ?? propertyLocation));
                     }
 
@@ -625,7 +640,9 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
 
         public required INamedTypeSymbol? RemainingParametersAttributeType { get; init; }
 
-        public required INamedTypeSymbol? RequiredAttributeType { get; init; }
+        public required INamedTypeSymbol? SystemComponentModelDataAnnotationsRequiredAttributeType { get; init; }
+
+        public required INamedTypeSymbol? SystemRuntimeCompilerServicesRequiredMemberAttributeType { get; init; }
 
         public required INamedTypeSymbol IEnumerableOfTType { get; init; }
 

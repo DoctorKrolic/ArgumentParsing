@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -38,6 +39,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
             """;
 
         var mainLibraryReference = MetadataReference.CreateFromFile(typeof(GeneratedArgumentParserAttribute).Assembly.Location);
+        var systemComponentModelDataAnnotationsLibraryReference = MetadataReference.CreateFromFile(typeof(RequiredAttribute).Assembly.Location);
 
         var test = new CSharpCodeFixTest<TAnalyzer, TCodeFix>()
         {
@@ -51,6 +53,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
                 AdditionalReferences =
                 {
                     mainLibraryReference,
+                    systemComponentModelDataAnnotationsLibraryReference,
                 }
             },
             LanguageVersion = languageVersion,
@@ -74,6 +77,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
             }
 
             test.FixedState.AdditionalReferences.Add(mainLibraryReference);
+            test.FixedState.AdditionalReferences.Add(systemComponentModelDataAnnotationsLibraryReference);
         }
 
         await test.RunAsync();

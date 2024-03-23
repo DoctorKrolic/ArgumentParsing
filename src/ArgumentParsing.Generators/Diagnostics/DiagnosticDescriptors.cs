@@ -136,8 +136,13 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    // Implement as an analyzer:
-    // ARGP0017 - suggest changing `[Required]` attribute to `required` property in case it is an option
+    public static readonly DiagnosticDescriptor UseRequiredProperty = new(
+        id: "ARGP0017",
+        title: "Use required property",
+        messageFormat: "Use required property instead of [Required] attribute to make parser-related member required",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor UnnecessaryRequiredAttribute = new(
         id: "ARGP0018",

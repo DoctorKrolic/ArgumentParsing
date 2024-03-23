@@ -585,6 +585,133 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     }
 
     [Fact]
+    public async Task SuggestUsingRequiredProperty_SeparateAttributeList()
+    {
+        var source = """
+            using System.ComponentModel.DataAnnotations;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                {|ARGP0017:[Required]|}
+                public string Option { get; init; }
+            }
+            """;
+
+        var fixedSource = """
+            using System.ComponentModel.DataAnnotations;
+            
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public required string Option { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<ChangeRequiredAttributeToRequiredPropertyCodeFixProvider>(source, fixedSource);
+    }
+
+    [Fact]
+    public async Task SuggestUsingRequiredProperty_SameAttributeList()
+    {
+        var source = """
+            using System.ComponentModel.DataAnnotations;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option, {|ARGP0017:Required|}]
+                public string Option { get; init; }
+            }
+            """;
+
+        var fixedSource = """
+            using System.ComponentModel.DataAnnotations;
+            
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public required string Option { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<ChangeRequiredAttributeToRequiredPropertyCodeFixProvider>(source, fixedSource);
+    }
+
+    [Fact]
+    public async Task DoNotSuggestUsingRequiredPropertyForLanguageVersionLessThan11_SeparateAttributeList()
+    {
+        var source = """
+            using System.ComponentModel.DataAnnotations;
+            
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                [Required]
+                public string Option { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source, LanguageVersion.CSharp10);
+    }
+
+    [Fact]
+    public async Task DoNotSuggestUsingRequiredPropertyForLanguageVersionLessThan11_SameAttributeList()
+    {
+        var source = """
+            using System.ComponentModel.DataAnnotations;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option, Required]
+                public string Option { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source, LanguageVersion.CSharp10);
+    }
+
+    [Fact]
+    public async Task DoNotSuggestUsingRequiredPropertyWhenNoRequiredMemberAttribute_SeparateAttributeList()
+    {
+        var source = """
+            using System.ComponentModel.DataAnnotations;
+            
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                [Required]
+                public string Option { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source, LanguageVersion.Latest, ReferenceAssemblies.NetFramework.Net48.Default);
+    }
+
+    [Fact]
+    public async Task DoNotSuggestUsingRequiredPropertyWhenNoRequiredMemberAttribute_SameAttributeList()
+    {
+        var source = """
+            using System.ComponentModel.DataAnnotations;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option, Required]
+                public string Option { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source, LanguageVersion.Latest, ReferenceAssemblies.NetFramework.Net48.Default);
+    }
+
+    [Fact]
     public async Task UnnecessaryRequiredAttribute_SeparateAttributeList()
     {
         var source = """
@@ -1061,7 +1188,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
                 public string Parameter1 { get; init; }
 
                 [Parameter(1)]
-                [Required]
+                {|ARGP0017:[Required]|}
                 public string {|ARGP0027:Parameter2|} { get; init; }
             }
             """;

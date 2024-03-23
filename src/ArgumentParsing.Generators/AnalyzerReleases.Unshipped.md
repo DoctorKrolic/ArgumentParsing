@@ -3,6 +3,7 @@
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 ARGP0011 | ArgumentParsing | Info |
+ARGP0017 | ArgumentParsing | Info |
 ARGP0018 | ArgumentParsing | Hidden |
 ARGP0021 | ArgumentParsing | Info |
 ARGP0034 | ArgumentParsing | Error |
