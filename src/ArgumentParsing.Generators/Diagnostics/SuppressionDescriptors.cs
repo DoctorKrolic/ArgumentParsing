@@ -13,4 +13,9 @@ internal static class SuppressionDescriptors
         id: "ARGPSPR02",
         suppressedDiagnosticId: "CS8618",
         justification: "Sequence-typed option is always assigned by the argument parser");
+
+    public static readonly SuppressionDescriptor RemainingParametersInOptionsType = new(
+        id: "ARGPSPR03",
+        suppressedDiagnosticId: "CS8618",
+        justification: "Remaining parameters property is always assigned by the argument parser");
 }
