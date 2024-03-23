@@ -15,7 +15,7 @@ public sealed partial class SimpleRequiredOptionsTests
 
         [Option('a')]
         [Required] // Attribute is intentional, do not replace with `required` property
-        public string AnotherRequiredOption { get; init; } = null!;
+        public string AnotherRequiredOption { get; init; }
 
         [Option('n')]
         public string? NotRequiredOption { get; init; }

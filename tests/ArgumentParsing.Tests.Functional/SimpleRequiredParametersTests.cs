@@ -16,7 +16,7 @@ public sealed partial class SimpleRequiredParametersTests
 
         [Parameter(1)]
         [Required] // Attribute is intentional, do not replace with `required` property
-        public string Param2 { get; init; } = null!;
+        public string Param2 { get; init; }
 
         [Parameter(2)]
         public string? Param3 { get; init; }

@@ -10,19 +10,19 @@ namespace ArgumentParsing.Tests.Unit.Utilities;
 public abstract class AnalyzerTestBase<TAnalyzer>
     where TAnalyzer : DiagnosticAnalyzer, new()
 {
-    protected static Task VerifyAnalyzerAsync(string source, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null)
-        => VerifyAnalyzerAsync(source, [], languageVersion, referenceAssemblies);
+    protected static Task VerifyAnalyzerAsync(string source, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null, CompilerDiagnostics compilerDiagnostics = CompilerDiagnostics.Errors)
+        => VerifyAnalyzerAsync(source, [], languageVersion, referenceAssemblies, compilerDiagnostics);
 
-    protected static Task VerifyAnalyzerAsync(string source, DiagnosticResult[] diagnostics, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null)
-        => VerifyAnalyzerWithCodeFixAsync<EmptyCodeFixProvider>(source, fixedSource: null, diagnostics, languageVersion, referenceAssemblies);
+    protected static Task VerifyAnalyzerAsync(string source, DiagnosticResult[] diagnostics, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null, CompilerDiagnostics compilerDiagnostics = CompilerDiagnostics.Errors)
+        => VerifyAnalyzerWithCodeFixAsync<EmptyCodeFixProvider>(source, fixedSource: null, diagnostics, languageVersion, referenceAssemblies, compilerDiagnostics);
 
-    protected static Task VerifyAnalyzerWithCodeFixAsync<TCodeFix>(string source, string fixedSource, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null)
+    protected static Task VerifyAnalyzerWithCodeFixAsync<TCodeFix>(string source, string fixedSource, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null, CompilerDiagnostics compilerDiagnostics = CompilerDiagnostics.Errors)
         where TCodeFix : CodeFixProvider, new()
     {
-        return VerifyAnalyzerWithCodeFixAsync<TCodeFix>(source, fixedSource, [], languageVersion, referenceAssemblies);
+        return VerifyAnalyzerWithCodeFixAsync<TCodeFix>(source, fixedSource, [], languageVersion, referenceAssemblies, compilerDiagnostics);
     }
 
-    protected static async Task VerifyAnalyzerWithCodeFixAsync<TCodeFix>(string source, string fixedSource, DiagnosticResult[] diagnostics, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null)
+    protected static async Task VerifyAnalyzerWithCodeFixAsync<TCodeFix>(string source, string fixedSource, DiagnosticResult[] diagnostics, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null, CompilerDiagnostics compilerDiagnostics = CompilerDiagnostics.Errors)
         where TCodeFix : CodeFixProvider, new()
     {
         var usings = """
@@ -56,6 +56,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
                     systemComponentModelDataAnnotationsLibraryReference,
                 }
             },
+            CompilerDiagnostics = compilerDiagnostics,
             LanguageVersion = languageVersion,
             ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net80,
         };
