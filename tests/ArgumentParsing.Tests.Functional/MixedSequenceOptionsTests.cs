@@ -13,13 +13,13 @@ public sealed partial class MixedSequenceOptionsTests
         // Different types of sequences are intentional, do not replace them with immutable arrays
 
         [Option('s')]
-        public IEnumerable<string> Strings { get; init; } = null!;
+        public IEnumerable<string> Strings { get; init; }
 
         [Option('i')]
-        public IReadOnlyCollection<int> Ints { get; init; } = null!;
+        public IReadOnlyCollection<int> Ints { get; init; }
 
         [Option('d')]
-        public IReadOnlyCollection<DayOfWeek> DaysOfWeek { get; init; } = null!;
+        public IReadOnlyCollection<DayOfWeek> DaysOfWeek { get; init; }
 
         [Option('c')]
         public ImmutableArray<char> Chars { get; init; }

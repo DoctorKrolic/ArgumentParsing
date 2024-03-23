@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Testing;
 
 namespace ArgumentParsing.Tests.Unit;
 
-public sealed class ParserRelatedPropertyMarkedWithRequiredAttributeDiagnosticSuppressorTests : AnalyzerTestBase<ParserRelatedPropertyMarkedWithRequiredAttributeDiagnosticSuppressor>
+public sealed class ParserRelatedPropertyMarkedWithRequiredAttributeSuppressorTests : AnalyzerTestBase<ParserRelatedPropertyMarkedWithRequiredAttributeSuppressor>
 {
     [Fact]
     public async Task DoNotSuppressNormalDiagnostic()

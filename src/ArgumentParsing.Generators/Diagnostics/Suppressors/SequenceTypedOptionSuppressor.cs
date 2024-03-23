@@ -8,9 +8,9 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace ArgumentParsing.Generators.Diagnostics.Suppressors;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class ParserRelatedPropertyMarkedWithRequiredAttributeDiagnosticSuppressor : DiagnosticSuppressor
+public sealed class SequenceTypedOptionSuppressor : DiagnosticSuppressor
 {
-    public override ImmutableArray<SuppressionDescriptor> SupportedSuppressions { get; } = ImmutableArray.Create(SuppressionDescriptors.ParserRelatedPropertyMarkedWithRequiredAttributeInOptionsType);
+    public override ImmutableArray<SuppressionDescriptor> SupportedSuppressions { get; } = ImmutableArray.Create(SuppressionDescriptors.SequenceTypedOptionInOptionsType);
 
     public override void ReportSuppressions(SuppressionAnalysisContext context)
     {
@@ -38,11 +38,14 @@ public sealed class ParserRelatedPropertyMarkedWithRequiredAttributeDiagnosticSu
                 continue;
             }
 
-            if (propertySymbol.GetAttributes().Any(a => a.AttributeClass?.Equals(compilation.OptionAttributeType(), SymbolEqualityComparer.Default) == true ||
-                                                        a.AttributeClass?.Equals(compilation.ParameterAttributeType(), SymbolEqualityComparer.Default) == true ||
-                                                        a.AttributeClass?.Equals(compilation.RemainingParametersAttributeType(), SymbolEqualityComparer.Default) == true))
+            if (!propertySymbol.GetAttributes().Any(a => a.AttributeClass?.Equals(compilation.OptionAttributeType(), SymbolEqualityComparer.Default) == true))
             {
-                context.ReportSuppression(Suppression.Create(SuppressionDescriptors.ParserRelatedPropertyMarkedWithRequiredAttributeInOptionsType, diagnostic));
+                continue;
+            }
+
+            if (propertySymbol.Type.OriginalDefinition.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_Generic_IReadOnlyCollection_T or SpecialType.System_Collections_Generic_IReadOnlyList_T)
+            {
+                context.ReportSuppression(Suppression.Create(SuppressionDescriptors.SequenceTypedOptionInOptionsType, diagnostic));
             }
         }
     }
