@@ -1357,7 +1357,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [RemainingParameters]
-                public required {|ARGP0021:{{sequenceBaseType}}<{{sequenceUnderlyingType}}>|} Option { get; init; }
+                public {|ARGP0021:{{sequenceBaseType}}<{{sequenceUnderlyingType}}>|} Option { get; init; }
             }
             """;
 
@@ -1369,11 +1369,100 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             class MyOptions
             {
                 [RemainingParameters]
-                public required ImmutableArray<{{sequenceUnderlyingType}}> Option { get; init; }
+                public ImmutableArray<{{sequenceUnderlyingType}}> Option { get; init; }
             }
             """;
 
         await VerifyAnalyzerWithCodeFixAsync<ChangePropertyTypeToImmutableArrayCodeFixProvider>(source, fixedSource);
+    }
+
+    [Fact]
+    public async Task RequiredRemainingParameters_RequiredProperty()
+    {
+        var source = """
+            using System.Collections.Immutable;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [RemainingParameters]
+                public {|ARGP0031:required|} ImmutableArray<string> RemainingParameters { get; init; }
+            }
+            """;
+
+        var fixedSource = """
+            using System.Collections.Immutable;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [RemainingParameters]
+                public ImmutableArray<string> RemainingParameters { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<RemoveUnnecessaryRequiredKeywordCodeFixProvider>(source, fixedSource);
+    }
+
+    [Fact]
+    public async Task RequiredRemainingParameters_RequiredAttribute_SeparateAttributeList()
+    {
+        var source = """
+            using System.Collections.Immutable;
+            using System.ComponentModel.DataAnnotations;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [RemainingParameters]
+                {|ARGP0031:[Required]|}
+                public ImmutableArray<string> RemainingParameters { get; init; }
+            }
+            """;
+
+        var fixedSource = """
+            using System.Collections.Immutable;
+            using System.ComponentModel.DataAnnotations;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [RemainingParameters]
+                public ImmutableArray<string> RemainingParameters { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<RemoveUnnecessaryRequiredAttributeCodeFixProvider>(source, fixedSource);
+    }
+
+    [Fact]
+    public async Task RequiredRemainingParameters_RequiredAttribute_SameAttributeList()
+    {
+        var source = """
+            using System.Collections.Immutable;
+            using System.ComponentModel.DataAnnotations;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [RemainingParameters, {|ARGP0031:Required|}]
+                public ImmutableArray<string> RemainingParameters { get; init; }
+            }
+            """;
+
+        var fixedSource = """
+            using System.Collections.Immutable;
+            using System.ComponentModel.DataAnnotations;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [RemainingParameters]
+                public ImmutableArray<string> RemainingParameters { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<RemoveUnnecessaryRequiredAttributeCodeFixProvider>(source, fixedSource);
     }
 
     [Theory]

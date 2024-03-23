@@ -252,7 +252,14 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    // ARGP0031 - fade out `required` keyword or `[Required]` attribute for remaining parameters property. Implement when we can suppress nullability warning on that property
+    public static readonly DiagnosticDescriptor RequiredRemainingParameters = new(
+        id: "ARGP0031",
+        title: "Required remaining parameters",
+        messageFormat: "Making remaining parameters required is not necessary since they are always assigned by the parser",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Hidden,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Unnecessary]);
 
     public static readonly DiagnosticDescriptor TooLowAccessibilityOfOptionsType = new(
         id: "ARGP0032",

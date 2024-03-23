@@ -12,7 +12,10 @@ namespace ArgumentParsing.CodeFixes;
 [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
 public sealed class RemoveUnnecessaryRequiredAttributeCodeFixProvider : CodeFixProvider
 {
-    public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DiagnosticDescriptors.UnnecessaryRequiredAttribute.Id);
+    public override ImmutableArray<string> FixableDiagnosticIds { get; }
+        = ImmutableArray.Create(
+            DiagnosticDescriptors.UnnecessaryRequiredAttribute.Id,
+            DiagnosticDescriptors.RequiredRemainingParameters.Id);
 
     public override FixAllProvider? GetFixAllProvider()
         => WellKnownFixAllProviders.BatchFixer;

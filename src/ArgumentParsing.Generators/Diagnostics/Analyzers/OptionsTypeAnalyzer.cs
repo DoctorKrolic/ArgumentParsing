@@ -38,7 +38,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.InvalidParameterName,
             DiagnosticDescriptors.DuplicateRemainingParameters,
             DiagnosticDescriptors.InvalidRemainingParametersPropertyType,
-            // ARGP0031
+            DiagnosticDescriptors.RequiredRemainingParameters,
             DiagnosticDescriptors.TooLowAccessibilityOfOptionsType,
             DiagnosticDescriptors.NoOptionNames,
             DiagnosticDescriptors.PropertyCannotHaveMultipleParserRoles);
@@ -130,7 +130,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
 
             var isRemainingParameters = false;
 
-            var hasRequiredAttribute = false;
+            SyntaxReference? requiredAttributeReference = null;
 
             var propertyLocation = property.Locations.First();
 
@@ -145,37 +145,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
 
                 if (attrType.Equals(knownTypes.SystemComponentModelDataAnnotationsRequiredAttributeType, SymbolEqualityComparer.Default))
                 {
-                    hasRequiredAttribute = true;
-
-                    if (property.IsRequired)
-                    {
-                        var syntax = attr.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
-
-                        if (syntax?.Parent is AttributeListSyntax { Attributes.Count: 1 } attributeList)
-                        {
-                            syntax = attributeList;
-                        }
-
-                        context.ReportDiagnostic(
-                            Diagnostic.Create(
-                                DiagnosticDescriptors.UnnecessaryRequiredAttribute,
-                                syntax?.GetLocation() ?? propertyLocation));
-                    }
-                    else if (languageVersion >= LanguageVersion.CSharp11 && knownTypes.SystemRuntimeCompilerServicesRequiredMemberAttributeType is not null)
-                    {
-                        var syntax = attr.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
-
-                        if (syntax?.Parent is AttributeListSyntax { Attributes.Count: 1 } attributeList)
-                        {
-                            syntax = attributeList;
-                        }
-
-                        context.ReportDiagnostic(
-                            Diagnostic.Create(
-                                DiagnosticDescriptors.UseRequiredProperty,
-                                syntax?.GetLocation() ?? propertyLocation));
-                    }
-
+                    requiredAttributeReference = attr.ApplicationSyntaxReference;
                     continue;
                 }
 
@@ -257,12 +227,6 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
 
                 continue;
             }
-            else if (countOfParserRelatedAttributes > 1)
-            {
-                context.ReportDiagnostic(
-                    Diagnostic.Create(
-                        DiagnosticDescriptors.PropertyCannotHaveMultipleParserRoles, propertyLocation));
-            }
 
             if (property.DeclaredAccessibility < Accessibility.Internal)
             {
@@ -286,7 +250,50 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                         DiagnosticDescriptors.PreferInitPropertyAccessor, setMethod.Locations.First()));
             }
 
-            var isRequired = hasRequiredAttribute || property.IsRequired;
+            if (countOfParserRelatedAttributes > 1)
+            {
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.PropertyCannotHaveMultipleParserRoles, propertyLocation));
+
+                continue;
+            }
+
+            if (requiredAttributeReference is not null)
+            {
+                if (property.IsRequired)
+                {
+                    var syntax = requiredAttributeReference?.GetSyntax(context.CancellationToken);
+
+                    if (syntax?.Parent is AttributeListSyntax { Attributes.Count: 1 } attributeList)
+                    {
+                        syntax = attributeList;
+                    }
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.UnnecessaryRequiredAttribute,
+                            syntax?.GetLocation() ?? propertyLocation));
+                }
+                else if (languageVersion >= LanguageVersion.CSharp11 &&
+                         knownTypes.SystemRuntimeCompilerServicesRequiredMemberAttributeType is not null &&
+                         !isRemainingParameters)
+                {
+                    var syntax = requiredAttributeReference?.GetSyntax(context.CancellationToken);
+
+                    if (syntax?.Parent is AttributeListSyntax { Attributes.Count: 1 } attributeList)
+                    {
+                        syntax = attributeList;
+                    }
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.UseRequiredProperty,
+                            syntax?.GetLocation() ?? propertyLocation));
+                }
+            }
+
+            var isRequired = requiredAttributeReference is not null || property.IsRequired;
 
             if (isOption)
             {
@@ -520,6 +527,31 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                     context.ReportDiagnostic(
                         Diagnostic.Create(
                             DiagnosticDescriptors.PreferImmutableArrayAsSequenceType, locationForTypeRelatedDiagnostics));
+                }
+
+                if (requiredAttributeReference is not null)
+                {
+                    var syntax = requiredAttributeReference?.GetSyntax(context.CancellationToken);
+
+                    if (syntax?.Parent is AttributeListSyntax { Attributes.Count: 1 } attributeList)
+                    {
+                        syntax = attributeList;
+                    }
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.RequiredRemainingParameters,
+                            syntax?.GetLocation() ?? propertyLocation));
+                }
+
+                if (property.IsRequired)
+                {
+                    var requiredToken = propertySyntax?.Modifiers.First(static m => m.IsKind(SyntaxKind.RequiredKeyword));
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.RequiredRemainingParameters,
+                            requiredToken?.GetLocation() ?? propertyLocation));
                 }
             }
         }
