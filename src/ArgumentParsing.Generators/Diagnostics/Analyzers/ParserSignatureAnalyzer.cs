@@ -17,7 +17,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.PreferArgsParameterName,
             DiagnosticDescriptors.ReturnTypeMustBeParseResult,
             DiagnosticDescriptors.InvalidOptionsType,
-            DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute);
+            DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute,
+            DiagnosticDescriptors.ParserArgumentIsASet);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -72,6 +73,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             }
 
             var singleParameterType = singleParameter.Type;
+            var singleParameterLocation = singleParameter.Locations.First();
+            var singleParameterTypeDiagnosticsLocation = singleParameterSyntax.Type?.GetLocation() ?? singleParameterLocation;
 
             if (!singleParameterType.IsEnumerableCollectionOfStrings())
             {
@@ -82,15 +85,28 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                     context.ReportDiagnostic(
                         Diagnostic.Create(
                             DiagnosticDescriptors.InvalidArgsParameterType,
-                            singleParameterSyntax.Type?.GetLocation() ?? singleParameter.Locations.First()));
+                            singleParameterTypeDiagnosticsLocation));
                 }
             }
 
-            if (!isInvalidParameter && singleParameter.Name != "args")
+            if (!isInvalidParameter)
             {
-                context.ReportDiagnostic(
-                    Diagnostic.Create(
-                        DiagnosticDescriptors.PreferArgsParameterName, singleParameter.Locations.First()));
+                // Not an equals check with a known type due to https://github.com/dotnet/roslyn/issues/72692
+                if (singleParameterType is { MetadataName: "ISet`1", ContainingNamespace: { Name: "Generic", ContainingNamespace: { Name: "Collections", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } } ||
+                    singleParameterType.OriginalDefinition.AllInterfaces.Any(i => i is { MetadataName: "ISet`1", ContainingNamespace: { Name: "Generic", ContainingNamespace: { Name: "Collections", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } }))
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.ParserArgumentIsASet,
+                            singleParameterTypeDiagnosticsLocation));
+                }
+
+                if (singleParameter.Name != "args")
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.PreferArgsParameterName, singleParameterLocation));
+                }
             }
         }
 

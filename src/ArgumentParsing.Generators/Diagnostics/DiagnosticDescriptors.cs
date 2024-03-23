@@ -293,4 +293,13 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor ParserArgumentIsASet = new(
+        id: "ARGP0037",
+        title: "Parser argument is a set",
+        messageFormat: "Argument type of a parser is a set",
+        description: "Since order of enumeration in sets is not strictly defined, passing as set as arguments collection may lead to unexpected parse results.",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

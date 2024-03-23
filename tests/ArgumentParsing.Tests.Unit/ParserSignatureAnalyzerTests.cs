@@ -140,6 +140,54 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         await VerifyAnalyzerAsync(source);
     }
 
+    [Theory]
+    [InlineData("string[]")]
+    [InlineData("IEnumerable<string>")]
+    [InlineData("IReadOnlyCollection<string>")]
+    [InlineData("IReadOnlyList<string>")]
+    [InlineData("List<string>")]
+    [InlineData("Span<string>")]
+    [InlineData("ReadOnlySpan<string>")]
+    [InlineData("ImmutableArray<string>")]
+    [InlineData("ImmutableList<string>")]
+    public async Task ValidParameterType_NotSet(string validType)
+    {
+        var source = $$"""
+            using System.Collections.Generic;
+            using System.Collections.Immutable;
+
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}({{validType}} args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("ISet<string>")]
+    [InlineData("HashSet<string>")]
+    [InlineData("ImmutableHashSet<string>")]
+    [InlineData("FrozenSet<string>")]
+    public async Task ValidParameterType_Set(string validType)
+    {
+        var source = $$"""
+            using System.Collections.Frozen;
+            using System.Collections.Generic;
+            using System.Collections.Immutable;
+
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}({|ARGP0037:{{validType}}|} args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
     [Fact]
     public async Task SuggestArgsParameterNameForValidParameter()
     {
