@@ -1,3 +1,4 @@
+using ArgumentParsing.CodeFixes;
 using ArgumentParsing.Generators.Diagnostics.Analyzers;
 using ArgumentParsing.Tests.Unit.Utilities;
 
@@ -26,7 +27,26 @@ public sealed class ParserRelatedPropertyInNonOptionsTypeAnalyzerTests : Analyze
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = """
+            using System.Collections.Immutable;
+
+            [OptionsType]
+            class Options
+            {
+                [Option]
+                public int Option { get; set; }
+
+                [Parameter(0)]
+                public int Parameter { get; set; }
+
+                [RemainingParameters]
+                public ImmutableArray<int> RemainingParameters { get; set; }
+
+                public int PropertyWithoutAttributes { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<AnnotateContainingTypeWithOptionsTypeAttributeCodeFixProvider>(source, fixedSource);
     }
 
     [Fact]
@@ -46,7 +66,22 @@ public sealed class ParserRelatedPropertyInNonOptionsTypeAnalyzerTests : Analyze
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = """
+            using System.Collections.Immutable;
+
+            [OptionsType]
+            class Options
+            {
+                [Option]
+                [Parameter(0)]
+                [RemainingParameters]
+                public int Property { get; set; }
+
+                public int PropertyWithoutAttributes { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<AnnotateContainingTypeWithOptionsTypeAttributeCodeFixProvider>(source, fixedSource);
     }
 
     [Fact]
