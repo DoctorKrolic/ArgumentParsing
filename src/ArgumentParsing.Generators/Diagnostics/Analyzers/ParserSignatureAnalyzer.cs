@@ -31,6 +31,7 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             var knownTypes = new KnownTypes
             {
                 GeneratedArgumentParserAttributeType = comp.GetTypeByMetadataName(ArgumentParserGenerator.GeneratedArgumentParserAttributeName),
+                ISetOfTType = comp.GetTypeByMetadataName("System.Collections.Generic.ISet`1"),
                 ParseResultOfTType = comp.ParseResultOfTType(),
                 OptionsTypeAttributeType = comp.OptionsTypeAttributeType(),
             };
@@ -91,9 +92,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
 
             if (!isInvalidParameter)
             {
-                // Not an equals check with a known type due to https://github.com/dotnet/roslyn/issues/72692
-                if (singleParameterType is { MetadataName: "ISet`1", ContainingNamespace: { Name: "Generic", ContainingNamespace: { Name: "Collections", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } } ||
-                    singleParameterType.OriginalDefinition.AllInterfaces.Any(i => i is { MetadataName: "ISet`1", ContainingNamespace: { Name: "Generic", ContainingNamespace: { Name: "Collections", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } }))
+                if (singleParameterType.OriginalDefinition.Equals(knownTypes.ISetOfTType, SymbolEqualityComparer.Default) ||
+                    singleParameterType.OriginalDefinition.AllInterfaces.Any(i => i.OriginalDefinition.Equals(knownTypes.ISetOfTType, SymbolEqualityComparer.Default)))
                 {
                     context.ReportDiagnostic(
                         Diagnostic.Create(
@@ -146,6 +146,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
     private readonly struct KnownTypes
     {
         public required INamedTypeSymbol? GeneratedArgumentParserAttributeType { get; init; }
+
+        public required INamedTypeSymbol? ISetOfTType { get; init; }
 
         public required INamedTypeSymbol? ParseResultOfTType { get; init; }
 
