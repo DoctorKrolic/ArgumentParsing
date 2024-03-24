@@ -39,7 +39,7 @@ public sealed class AnnotateContainingTypeWithOptionsTypeAttributeCodeFixProvide
 
     private static async Task<Document> MakeContainingTypeOptionsType(Document document, SyntaxNode root, TypeDeclarationSyntax typeDeclaration, CancellationToken cancellationToken)
     {
-        var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
+        var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
         {
             Debug.Fail("Shouldn't really happen");

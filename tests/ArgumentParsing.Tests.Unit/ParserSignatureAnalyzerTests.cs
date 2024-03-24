@@ -379,7 +379,20 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            
+            [OptionsType]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<AnnotateTypeWithOptionsTypeAttributeCodeFixProvider>(source, fixedSource);
     }
 
     [Fact]
@@ -399,6 +412,21 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = """
+            using UnannotatedOptionsType = ArgumentParsing.Results.ParseResult<MyOptions>;
+
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial UnannotatedOptionsType {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<AnnotateTypeWithOptionsTypeAttributeCodeFixProvider>(source, fixedSource);
     }
 }
