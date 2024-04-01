@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CurrentLibraryVersion>0.1.0</CurrentLibraryVersion>
+    <CurrentLibraryVersion>0.2.0</CurrentLibraryVersion>
     <IsReleaseBuild>false</IsReleaseBuild>
   </PropertyGroup>
 
