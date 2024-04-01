@@ -910,9 +910,11 @@ public partial class ArgumentParserGenerator
         context.AddSource($"HelpCommandHandler.{qualifiedName}.g.cs", writer.ToString().Trim());
     }
 
-    private static void EmitVersionCommandHandler(SourceProductionContext context, AssemblyVersionInfo? versionInfo)
+    private static void EmitVersionCommandHandler(SourceProductionContext context, (AssemblyVersionInfo, bool hasAnyParsers) info)
     {
-        if (versionInfo is null)
+        var (versionInfo, hasAnyParsers) = info;
+
+        if (!hasAnyParsers)
         {
             return;
         }

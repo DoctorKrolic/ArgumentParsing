@@ -24,10 +24,9 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .Select((info, _) => info.EnvironmentInfo);
 
         var argumentParserInfos = extractedInfosProvider
-            .Select((info, _) => info.ArgumentParserInfo!)
-            .Combine(environmentInfo);
+            .Select((info, _) => info.ArgumentParserInfo!);
 
-        context.RegisterSourceOutput(argumentParserInfos, EmitArgumentParser);
+        context.RegisterSourceOutput(argumentParserInfos.Combine(environmentInfo), EmitArgumentParser);
 
         var assemblyVersionInfo = infoFromCompilation
             .Select((info, _) => info.AssemblyVersionInfo);
@@ -38,15 +37,11 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(optionsHelpInfos, EmitHelpCommandHandler);
 
-        // We want to generate `--version` command handler only if there is at least 1 argument parser method defined.
-        // This ugly hack will result in correct assembly version info if the condition is true and `null` otherwise.
-        // Obviously, we can then detect `null` on the generation step to emit handler conditionally
-        var assemblyVersionInfoForCommandGeneration = argumentParserInfos
-            .Select((_, _) => 0)
+        // Candidate for `Any` API: https://github.com/dotnet/roslyn/issues/59690
+        var hasAnyParsers = argumentParserInfos
             .Collect()
-            .Combine(assemblyVersionInfo)
-            .Select((tup, _) => tup.Left.Length > 0 ? tup.Right : null);
+            .Select((parsers, _) => !parsers.IsEmpty);
 
-        context.RegisterSourceOutput(assemblyVersionInfoForCommandGeneration, EmitVersionCommandHandler);
+        context.RegisterSourceOutput(assemblyVersionInfo.Combine(hasAnyParsers), EmitVersionCommandHandler);
     }
 }
