@@ -96,7 +96,6 @@ public partial class ArgumentParserGenerator
 
         var parameterMap = new Dictionary<int, ParameterInfo>();
         var parameterHelpDescriptionsMap = new Dictionary<ParameterInfo, string?>();
-        var parametersProperties = new Dictionary<ParameterInfo, IPropertySymbol>();
 
         var declaredRemainingParameters = false;
         RemainingParametersInfo? remainingParametersInfo = null;
@@ -336,7 +335,6 @@ public partial class ArgumentParserGenerator
 
                     parameterMap.Add(parameterIndex, parameterInfo);
                     parameterHelpDescriptionsMap.Add(parameterInfo, helpDescription);
-                    parametersProperties.Add(parameterInfo, property);
                 }
             }
             else
