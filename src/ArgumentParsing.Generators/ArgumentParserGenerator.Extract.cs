@@ -273,7 +273,7 @@ public partial class ArgumentParserGenerator
                     }
                 }
 
-                var (parseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType) = GetParseStrategyForOption(propertyType, compilation);
+                var (parseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType) = GetParseStrategy(propertyType, compilation);
 
                 if (parseStrategy == ParseStrategy.None)
                 {
@@ -317,8 +317,8 @@ public partial class ArgumentParserGenerator
                     return default;
                 }
 
-                var (parseStrategy, nullableUnderlyingType) = GetParseStrategyForParameter(propertyType);
-                if (parseStrategy == ParseStrategy.None)
+                var (parseStrategy, nullableUnderlyingType, sequenceType, _) = GetParseStrategy(propertyType, compilation);
+                if (parseStrategy == ParseStrategy.None || sequenceType != SequenceType.None)
                 {
                     return default;
                 }
@@ -348,7 +348,7 @@ public partial class ArgumentParserGenerator
 
                 declaredRemainingParameters = true;
 
-                var (parseStrategy, _, sequenceType, sequenceUnderlyingType) = GetParseStrategyForOption(propertyType, compilation);
+                var (parseStrategy, _, sequenceType, sequenceUnderlyingType) = GetParseStrategy(propertyType, compilation);
                 if (parseStrategy == ParseStrategy.None || sequenceType == SequenceType.None)
                 {
                     return default;
@@ -416,7 +416,7 @@ public partial class ArgumentParserGenerator
 
         return (optionsInfo, optionsHelpInfo);
 
-        static (ParseStrategy, string? NullableUnderlyingType, SequenceType, string? SequenceUnderlyingType) GetParseStrategyForOption(ITypeSymbol type, Compilation compilation)
+        static (ParseStrategy, string? NullableUnderlyingType, SequenceType, string? SequenceUnderlyingType) GetParseStrategy(ITypeSymbol type, Compilation compilation)
         {
             string? nullableUnderlyingType = null;
 
@@ -451,20 +451,6 @@ public partial class ArgumentParserGenerator
 
             var parseStrategy = type.GetPrimaryParseStrategy();
             return (parseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType);
-        }
-
-        static (ParseStrategy, string? NullableUnderlyingType) GetParseStrategyForParameter(ITypeSymbol type)
-        {
-            string? nullableUnderlyingType = null;
-
-            if (type is INamedTypeSymbol { ConstructedFrom.SpecialType: SpecialType.System_Nullable_T, TypeArguments: [var nullableUnderlyingTypeSymbol] })
-            {
-                nullableUnderlyingType = nullableUnderlyingTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                type = nullableUnderlyingTypeSymbol;
-            }
-
-            var parseStrategy = type.GetPrimaryParseStrategy();
-            return (parseStrategy, nullableUnderlyingType);
         }
     }
 
