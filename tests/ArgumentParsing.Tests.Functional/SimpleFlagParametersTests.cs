@@ -43,6 +43,7 @@ public sealed partial class SimpleFlagParametersTests
         Assert.Equal(param3, options.Param3);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

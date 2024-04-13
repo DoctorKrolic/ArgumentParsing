@@ -49,6 +49,7 @@ public sealed partial class SimpleFlagOptionsTests
         Assert.Equal(c, options.FlagC);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

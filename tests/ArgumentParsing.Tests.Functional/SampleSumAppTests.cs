@@ -57,5 +57,6 @@ public sealed partial class SampleSumAppTests
         Assert.Collection(options.RemainingParameters, remainingParametersAsserts);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 }

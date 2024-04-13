@@ -44,6 +44,7 @@ public sealed partial class SimpleStringParametersTests
         Assert.Equal(param3, options.Param3);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

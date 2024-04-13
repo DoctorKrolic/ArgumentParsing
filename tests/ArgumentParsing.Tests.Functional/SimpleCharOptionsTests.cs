@@ -36,6 +36,7 @@ public sealed partial class SimpleCharOptionsTests
         Assert.Equal(c, options.CharOption);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

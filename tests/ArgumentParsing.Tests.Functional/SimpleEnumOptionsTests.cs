@@ -40,6 +40,7 @@ public sealed partial class SimpleEnumOptionsTests
         Assert.Equal((MyEnum)expectedValue, options.EnumOption);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

@@ -47,5 +47,6 @@ public sealed partial class MixedNullableOptionsTests
         Assert.Equal(c, options.NullableCharOption);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 }

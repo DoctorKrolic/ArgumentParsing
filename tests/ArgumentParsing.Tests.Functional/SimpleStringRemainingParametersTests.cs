@@ -48,11 +48,12 @@ public sealed partial class SimpleStringRemainingParametersTests
         for (var i = 0; i < remainingParametersAsserts.Length; i++)
         {
             var copy = i; // Avoid closure
-            remainingParametersAsserts[i] = (ch) => Assert.Equal(remainingParams[copy], ch);
+            remainingParametersAsserts[i] = (str) => Assert.Equal(remainingParams[copy], str);
         }
 
         Assert.Collection(options.RemainingParams, remainingParametersAsserts);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 }

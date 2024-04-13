@@ -45,6 +45,7 @@ public sealed partial class SimpleRequiredOptionsTests
         Assert.Equal(notRequiredOptionValue, options.NotRequiredOption);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

@@ -42,6 +42,7 @@ public sealed partial class MixedFlagOptionsAndParametersTests
         Assert.Equal(param, options.Param);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

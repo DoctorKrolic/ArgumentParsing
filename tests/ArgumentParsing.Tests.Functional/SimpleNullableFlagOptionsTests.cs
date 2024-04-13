@@ -54,6 +54,7 @@ public sealed partial class SimpleNullableFlagOptionsTests
         Assert.Equal(c, options.NullableFlagC);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

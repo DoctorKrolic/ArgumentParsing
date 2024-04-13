@@ -46,5 +46,6 @@ public sealed partial class MixedFlagsOptionsTests
         Assert.Equal(n, options.NullableFlag);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 }

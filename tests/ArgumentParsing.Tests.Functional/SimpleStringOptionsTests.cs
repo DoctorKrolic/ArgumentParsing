@@ -48,6 +48,7 @@ public sealed partial class SimpleStringOptionsTests
         Assert.Equal(c, options.OptionC);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Fact]

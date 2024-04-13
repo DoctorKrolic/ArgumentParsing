@@ -91,6 +91,7 @@ public sealed partial class MixedSequenceOptionsTests
         Assert.Collection(chars, charsAsserts);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

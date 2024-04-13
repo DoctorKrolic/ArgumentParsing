@@ -47,5 +47,6 @@ public sealed partial class MixedNullableParametersTests
         Assert.Equal(param4, options.Param4);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 }

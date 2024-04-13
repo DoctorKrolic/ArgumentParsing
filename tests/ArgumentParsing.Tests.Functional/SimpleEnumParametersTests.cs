@@ -34,6 +34,7 @@ public sealed partial class SimpleEnumParametersTests
         Assert.Equal(param1, options.Param1);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

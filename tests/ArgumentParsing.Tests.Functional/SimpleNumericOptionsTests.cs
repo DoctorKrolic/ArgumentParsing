@@ -46,6 +46,7 @@ public sealed partial class SimpleNumericOptionsTests
         Assert.Equal(doubleOptionValue, options.DoubleOption);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

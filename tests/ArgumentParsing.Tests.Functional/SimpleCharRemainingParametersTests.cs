@@ -54,6 +54,7 @@ public sealed partial class SimpleCharRemainingParametersTests
         Assert.Collection(options.RemainingParams, remainingParametersAsserts);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]

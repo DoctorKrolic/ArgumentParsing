@@ -58,6 +58,7 @@ public sealed partial class MixedStringOptionsAndParametersTests
         Assert.Collection(options.RemainingParams, remainingParametersAsserts);
 
         Assert.Null(result.Errors);
+        Assert.Null(result.SpecialCommandHandler);
     }
 
     [Theory]
