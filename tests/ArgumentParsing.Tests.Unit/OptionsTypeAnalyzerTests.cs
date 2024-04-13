@@ -568,6 +568,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     [InlineData("bool")]
     [InlineData("DayOfWeek")]
     [InlineData("DateTime")]
+    [InlineData("TimeSpan")]
     public async Task ValidOptionType(string validType)
     {
         var source = $$"""

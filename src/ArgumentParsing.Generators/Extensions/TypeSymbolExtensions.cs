@@ -1,3 +1,4 @@
+using System.Numerics;
 using ArgumentParsing.Generators.Models;
 using Microsoft.CodeAnalysis;
 
@@ -52,11 +53,12 @@ internal static class TypeSymbolExtensions
                          SpecialType.System_UInt32 or
                          SpecialType.System_Int64 or
                          SpecialType.System_UInt64
-        } or { Name: "BigInteger", ContainingNamespace: { Name: "Numerics", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } } => ParseStrategy.Integer,
+        } or { Name: nameof(BigInteger), ContainingNamespace: { Name: nameof(System.Numerics), ContainingNamespace: { Name: nameof(System), ContainingNamespace.IsGlobalNamespace: true } } } => ParseStrategy.Integer,
         { SpecialType: SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal } => ParseStrategy.Float,
         { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
         { SpecialType: SpecialType.System_Char } => ParseStrategy.Char,
         { SpecialType: SpecialType.System_DateTime } => ParseStrategy.DateTime,
+        { Name: nameof(TimeSpan), ContainingNamespace: { Name: nameof(System), ContainingNamespace.IsGlobalNamespace: true } } => ParseStrategy.TimeSpan,
         _ => ParseStrategy.None,
     };
 }
