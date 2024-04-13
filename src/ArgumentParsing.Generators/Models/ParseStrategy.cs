@@ -9,6 +9,6 @@ internal enum ParseStrategy : byte
     Flag,
     Enum,
     Char,
-    DateTime,
+    DateTimeRelated,
     TimeSpan
 }

@@ -57,7 +57,9 @@ internal static class TypeSymbolExtensions
         { SpecialType: SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal } => ParseStrategy.Float,
         { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
         { SpecialType: SpecialType.System_Char } => ParseStrategy.Char,
-        { SpecialType: SpecialType.System_DateTime } => ParseStrategy.DateTime,
+        { SpecialType: SpecialType.System_DateTime }
+            or { Name: "DateOnly", ContainingNamespace: { Name: nameof(System), ContainingNamespace.IsGlobalNamespace: true } }
+            or { Name: "TimeOnly", ContainingNamespace: { Name: nameof(System), ContainingNamespace.IsGlobalNamespace: true } } => ParseStrategy.DateTimeRelated,
         { Name: nameof(TimeSpan), ContainingNamespace: { Name: nameof(System), ContainingNamespace.IsGlobalNamespace: true } } => ParseStrategy.TimeSpan,
         _ => ParseStrategy.None,
     };
