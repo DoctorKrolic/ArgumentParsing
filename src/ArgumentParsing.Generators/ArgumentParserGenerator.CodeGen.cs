@@ -468,6 +468,21 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     break;
+                case ParseStrategy.DateTime:
+                    if (nullableUnderlyingType is not null)
+                    {
+                        writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
+                    }
+                    writer.WriteLine($"if (!global::System.DateTime.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, global::System.Globalization.DateTimeStyles.None, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                    writer.OpenBlock();
+                    writer.WriteLine("errors ??= new();");
+                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
+                    writer.CloseBlock();
+                    if (nullableUnderlyingType is not null)
+                    {
+                        writer.WriteLine($"{propertyName}_val = {propertyName}_underlying;");
+                    }
+                    break;
             }
             if (sequenceType != SequenceType.None)
             {
@@ -564,6 +579,21 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         break;
+                    case ParseStrategy.DateTime:
+                        if (nullableUnderlyingType is not null)
+                        {
+                            writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
+                        }
+                        writer.WriteLine($"if (!global::System.DateTime.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, global::System.Globalization.DateTimeStyles.None, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                        writer.OpenBlock();
+                        writer.WriteLine("errors ??= new();");
+                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
+                        writer.CloseBlock();
+                        if (nullableUnderlyingType is not null)
+                        {
+                            writer.WriteLine($"{propertyName}_val = {propertyName}_underlying;");
+                        }
+                        break;
                 }
                 writer.WriteLine("break;");
                 writer.Ident--;
@@ -640,6 +670,15 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine("errors ??= new();");
                         writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
                         writer.CloseBlock();
+                        break;
+                    case ParseStrategy.DateTime:
+                        writer.WriteLine($"global::System.DateTime {propertyName}_val = default(global::System.DateTime);");
+                        writer.WriteLine($"if (!global::System.DateTime.TryParse(arg, global::System.Globalization.CultureInfo.InvariantCulture, global::System.Globalization.DateTimeStyles.None, out {propertyName}_val))");
+                        writer.OpenBlock();
+                        writer.WriteLine("errors ??= new();");
+                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.CloseBlock();
+                        writer.WriteLine($"remainingParametersBuilder.Add({propertyName}_val);");
                         break;
                 }
             }

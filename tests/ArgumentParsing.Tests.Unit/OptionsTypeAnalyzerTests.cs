@@ -552,6 +552,40 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     }
 
     [Theory]
+    [InlineData("string")]
+    [InlineData("char")]
+    [InlineData("byte")]
+    [InlineData("sbyte")]
+    [InlineData("short")]
+    [InlineData("ushort")]
+    [InlineData("int")]
+    [InlineData("uint")]
+    [InlineData("long")]
+    [InlineData("ulong")]
+    [InlineData("BigInteger")]
+    [InlineData("float")]
+    [InlineData("double")]
+    [InlineData("bool")]
+    [InlineData("DayOfWeek")]
+    [InlineData("DateTime")]
+    public async Task ValidOptionType(string validType)
+    {
+        var source = $$"""
+            using System;
+            using System.Numerics;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public {{validType}} Option { get; init; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
     [InlineData("object")]
     [InlineData("dynamic")]
     [InlineData("MyOptions")]

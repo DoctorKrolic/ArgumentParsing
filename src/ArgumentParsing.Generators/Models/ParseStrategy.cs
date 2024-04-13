@@ -8,5 +8,6 @@ internal enum ParseStrategy : byte
     Float,
     Flag,
     Enum,
-    Char
+    Char,
+    DateTime
 }

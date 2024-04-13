@@ -56,6 +56,7 @@ internal static class TypeSymbolExtensions
         { SpecialType: SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal } => ParseStrategy.Float,
         { SpecialType: SpecialType.System_Boolean } => ParseStrategy.Flag,
         { SpecialType: SpecialType.System_Char } => ParseStrategy.Char,
+        { SpecialType: SpecialType.System_DateTime } => ParseStrategy.DateTime,
         _ => ParseStrategy.None,
     };
 }
