@@ -606,4 +606,44 @@ public sealed class SpecialCommandHandlerAnalyzerTests : AnalyzerTestBase<Specia
         await VerifyAnalyzerWithCodeFixAsync<PrefixAliasWithDashesCodeFixProvider>(source, fixedSource1, codeActionIndex: 0);
         await VerifyAnalyzerWithCodeFixAsync<PrefixAliasWithDashesCodeFixProvider>(source, fixedSource2, codeActionIndex: 1);
     }
+
+    [Fact]
+    public async Task NoParameterlessConstructor()
+    {
+        var source = """
+            [SpecialCommandAliases("--info")]
+            class {|ARGP0042:InfoCommandHandler|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+
+                public InfoCommandHandler(int x)
+                {
+                }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("private")]
+    [InlineData("protected")]
+    [InlineData("private protected")]
+    public async Task InaccessibleParameterlessConstructor(string accessibility)
+    {
+        var source = $$"""
+            [SpecialCommandAliases("--info")]
+            class {|ARGP0042:InfoCommandHandler|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+
+                {{accessibility}} InfoCommandHandler()
+                {
+                }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
 }

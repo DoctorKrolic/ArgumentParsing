@@ -344,4 +344,12 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor SpecialCommandHandlerMustHaveAccessibleParameterlessConstructor = new(
+        id: "ARGP0042",
+        title: "Special command handler must have an accessible parameterless constructor",
+        messageFormat: "Special command handler must have an accessible parameterless constructor",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

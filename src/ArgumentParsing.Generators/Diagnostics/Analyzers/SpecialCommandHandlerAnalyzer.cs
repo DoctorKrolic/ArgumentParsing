@@ -14,7 +14,8 @@ public sealed class SpecialCommandHandlerAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.SpecialCommandHandlerShouldBeClass,
             DiagnosticDescriptors.SpecialCommandHandlerMustHaveAliases,
             DiagnosticDescriptors.InvalidSpecialCommandAlias,
-            DiagnosticDescriptors.AliasShouldStartWithDash);
+            DiagnosticDescriptors.AliasShouldStartWithDash,
+            DiagnosticDescriptors.SpecialCommandHandlerMustHaveAccessibleParameterlessConstructor);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -96,6 +97,14 @@ public sealed class SpecialCommandHandlerAnalyzer : DiagnosticAnalyzer
                             aliasSyntaxes?[i].GetLocation() ?? diagnosticLocation));
                 }
             }
+        }
+
+        if (!type.Constructors.Any(static c => c.DeclaredAccessibility >= Accessibility.Internal && c.Parameters.IsEmpty))
+        {
+            context.ReportDiagnostic(
+                Diagnostic.Create(
+                    DiagnosticDescriptors.SpecialCommandHandlerMustHaveAccessibleParameterlessConstructor,
+                    diagnosticLocation));
         }
     }
 
