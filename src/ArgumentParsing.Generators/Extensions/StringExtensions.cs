@@ -1,6 +1,6 @@
 namespace ArgumentParsing.Generators.Extensions;
 
-internal static class StringExtensions
+public static class StringExtensions
 {
     public static string ToKebabCase(this string s)
     {

@@ -41,14 +41,7 @@ public sealed class WrapReturnTypeIntoParseResultCodeFixProvider : CodeFixProvid
     private static async Task<Document> WrapReturnTypeIntoParseResult(Document document, SyntaxNode root, TypeSyntax returnTypeSyntax, CancellationToken cancellationToken)
     {
         var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-        {
-            Debug.Fail("Shouldn't really happen");
-            return document;
-        }
-
-        var parseResultOfTType = semanticModel.Compilation.ParseResultOfTType();
-        if (parseResultOfTType is null)
+        if (semanticModel?.Compilation.ParseResultOfTType() is not { } parseResultOfTType)
         {
             Debug.Fail("Shouldn't really happen");
             return document;

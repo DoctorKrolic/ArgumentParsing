@@ -96,72 +96,433 @@ public sealed class SpecialCommandHandlerAnalyzerTests : AnalyzerTestBase<Specia
         await VerifyAnalyzerWithCodeFixAsync<ConvertToClassCodeFixProvider>(source, fixedSource);
     }
 
-    [Fact]
-    public async Task NoAliases_NoAttribute()
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoAttribute(string handlerName)
     {
-        var source = """
-            class {|ARGP0039:InfoCommandHandler|} : ISpecialCommandHandler
+        var source = $$"""
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
             {
                 public int HandleCommand() => 0;
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = $$"""
+            [SpecialCommandAliases("--info")]
+            class {{handlerName}} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
     }
 
-    [Fact]
-    public async Task NoAliases_NullValuesInAttribute()
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NullValuesInAttribute(string handlerName)
     {
-        var source = """
+        var source = $$"""
             [SpecialCommandAliases(null)]
-            class {|ARGP0039:InfoCommandHandler|} : ISpecialCommandHandler
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
             {
                 public int HandleCommand() => 0;
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = $$"""
+            [SpecialCommandAliases("--info")]
+            class {{handlerName}} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
     }
 
-    [Fact]
-    public async Task NoAliases_NoValuesInAttribute1()
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NullValuesInAttribute_AttributeOnAnotherPartialDeclaration(string handlerName)
     {
-        var source = """
+        var source = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            [SpecialCommandAliases(null)]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        var fixedSource = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            
+            [SpecialCommandAliases("--info")]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute1(string handlerName)
+    {
+        var source = $$"""
             [SpecialCommandAliases]
-            class {|ARGP0039:InfoCommandHandler|} : ISpecialCommandHandler
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
             {
                 public int HandleCommand() => 0;
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = $$"""
+            [SpecialCommandAliases("--info")]
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
     }
 
-    [Fact]
-    public async Task NoAliases_NoValuesInAttribute2()
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute1_MultipleAttributesInTheList(string handlerName)
     {
-        var source = """
+        var source = $$"""
+            [Obsolete, SpecialCommandAliases]
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        var fixedSource = $$"""
+            [Obsolete, SpecialCommandAliases("--info")]
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute1_AttributeOnAnotherPartialDeclaration(string handlerName)
+    {
+        var source = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            [SpecialCommandAliases]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        var fixedSource = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            
+            [SpecialCommandAliases("--info")]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute1_AttributeOnAnotherPartialDeclaration_MultipleAttributesInTheList(string handlerName)
+    {
+        var source = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            [Obsolete, SpecialCommandAliases]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        var fixedSource = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            
+            [Obsolete, SpecialCommandAliases("--info")]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute2(string handlerName)
+    {
+        var source = $$"""
             [SpecialCommandAliases()]
-            class {|ARGP0039:InfoCommandHandler|} : ISpecialCommandHandler
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
             {
                 public int HandleCommand() => 0;
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = $$"""
+            [SpecialCommandAliases("--info")]
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
     }
 
-    [Fact]
-    public async Task NoAliases_NoValuesInAttribute3()
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute2_MultipleAttributesInTheList(string handlerName)
     {
-        var source = """
-            [SpecialCommandAliases([])]
-            class {|ARGP0039:InfoCommandHandler|} : ISpecialCommandHandler
+        var source = $$"""
+            [Obsolete, SpecialCommandAliases()]
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
             {
                 public int HandleCommand() => 0;
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = $$"""
+            [Obsolete, SpecialCommandAliases("--info")]
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute2_AttributeOnAnotherPartialDeclaration(string handlerName)
+    {
+        var source = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            [SpecialCommandAliases()]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        var fixedSource = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            
+            [SpecialCommandAliases("--info")]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute2_AttributeOnAnotherPartialDeclaration_MultipleAttributesInTheList(string handlerName)
+    {
+        var source = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            [Obsolete, SpecialCommandAliases()]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        var fixedSource = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            
+            [Obsolete, SpecialCommandAliases("--info")]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute3(string handlerName)
+    {
+        var source = $$"""
+            [SpecialCommandAliases([])]
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        var fixedSource = $$"""
+            [SpecialCommandAliases("--info")]
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute3_MultipleAttributesInTheList(string handlerName)
+    {
+        var source = $$"""
+            [Obsolete, SpecialCommandAliases([])]
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        var fixedSource = $$"""
+            [Obsolete, SpecialCommandAliases("--info")]
+            class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute3_AttributeOnAnotherPartialDeclaration(string handlerName)
+    {
+        var source = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            [SpecialCommandAliases([])]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        var fixedSource = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            
+            [SpecialCommandAliases("--info")]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
+    }
+
+    [Theory]
+    [InlineData("Info")]
+    [InlineData("InfoCommandHandler")]
+    [InlineData("InfoSpecialCommandHandler")]
+    public async Task NoAliases_NoValuesInAttribute3_AttributeOnAnotherPartialDeclaration_MultipleAttributesInTheList(string handlerName)
+    {
+        var source = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            [Obsolete, SpecialCommandAliases([])]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        var fixedSource = $$"""
+            partial class {|ARGP0039:{{handlerName}}|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            
+            [Obsolete, SpecialCommandAliases("--info")]
+            partial class {{handlerName}}
+            {
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
     }
 }
