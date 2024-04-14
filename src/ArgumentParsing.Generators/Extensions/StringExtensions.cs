@@ -26,4 +26,22 @@ public static class StringExtensions
 
         return new string([.. buffer]);
     }
+
+    public static bool IsValidName(this string s)
+    {
+        if (!char.IsLetter(s[0]))
+        {
+            return false;
+        }
+
+        foreach (var ch in s)
+        {
+            if (ch != '-' && !char.IsLetterOrDigit(ch))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

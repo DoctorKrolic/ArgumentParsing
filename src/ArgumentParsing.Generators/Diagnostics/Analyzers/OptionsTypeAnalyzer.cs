@@ -350,7 +350,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
 
                 if (longName is not null)
                 {
-                    if (!char.IsLetter(longName[0]) || !longName.Replace("-", string.Empty).All(char.IsLetterOrDigit))
+                    if (!longName.IsValidName())
                     {
                         context.ReportDiagnostic(
                             Diagnostic.Create(
@@ -458,7 +458,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
 
                 parameterName ??= property.Name.ToKebabCase();
 
-                if (!char.IsLetter(parameterName[0]) || !parameterName.Replace("-", string.Empty).All(char.IsLetterOrDigit))
+                if (!parameterName.IsValidName())
                 {
                     context.ReportDiagnostic(
                         Diagnostic.Create(

@@ -267,7 +267,7 @@ public partial class ArgumentParserGenerator
 
                 if (longName is not null)
                 {
-                    if (!char.IsLetter(longName[0]) || !longName.Replace("-", string.Empty).All(char.IsLetterOrDigit) || !seenLongNames.Add(longName))
+                    if (!longName.IsValidName() || !seenLongNames.Add(longName))
                     {
                         return default;
                     }
@@ -312,7 +312,7 @@ public partial class ArgumentParserGenerator
 
                 parameterName ??= propertyName.ToKebabCase();
 
-                if (!char.IsLetter(parameterName[0]) || !parameterName.Replace("-", string.Empty).All(char.IsLetterOrDigit))
+                if (!parameterName.IsValidName())
                 {
                     return default;
                 }
