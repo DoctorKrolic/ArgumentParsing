@@ -12,7 +12,9 @@ public sealed class SpecialCommandHandlerAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
         ImmutableArray.Create(
             DiagnosticDescriptors.SpecialCommandHandlerShouldBeClass,
-            DiagnosticDescriptors.SpecialCommandHandlerMustHaveAliases);
+            DiagnosticDescriptors.SpecialCommandHandlerMustHaveAliases,
+            DiagnosticDescriptors.InvalidSpecialCommandAlias,
+            DiagnosticDescriptors.AliasShouldStartWithDash);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -54,10 +56,10 @@ public sealed class SpecialCommandHandlerAnalyzer : DiagnosticAnalyzer
         }
 
         var aliasesAttribute = type.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Equals(knownTypes.SpecialCommandAliasesAttributeType, SymbolEqualityComparer.Default) == true);
-        var constructorArg = aliasesAttribute?.ConstructorArguments.First();
+        var constructorArg = aliasesAttribute?.ConstructorArguments[0];
 
         if (aliasesAttribute is null ||
-            constructorArg is { IsNull: true } or { Values.IsEmpty: true })
+            constructorArg is null or { IsNull: true } or { Values.IsEmpty: true })
         {
             var diagType = aliasesAttribute is null
                 ? SpecialCommandHandlerMustHaveAliasesDiagnosticTypes.NoAttribute
@@ -70,6 +72,30 @@ public sealed class SpecialCommandHandlerAnalyzer : DiagnosticAnalyzer
                     DiagnosticDescriptors.SpecialCommandHandlerMustHaveAliases,
                     diagnosticLocation,
                     properties: ImmutableDictionary.CreateRange([new KeyValuePair<string, string?>("Type", diagType)])));
+        }
+        else
+        {
+            var aliasSyntaxes = ((AttributeSyntax?)aliasesAttribute.ApplicationSyntaxReference?.GetSyntax())?.ArgumentList?.Arguments;
+
+            for (var i = 0; i < constructorArg.Value.Values.Length; i++)
+            {
+                var aliasValue = (string?)constructorArg.Value.Values[i].Value;
+                if (!aliasValue.IsValidName(allowDashPrefix: true))
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.InvalidSpecialCommandAlias,
+                            aliasSyntaxes?[i].GetLocation() ?? diagnosticLocation,
+                            aliasValue));
+                }
+                else if (aliasValue[0] != '-')
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.AliasShouldStartWithDash,
+                            aliasSyntaxes?[i].GetLocation() ?? diagnosticLocation));
+                }
+            }
         }
     }
 

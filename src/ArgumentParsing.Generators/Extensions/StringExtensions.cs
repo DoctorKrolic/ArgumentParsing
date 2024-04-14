@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace ArgumentParsing.Generators.Extensions;
 
 public static class StringExtensions
@@ -27,11 +29,20 @@ public static class StringExtensions
         return new string([.. buffer]);
     }
 
-    public static bool IsValidName(this string s)
+    public static bool IsValidName([NotNullWhen(true)] this string? s, bool allowDashPrefix = false)
     {
-        if (!char.IsLetter(s[0]))
+        if (s is null)
         {
             return false;
+        }
+
+        var s0 = s[0];
+        if (!char.IsLetter(s0))
+        {
+            if (s0 != '-' || !allowDashPrefix)
+            {
+                return false;
+            }
         }
 
         foreach (var ch in s)

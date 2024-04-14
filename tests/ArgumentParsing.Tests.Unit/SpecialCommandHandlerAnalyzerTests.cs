@@ -525,4 +525,71 @@ public sealed class SpecialCommandHandlerAnalyzerTests : AnalyzerTestBase<Specia
 
         await VerifyAnalyzerWithCodeFixAsync<DeclareSpecialCommandAliasCodeFixProvider>(source, fixedSource);
     }
+
+    [Theory]
+    [InlineData("%")]
+    [InlineData("--my$name")]
+    [InlineData("2me")]
+    [InlineData("my command")]
+    public async Task InvalidAlias(string invalidName)
+    {
+        var source = $$"""
+            [SpecialCommandAliases({|ARGP0040:"{{invalidName}}"|})]
+            class InfoCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("%")]
+    [InlineData("--my$name")]
+    [InlineData("2me")]
+    [InlineData("my command")]
+    public async Task InvalidAlias_TwoAliases(string invalidName)
+    {
+        var source = $$"""
+            [SpecialCommandAliases("--info", {|ARGP0040:"{{invalidName}}"|})]
+            class InfoCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task NameStartsWithLetter()
+    {
+        var source = """
+            [SpecialCommandAliases({|ARGP0041:"info"|})]
+            class InfoCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        var fixedSource1 = """
+            [SpecialCommandAliases("--info")]
+            class InfoCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        var fixedSource2 = """
+            [SpecialCommandAliases("-info")]
+            class InfoCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<PrefixAliasWithDashesCodeFixProvider>(source, fixedSource1, codeActionIndex: 0);
+        await VerifyAnalyzerWithCodeFixAsync<PrefixAliasWithDashesCodeFixProvider>(source, fixedSource2, codeActionIndex: 1);
+    }
 }

@@ -326,4 +326,22 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidSpecialCommandAlias = new(
+        id: "ARGP0040",
+        title: "Invalid alias of a special command",
+        messageFormat: "Special command alias '{0}' is invalid",
+        description: "Alias of a special command must contain only letters, digits and dashes.",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor AliasShouldStartWithDash = new(
+        id: "ARGP0041",
+        title: "Alias of a special command should start with a dash",
+        messageFormat: "Alias of a special command should start with a dash or 2 dashes",
+        description: "Special command aliases should start with dashes. If you want a normal command, you should use a verb.",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }
