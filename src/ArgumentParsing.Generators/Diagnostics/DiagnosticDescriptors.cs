@@ -309,4 +309,13 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor SpecialCommandHandlerShouldBeClass = new(
+        id: "ARGP0038",
+        title: "Special command handler should be a class",
+        messageFormat: "Make special command handler a class for better performance",
+        description: "Special command handlers are used as interfaces in argument parsing, thus having a special command handler as a struct results in unnecessary boxing without any benefits. Consider changing command handler declaration to be a class.",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

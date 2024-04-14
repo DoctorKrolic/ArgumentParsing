@@ -28,6 +28,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
         var usings = """
             global using ArgumentParsing;
             global using ArgumentParsing.Results;
+            global using ArgumentParsing.SpecialCommands;
             global using System;
             """;
 
