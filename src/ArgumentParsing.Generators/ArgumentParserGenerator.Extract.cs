@@ -19,6 +19,59 @@ public partial class ArgumentParserGenerator
         SimpleParameterInfo? parameterInfo = null;
         INamedTypeSymbol? validOptionsType = null;
 
+        var comp = context.SemanticModel.Compilation;
+        var genArgParserAttrType = comp.GetTypeByMetadataName(GeneratedArgumentParserAttributeName)!;
+
+        var genArgParserAttrData = context.Attributes.First(a => a.AttributeClass?.Equals(genArgParserAttrType, SymbolEqualityComparer.Default) == true);
+        ImmutableArray<SpecialCommandHandlerInfo>.Builder? specialCommandHandlerInfosBuilder = null;
+
+        if (genArgParserAttrData.NamedArguments.FirstOrDefault(static n => n.Key == "SpecialCommandHandlers").Value is { IsNull: false, Values: { IsDefault: false } specialCommandHandlers })
+        {
+            specialCommandHandlerInfosBuilder = ImmutableArray.CreateBuilder<SpecialCommandHandlerInfo>();
+            var iSpecialCommandHandlerType = comp.ISpecialCommandHandlerType();
+            var specialCommandAliasesAttributeType = comp.SpecialCommandAliasesAttributeType();
+
+            foreach (var commandHandler in specialCommandHandlers)
+            {
+                if (commandHandler.Value is not INamedTypeSymbol commandHandlerType ||
+                    !commandHandlerType.AllInterfaces.Any(i => i.Equals(iSpecialCommandHandlerType, SymbolEqualityComparer.Default)) ||
+                    !commandHandlerType.Constructors.Any(static c => c.DeclaredAccessibility >= Accessibility.Internal && c.Parameters.IsEmpty))
+                {
+                    return default;
+                }
+
+                var aliasesAttrData = commandHandlerType
+                    .GetAttributes()
+                    .FirstOrDefault(a => a.AttributeClass?.Equals(specialCommandAliasesAttributeType, SymbolEqualityComparer.Default) == true);
+
+                if (aliasesAttrData is null)
+                {
+                    return default;
+                }
+
+                var firstConstructorArg = aliasesAttrData.ConstructorArguments.First();
+                if (firstConstructorArg.IsNull || firstConstructorArg.Values.IsEmpty)
+                {
+                    return default;
+                }
+
+                var aliasesBuilder = ImmutableArray.CreateBuilder<string>();
+                foreach (var alias in firstConstructorArg.Values)
+                {
+                    if (alias is not { IsNull: false, Value: string aliasVal } || !aliasVal.IsValidName(allowDashPrefix: true))
+                    {
+                        return default;
+                    }
+
+                    aliasesBuilder.Add(aliasVal);
+                }
+
+                specialCommandHandlerInfosBuilder.Add(new(
+                    commandHandlerType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                    aliasesBuilder.ToImmutable()));
+            }
+        }
+
         if (argumentParserMethodSymbol.Parameters is not [var singleParameter])
         {
             return default;
@@ -46,17 +99,15 @@ public partial class ArgumentParserGenerator
         var returnTypeSyntax = argumentParserMethodSyntax.ReturnType;
         var returnType = argumentParserMethodSymbol.ReturnType;
 
-        var compilation = context.SemanticModel.Compilation;
-
         if (returnType is not INamedTypeSymbol { TypeArguments: [var optionsType] } namedReturnType ||
-            !namedReturnType.ConstructedFrom.Equals(compilation.ParseResultOfTType(), SymbolEqualityComparer.Default))
+            !namedReturnType.ConstructedFrom.Equals(comp.ParseResultOfTType(), SymbolEqualityComparer.Default))
         {
             return default;
         }
 
         if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType ||
             !namedOptionsType.Constructors.Any(static c => c.DeclaredAccessibility >= Accessibility.Internal && c.Parameters.IsEmpty) ||
-            !namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(compilation.OptionsTypeAttributeType(), SymbolEqualityComparer.Default) == true))
+            !namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(comp.OptionsTypeAttributeType(), SymbolEqualityComparer.Default) == true))
         {
             return default;
         }
@@ -65,9 +116,9 @@ public partial class ArgumentParserGenerator
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var (optionsInfo, optionsHelpInfo) = ExtractInfoFromOptionsType(validOptionsType, compilation, cancellationToken);
+        var (optionsInfo, optionsHelpInfo) = ExtractInfoFromOptionsType(validOptionsType, comp, cancellationToken);
 
-        if (optionsHelpInfo is null)
+        if (optionsInfo is null)
         {
             return default;
         }
@@ -76,12 +127,13 @@ public partial class ArgumentParserGenerator
             argumentParserMethodSyntax.Modifiers.ToString(),
             argumentParserMethodSymbol.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             argumentParserMethodSymbol.Name,
-            parameterInfo!);
+            parameterInfo);
 
         var argumentParserInfo = new ArgumentParserInfo(
             HierarchyInfo.From(argumentParserMethodSymbol.ContainingType),
             methodInfo,
-            optionsInfo!);
+            optionsInfo,
+            specialCommandHandlerInfosBuilder?.ToImmutable());
 
         return (argumentParserInfo, optionsHelpInfo);
     }
