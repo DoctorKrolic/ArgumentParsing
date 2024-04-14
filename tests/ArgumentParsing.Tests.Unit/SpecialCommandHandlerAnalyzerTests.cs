@@ -563,6 +563,20 @@ public sealed class SpecialCommandHandlerAnalyzerTests : AnalyzerTestBase<Specia
     }
 
     [Fact]
+    public async Task InvalidAlias_TwoAliases_Null()
+    {
+        var source = """
+            [SpecialCommandAliases({|ARGP0040:null|}, "--info")]
+            class InfoCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task NameStartsWithLetter()
     {
         var source = """
