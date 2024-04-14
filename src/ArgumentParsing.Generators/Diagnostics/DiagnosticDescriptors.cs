@@ -49,7 +49,8 @@ public static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor InvalidOptionsType = new(
         id: "ARGP0006",
         title: "Invalid options type",
-        messageFormat: "Options type must be a non-special class or struct with an accessible parameterless constructor",
+        messageFormat: "Invalid options type",
+        description: "Options type must be a non-special class or struct with an accessible parameterless constructor.",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
