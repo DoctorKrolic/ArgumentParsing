@@ -21,4 +21,6 @@ public static class CommonTypesCompilationExtensions
     public static INamedTypeSymbol? IsExternalInitType(this Compilation compilation) => compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.IsExternalInit");
 
     public static INamedTypeSymbol? ISpecialCommandHandlerType(this Compilation compilation) => compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.ISpecialCommandHandler");
+
+    public static INamedTypeSymbol? SpecialCommandAliasesAttributeType(this Compilation compilation) => compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute");
 }

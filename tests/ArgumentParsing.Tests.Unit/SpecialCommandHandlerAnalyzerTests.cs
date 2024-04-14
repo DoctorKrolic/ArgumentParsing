@@ -56,4 +56,73 @@ public sealed class SpecialCommandHandlerAnalyzerTests : AnalyzerTestBase<Specia
 
         await VerifyAnalyzerAsync(source);
     }
+
+    [Fact]
+    public async Task NoAliases_NoAttribute()
+    {
+        var source = """
+            class {|ARGP0039:InfoCommandHandler|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task NoAliases_NullValuesInAttribute()
+    {
+        var source = """
+            [SpecialCommandAliases(null)]
+            class {|ARGP0039:InfoCommandHandler|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task NoAliases_NoValuesInAttribute1()
+    {
+        var source = """
+            [SpecialCommandAliases]
+            class {|ARGP0039:InfoCommandHandler|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task NoAliases_NoValuesInAttribute2()
+    {
+        var source = """
+            [SpecialCommandAliases()]
+            class {|ARGP0039:InfoCommandHandler|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task NoAliases_NoValuesInAttribute3()
+    {
+        var source = """
+            [SpecialCommandAliases([])]
+            class {|ARGP0039:InfoCommandHandler|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
 }

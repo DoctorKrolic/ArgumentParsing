@@ -11,7 +11,8 @@ public sealed class SpecialCommandHandlerAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
         ImmutableArray.Create(
-            DiagnosticDescriptors.SpecialCommandHandlerShouldBeClass);
+            DiagnosticDescriptors.SpecialCommandHandlerShouldBeClass,
+            DiagnosticDescriptors.SpecialCommandHandlerMustHaveAliases);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -24,6 +25,7 @@ public sealed class SpecialCommandHandlerAnalyzer : DiagnosticAnalyzer
             var knownTypes = new KnownTypes
             {
                 ISpecialCommandHandlerType = comp.ISpecialCommandHandlerType(),
+                SpecialCommandAliasesAttributeType = comp.SpecialCommandAliasesAttributeType(),
             };
 
             context.RegisterSymbolAction(context => AnalyzeSpecialCommandHandler(context, knownTypes), SymbolKind.NamedType);
@@ -40,20 +42,48 @@ public sealed class SpecialCommandHandlerAnalyzer : DiagnosticAnalyzer
         }
 
         var location = type.Locations.First();
+        var declaration = location.SourceTree?.GetRoot(context.CancellationToken).FindNode(location.SourceSpan) as BaseTypeDeclarationSyntax;
+        var diagnosticLocation = declaration?.Identifier.GetLocation() ?? location;
 
         if (type.TypeKind == TypeKind.Struct)
         {
-            var declaration = location.SourceTree?.GetRoot(context.CancellationToken).FindNode(location.SourceSpan) as BaseTypeDeclarationSyntax;
-
             context.ReportDiagnostic(
                 Diagnostic.Create(
                     DiagnosticDescriptors.SpecialCommandHandlerShouldBeClass,
-                    declaration?.Identifier.GetLocation() ?? location));
+                    diagnosticLocation));
         }
+
+        var aliasesAttribute = type.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Equals(knownTypes.SpecialCommandAliasesAttributeType, SymbolEqualityComparer.Default) == true);
+        var constructorArg = aliasesAttribute?.ConstructorArguments.First();
+
+        if (aliasesAttribute is null ||
+            constructorArg is { IsNull: true } or { Values.IsEmpty: true })
+        {
+            var diagType = aliasesAttribute is null
+                ? SpecialCommandHandlerMustHaveAliasesDiagnosticTypes.NoAttribute
+                : (constructorArg is { IsNull: true }
+                    ? SpecialCommandHandlerMustHaveAliasesDiagnosticTypes.NullValues
+                    : SpecialCommandHandlerMustHaveAliasesDiagnosticTypes.EmptyValues);
+
+            context.ReportDiagnostic(
+                Diagnostic.Create(
+                    DiagnosticDescriptors.SpecialCommandHandlerMustHaveAliases,
+                    diagnosticLocation,
+                    properties: ImmutableDictionary.CreateRange([new KeyValuePair<string, string?>("Type", diagType)])));
+        }
+    }
+
+    public static class SpecialCommandHandlerMustHaveAliasesDiagnosticTypes
+    {
+        public const string NoAttribute = "NoAttribute";
+        public const string NullValues = "NullValues";
+        public const string EmptyValues = "EmptyValues";
     }
 
     private readonly struct KnownTypes
     {
         public required INamedTypeSymbol? ISpecialCommandHandlerType { get; init; }
+
+        public required INamedTypeSymbol? SpecialCommandAliasesAttributeType { get; init; }
     }
 }

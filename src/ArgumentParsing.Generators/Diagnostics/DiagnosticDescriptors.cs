@@ -318,4 +318,12 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor SpecialCommandHandlerMustHaveAliases = new(
+        id: "ARGP0039",
+        title: "Special command handler must declare aliases",
+        messageFormat: "Special command handler must declare at least one alias",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
