@@ -1,3 +1,4 @@
+using ArgumentParsing.CodeFixes;
 using ArgumentParsing.Generators.Diagnostics.Analyzers;
 using ArgumentParsing.Tests.Unit.Utilities;
 
@@ -54,7 +55,45 @@ public sealed class SpecialCommandHandlerAnalyzerTests : AnalyzerTestBase<Specia
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        var fixedSource = """
+            [SpecialCommandAliases("--info")]
+            class InfoCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<ConvertToClassCodeFixProvider>(source, fixedSource);
+    }
+
+    [Fact]
+    public async Task WarnOnCommandHandlerStruct_MultiplePartialDeclarations()
+    {
+        var source = """
+            [SpecialCommandAliases("--info")]
+            partial struct {|ARGP0038:InfoCommandHandler|} : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            partial struct InfoCommandHandler
+            {
+            }
+            """;
+
+        var fixedSource = """
+            [SpecialCommandAliases("--info")]
+            partial class InfoCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            partial class InfoCommandHandler
+            {
+            }
+            """;
+
+        await VerifyAnalyzerWithCodeFixAsync<ConvertToClassCodeFixProvider>(source, fixedSource);
     }
 
     [Fact]
