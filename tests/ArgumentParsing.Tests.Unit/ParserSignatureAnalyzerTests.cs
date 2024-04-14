@@ -437,4 +437,247 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
 
         await VerifyAnalyzerWithCodeFixAsync<AnnotateTypeWithOptionsTypeAttributeCodeFixProvider>(source, fixedSource);
     }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_ExplicitNull()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = null)]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_Empty()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [])]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_NullElement_CollectionExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [{|#0:null|}])]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(0)
+                .WithArguments("null")
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_NullElement_ArrayCreationExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { {|#0:null|} })]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(0)
+                .WithArguments("null")
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_InvalidType1_CollectionExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({|#0:int|})])]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(0)
+                .WithArguments("int")
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_InvalidType1_ArrayCreationExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { typeof({|#0:int|}) })]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(0)
+                .WithArguments("int")
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_InvalidType2_CollectionExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({|#0:C|})])]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(0)
+                .WithArguments("C")
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_InvalidType2_ArrayCreationExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { typeof({|#0:C|}) })]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(0)
+                .WithArguments("C")
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_MultipleInvalidTypes_CollectionExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({|#0:C|}), typeof({|#1:MyClass|})])]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            public class MyClass
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(0)
+                .WithArguments("C"),
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(1)
+                .WithArguments("MyClass")
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_MultipleInvalidTypes_ArrayCreationExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { typeof({|#0:C|}), typeof({|#1:MyClass|}) })]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            public class MyClass
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(0)
+                .WithArguments("C"),
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(1)
+                .WithArguments("MyClass")
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_ValidType()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [SpecialCommandAliases("--info")]
+            class InfoSpecialCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_ValidType_EvenWithoutAliases()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            class InfoSpecialCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
 }

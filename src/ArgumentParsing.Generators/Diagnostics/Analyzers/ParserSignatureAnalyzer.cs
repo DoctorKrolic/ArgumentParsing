@@ -18,7 +18,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.ReturnTypeMustBeParseResult,
             DiagnosticDescriptors.InvalidOptionsType,
             DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute,
-            DiagnosticDescriptors.ParserArgumentIsASet);
+            DiagnosticDescriptors.ParserArgumentIsASet,
+            DiagnosticDescriptors.InvalidSpecialCommandHandlerTypeSpecifier);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -34,6 +35,7 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                 ISetOfTType = comp.GetTypeByMetadataName("System.Collections.Generic.ISet`1"),
                 ParseResultOfTType = comp.ParseResultOfTType(),
                 OptionsTypeAttributeType = comp.OptionsTypeAttributeType(),
+                ISpecialCommandHandlerType = comp.ISpecialCommandHandlerType(),
             };
 
             context.RegisterSymbolAction(context => AnalyzeParserSignature(context, knownTypes), SymbolKind.Method);
@@ -44,10 +46,46 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
     {
         var method = (IMethodSymbol)context.Symbol;
 
-        if (!method.GetAttributes()
-            .Any(a => a.AttributeClass?.Equals(knownTypes.GeneratedArgumentParserAttributeType, SymbolEqualityComparer.Default) == true))
+        if (method.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Equals(knownTypes.GeneratedArgumentParserAttributeType, SymbolEqualityComparer.Default) == true) is not { } generatedArgParserAttrData)
         {
             return;
+        }
+
+        var iSpecialCommandHandlerType = knownTypes.ISpecialCommandHandlerType;
+
+        if (iSpecialCommandHandlerType is not null &&
+            generatedArgParserAttrData.NamedArguments
+            .FirstOrDefault(static n => n.Key == "SpecialCommandHandlers").Value is { IsNull: false, Values: { IsDefaultOrEmpty: false } specialCommandHandlers })
+        {
+            var attributeSyntax = (AttributeSyntax?)generatedArgParserAttrData.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
+            var specialCommandHandlersCollectionSyntax = attributeSyntax?.ArgumentList?.Arguments.First(static a => a.NameEquals?.Name.Identifier.ValueText == "SpecialCommandHandlers").Expression;
+            var namedParametersList = (specialCommandHandlersCollectionSyntax is CollectionExpressionSyntax collectionExpression
+                ? collectionExpression.Elements.Select(static ce => ((ExpressionElementSyntax)ce).Expression)
+                : (specialCommandHandlersCollectionSyntax is ArrayCreationExpressionSyntax arrayCreation
+                    ? arrayCreation.Initializer?.Expressions
+                    : null)).ToArray();
+
+            for (var i = 0; i < specialCommandHandlers.Length; i++)
+            {
+                var commandHandler = specialCommandHandlers[i];
+
+                if (commandHandler is not { Value: INamedTypeSymbol namedHandlerType } ||
+                    !namedHandlerType.AllInterfaces.Contains(iSpecialCommandHandlerType))
+                {
+                    var associatedSyntaxNode = namedParametersList?[i];
+                    if (associatedSyntaxNode is TypeOfExpressionSyntax typeofExpression)
+                    {
+                        associatedSyntaxNode = typeofExpression.Type;
+                    }
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.InvalidSpecialCommandHandlerTypeSpecifier,
+                            associatedSyntaxNode?.GetLocation() ?? attributeSyntax?.GetLocation() ?? method.Locations.First(),
+                            commandHandler.IsNull ? "null" : commandHandler.Value));
+                }
+            }
         }
 
         if (method.Parameters is not [var singleParameter])
@@ -153,5 +191,7 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
         public required INamedTypeSymbol? ParseResultOfTType { get; init; }
 
         public required INamedTypeSymbol? OptionsTypeAttributeType { get; init; }
+
+        public required INamedTypeSymbol? ISpecialCommandHandlerType { get; init; }
     }
 }

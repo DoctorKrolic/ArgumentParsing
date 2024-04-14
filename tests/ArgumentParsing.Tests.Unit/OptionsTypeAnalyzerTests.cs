@@ -1032,7 +1032,8 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
 
         await VerifyAnalyzerAsync(source,
         [
-            DiagnosticResult.CompilerError("ARGP0025")
+            DiagnosticResult
+                .CompilerError("ARGP0025")
                 .WithLocation(0)
                 .WithArguments(1)
         ]);
@@ -1058,7 +1059,8 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
 
         await VerifyAnalyzerAsync(source,
         [
-            DiagnosticResult.CompilerError("ARGP0025")
+            DiagnosticResult
+                .CompilerError("ARGP0025")
                 .WithLocation(0)
                 .WithArguments(2)
         ]);
@@ -1081,7 +1083,8 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
 
         await VerifyAnalyzerAsync(source,
         [
-            DiagnosticResult.CompilerError("ARGP0026")
+            DiagnosticResult
+                .CompilerError("ARGP0026")
                 .WithLocation(0)
                 .WithArguments(1, 2)
         ]);
@@ -1107,10 +1110,12 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
 
         await VerifyAnalyzerAsync(source,
         [
-            DiagnosticResult.CompilerError("ARGP0025")
+            DiagnosticResult
+                .CompilerError("ARGP0025")
                 .WithLocation(0)
                 .WithArguments(1),
-            DiagnosticResult.CompilerError("ARGP0025")
+            DiagnosticResult
+                .CompilerError("ARGP0025")
                 .WithLocation(0)
                 .WithArguments(3)
         ]);
@@ -1133,7 +1138,8 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
 
         await VerifyAnalyzerAsync(source,
         [
-            DiagnosticResult.CompilerError("ARGP0026")
+            DiagnosticResult
+                .CompilerError("ARGP0026")
                 .WithLocation(0)
                 .WithArguments(1, 3)
         ]);
@@ -1159,7 +1165,8 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
 
         await VerifyAnalyzerAsync(source,
         [
-            DiagnosticResult.CompilerError("ARGP0026")
+            DiagnosticResult
+                .CompilerError("ARGP0026")
                 .WithLocation(0)
                 .WithArguments(2, 3)
         ]);
@@ -1185,10 +1192,12 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
 
         await VerifyAnalyzerAsync(source,
         [
-            DiagnosticResult.CompilerError("ARGP0026")
+            DiagnosticResult
+                .CompilerError("ARGP0026")
                 .WithLocation(0)
                 .WithArguments(1, 2),
-            DiagnosticResult.CompilerError("ARGP0026")
+            DiagnosticResult
+                .CompilerError("ARGP0026")
                 .WithLocation(0)
                 .WithArguments(4, 5)
         ]);

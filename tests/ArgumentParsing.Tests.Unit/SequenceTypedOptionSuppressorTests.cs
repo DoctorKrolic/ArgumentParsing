@@ -102,7 +102,8 @@ public sealed class SequenceTypedOptionSuppressorTests : AnalyzerTestBase<Sequen
     private static Task VerifyNullabilitySuppression(string source, bool isSuppressed)
         => VerifyAnalyzerAsync(source,
         [
-            DiagnosticResult.CompilerWarning("CS8618")
+            DiagnosticResult
+                .CompilerWarning("CS8618")
                 .WithLocation(0)
                 .WithLocation(0)
                 .WithIsSuppressed(isSuppressed)

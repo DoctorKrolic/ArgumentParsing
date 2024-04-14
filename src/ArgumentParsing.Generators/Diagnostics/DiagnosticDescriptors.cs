@@ -353,4 +353,13 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidSpecialCommandHandlerTypeSpecifier = new(
+        id: "ARGP0043",
+        title: "Invalid special command handler type specifier",
+        messageFormat: "'{0}' is an invalid special command handler specifier",
+        description: "Special command handler specifier must be a non-null type, which implements 'ISpecialCommandHandler' interface.",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
