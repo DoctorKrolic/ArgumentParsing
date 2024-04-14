@@ -450,6 +450,7 @@ public sealed class ArgumentParserGeneratorTests
     [InlineData("Action")]
     [InlineData("DayOfWeek")]
     [InlineData("ClassWithoutParameterlessConstructor")]
+    [InlineData("ClassWithInaccessibleParameterlessConstructor")]
     public async Task InvalidOptionsType(string invalidType)
     {
         var source = $$"""
@@ -463,6 +464,14 @@ public sealed class ArgumentParserGeneratorTests
             class ClassWithoutParameterlessConstructor
             {
                 public ClassWithoutParameterlessConstructor(int a)
+                {
+                }
+            }
+
+            [OptionsType]
+            class ClassWithInaccessibleParameterlessConstructor
+            {
+                private ClassWithInaccessibleParameterlessConstructor()
                 {
                 }
             }

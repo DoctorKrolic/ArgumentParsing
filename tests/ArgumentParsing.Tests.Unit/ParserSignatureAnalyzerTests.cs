@@ -302,6 +302,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     [InlineData("Action")]
     [InlineData("DayOfWeek")]
     [InlineData("ClassWithoutParameterlessConstructor")]
+    [InlineData("ClassWithInaccessibleParameterlessConstructor")]
     public async Task InvalidOptionsType(string invalidType)
     {
         var source = $$"""
@@ -314,6 +315,13 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
             class ClassWithoutParameterlessConstructor
             {
                 public ClassWithoutParameterlessConstructor(int a)
+                {
+                }
+            }
+
+            class ClassWithInaccessibleParameterlessConstructor
+            {
+                private ClassWithInaccessibleParameterlessConstructor()
                 {
                 }
             }

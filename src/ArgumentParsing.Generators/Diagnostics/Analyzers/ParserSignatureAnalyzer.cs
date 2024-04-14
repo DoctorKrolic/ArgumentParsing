@@ -126,7 +126,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                     additionalLocations: null,
                     properties: null));
         }
-        else if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType || !namedOptionsType.Constructors.Any(c => c.Parameters.Length == 0))
+        else if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType ||
+                 !namedOptionsType.Constructors.Any(static c => c.DeclaredAccessibility >= Accessibility.Internal && c.Parameters.IsEmpty))
         {
             if (optionsType.TypeKind != TypeKind.Error)
             {

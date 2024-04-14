@@ -55,7 +55,7 @@ public partial class ArgumentParserGenerator
         }
 
         if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType ||
-            !namedOptionsType.Constructors.Any(c => c.Parameters.Length == 0) ||
+            !namedOptionsType.Constructors.Any(static c => c.DeclaredAccessibility >= Accessibility.Internal && c.Parameters.IsEmpty) ||
             !namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(compilation.OptionsTypeAttributeType(), SymbolEqualityComparer.Default) == true))
         {
             return default;
