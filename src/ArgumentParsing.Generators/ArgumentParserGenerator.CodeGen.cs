@@ -29,9 +29,7 @@ public partial class ArgumentParserGenerator
         var generatorType = typeof(ArgumentParserGenerator);
         var generatedCodeAttribute = $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{generatorType.FullName}\", \"{generatorType.Assembly.GetName().Version}\")]";
 
-        var hasAnySpecialCommandHandlers = !specialCommandHandlers.HasValue || !specialCommandHandlers.Value.IsEmpty;
-
-        if (hasAtLeastInternalAccessibility)
+        if (hasAtLeastInternalAccessibility && !specialCommandHandlers.HasValue)
         {
             writer.WriteLine("namespace ArgumentParsing.Generated");
             writer.OpenBlock();
@@ -62,13 +60,10 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("global::System.Console.Error.WriteLine(errorScreenText);");
             writer.WriteLine("global::System.Environment.Exit(1);");
             writer.WriteLine("break;");
-            if (hasAnySpecialCommandHandlers)
-            {
-                writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:", identDelta: -1);
-                writer.WriteLine("int exitCode = result.SpecialCommandHandler.HandleCommand();");
-                writer.WriteLine("global::System.Environment.Exit(exitCode);");
-                writer.WriteLine("break;");
-            }
+            writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:", identDelta: -1);
+            writer.WriteLine("int exitCode = result.SpecialCommandHandler.HandleCommand();");
+            writer.WriteLine("global::System.Environment.Exit(exitCode);");
+            writer.WriteLine("break;");
             writer.Ident--;
             writer.CloseRemainingBlocks();
             writer.WriteLine();
@@ -124,6 +119,7 @@ public partial class ArgumentParserGenerator
 
         var hasAnyOptions = optionInfos.Length > 0;
         var hasAnyParameters = parameterInfos.Length > 0;
+        var hasAnySpecialCommandHandlers = !specialCommandHandlers.HasValue || !specialCommandHandlers.Value.IsEmpty;
 
         writer.WriteLine();
         writer.WriteLine($"int state = {(hasAnySpecialCommandHandlers ? "-3" : "0")};");

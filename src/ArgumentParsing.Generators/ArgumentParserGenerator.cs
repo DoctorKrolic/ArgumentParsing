@@ -32,6 +32,7 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .Select((info, _) => info.AssemblyVersionInfo);
 
         var optionsHelpInfos = extractedInfosProvider
+            .Where(info => !info.ArgumentParserInfo!.SpecialCommandHandlersInfos.HasValue)
             .Select((info, _) => info.OptionsHelpInfo!)
             .Combine(assemblyVersionInfo);
 

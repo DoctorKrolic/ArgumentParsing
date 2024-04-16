@@ -32,39 +32,6 @@ public partial class ArgumentParserGeneratorTests
             #nullable disable
             #pragma warning disable
 
-            namespace ArgumentParsing.Generated
-            {
-                internal static partial class ParseResultExtensions
-                {
-                    /// <summary>
-                    /// Executes common default actions for the given <see cref="global::ArgumentParsing.Results.ParseResult{TOptions}"/>
-                    /// <list type="bullet">
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedOptions"/> state invokes provided <paramref name="action"/> with parsed options object</item>
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors"/> state writes help screen text with parse errors to <see cref="global::System.Console.Error"/> and exits application with code 1</item>
-                    /// <item>If <paramref name="result"/> is in <see cref="global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand"/> state executes parsed handler and exits application with code, returned from the handler</item>
-                    /// </list>
-                    /// </summary>
-                    /// <param name="result">Parse result</param>
-                    /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
-                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
-                    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-                    public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::EmptyOptions> result, global::System.Action<global::EmptyOptions> action)
-                    {
-                        switch (result.State)
-                        {
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedOptions:
-                                action(result.Options);
-                                break;
-                            case global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors:
-                                string errorScreenText = global::ArgumentParsing.Generated.HelpCommandHandler_EmptyOptions.GenerateHelpText(result.Errors);
-                                global::System.Console.Error.WriteLine(errorScreenText);
-                                global::System.Environment.Exit(1);
-                                break;
-                        }
-                    }
-                }
-            }
-
             partial class C
             {
                 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
@@ -185,8 +152,7 @@ public partial class ArgumentParserGeneratorTests
             }
             """;
 
-        // TODO: this should have non-default help codegen
-        await VerifyGeneratorAsync(source, ("EmptyOptions.g.cs", generated), ("HelpCommandHandler.EmptyOptions.g.cs", HelpCodeGenForEmptyOptions));
+        await VerifyGeneratorAsync(source, ("EmptyOptions.g.cs", generated));
     }
 
     [Fact]
