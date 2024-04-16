@@ -38,10 +38,11 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(optionsHelpInfos, EmitHelpCommandHandler);
 
         // Candidate for `Any` API: https://github.com/dotnet/roslyn/issues/59690
-        var hasAnyParsers = argumentParserInfos
+        var hasAnyParsersWithDefaultHandlers = argumentParserInfos
+            .Where(a => !a.SpecialCommandHandlersInfos.HasValue)
             .Collect()
             .Select((parsers, _) => !parsers.IsEmpty);
 
-        context.RegisterSourceOutput(assemblyVersionInfo.Combine(hasAnyParsers), EmitVersionCommandHandler);
+        context.RegisterSourceOutput(assemblyVersionInfo.Combine(hasAnyParsersWithDefaultHandlers), EmitVersionCommandHandler);
     }
 }

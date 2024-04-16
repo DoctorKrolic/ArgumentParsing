@@ -14,13 +14,13 @@ public sealed partial class SimpleHelpCommandTest
     private sealed class Options
     {
         [Option('o'), HelpInfo("Option help description")]
-        public int Option { get; set; }
+        public int Option { get; init; }
 
         [Parameter(0), HelpInfo("Parameter help description")]
-        public string? Parameter { get; set; }
+        public string? Parameter { get; init; }
 
         [RemainingParameters, HelpInfo("Remaining parameters description")]
-        public ImmutableArray<string> RemainingParams { get; set; }
+        public ImmutableArray<string> RemainingParams { get; init; }
     }
 
     [GeneratedArgumentParser]

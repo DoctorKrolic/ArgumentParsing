@@ -29,6 +29,8 @@ public partial class ArgumentParserGenerator
         var generatorType = typeof(ArgumentParserGenerator);
         var generatedCodeAttribute = $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{generatorType.FullName}\", \"{generatorType.Assembly.GetName().Version}\")]";
 
+        var hasAnySpecialCommandHandlers = !specialCommandHandlers.HasValue || !specialCommandHandlers.Value.IsEmpty;
+
         if (hasAtLeastInternalAccessibility)
         {
             writer.WriteLine("namespace ArgumentParsing.Generated");
@@ -60,10 +62,13 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("global::System.Console.Error.WriteLine(errorScreenText);");
             writer.WriteLine("global::System.Environment.Exit(1);");
             writer.WriteLine("break;");
-            writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:", identDelta: -1);
-            writer.WriteLine("int exitCode = result.SpecialCommandHandler.HandleCommand();");
-            writer.WriteLine("global::System.Environment.Exit(exitCode);");
-            writer.WriteLine("break;");
+            if (hasAnySpecialCommandHandlers)
+            {
+                writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:", identDelta: -1);
+                writer.WriteLine("int exitCode = result.SpecialCommandHandler.HandleCommand();");
+                writer.WriteLine("global::System.Environment.Exit(exitCode);");
+                writer.WriteLine("break;");
+            }
             writer.Ident--;
             writer.CloseRemainingBlocks();
             writer.WriteLine();
@@ -121,7 +126,7 @@ public partial class ArgumentParserGenerator
         var hasAnyParameters = parameterInfos.Length > 0;
 
         writer.WriteLine();
-        writer.WriteLine("int state = -3;");
+        writer.WriteLine($"int state = {(hasAnySpecialCommandHandlers ? "-3" : "0")};");
         if (hasAnyOptions)
         {
             writer.WriteLine("int seenOptions = 0;");
@@ -150,23 +155,42 @@ public partial class ArgumentParserGenerator
 
         writer.WriteLine($"foreach (string arg in {method.ArgsParameterInfo.Name})");
         writer.OpenBlock();
-        writer.WriteLine("if (state == -3)");
-        writer.OpenBlock();
-        writer.WriteLine("switch (arg)");
-        writer.OpenBlock();
-        writer.WriteLine("case \"--help\":");
-        writer.Ident++;
-        writer.WriteLine($"return new {method.ReturnType}(new global::ArgumentParsing.Generated.HelpCommandHandler_{qualifiedName.Replace('.', '_')}());");
-        writer.Ident--;
-        writer.WriteLine("case \"--version\":");
-        writer.Ident++;
-        writer.WriteLine($"return new {method.ReturnType}(new global::ArgumentParsing.Generated.VersionCommandHandler());");
-        writer.Ident--;
-        writer.CloseBlock();
-        writer.WriteLine();
-        writer.WriteLine("state = 0;");
-        writer.CloseBlock();
-        writer.WriteLine();
+        if (hasAnySpecialCommandHandlers)
+        {
+            writer.WriteLine("if (state == -3)");
+            writer.OpenBlock();
+            writer.WriteLine("switch (arg)");
+            writer.OpenBlock();
+            if (specialCommandHandlers.HasValue)
+            {
+                foreach (var commandHandler in specialCommandHandlers.Value)
+                {
+                    foreach (var alias in commandHandler.Aliases)
+                    {
+                        writer.WriteLine($"case \"{alias}\":");
+                    }
+                    writer.Ident++;
+                    writer.WriteLine($"return new {method.ReturnType}(new {commandHandler.Type}());");
+                    writer.Ident--;
+                }
+            }
+            else
+            {
+                writer.WriteLine("case \"--help\":");
+                writer.Ident++;
+                writer.WriteLine($"return new {method.ReturnType}(new global::ArgumentParsing.Generated.HelpCommandHandler_{qualifiedName.Replace('.', '_')}());");
+                writer.Ident--;
+                writer.WriteLine("case \"--version\":");
+                writer.Ident++;
+                writer.WriteLine($"return new {method.ReturnType}(new global::ArgumentParsing.Generated.VersionCommandHandler());");
+                writer.Ident--;
+            }
+            writer.CloseBlock();
+            writer.WriteLine();
+            writer.WriteLine("state = 0;");
+            writer.CloseBlock();
+            writer.WriteLine();
+        }
         writer.WriteLine($"{spanOrString} val;");
         writer.WriteLine();
         writer.WriteLine("bool hasLetters = global::System.Linq.Enumerable.Any(arg, char.IsLetter);");
