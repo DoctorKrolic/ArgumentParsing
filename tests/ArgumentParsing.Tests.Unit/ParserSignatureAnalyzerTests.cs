@@ -553,6 +553,34 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
+    public async Task SpecialCommandHandlers_InvalidType_ErrorType_CollectionExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({|CS0246:ErrorType|})])]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_InvalidType_ErrorType_ArrayCreationExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { typeof({|CS0246:ErrorType|}) })]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task SpecialCommandHandlers_MultipleInvalidTypes_CollectionExpression()
     {
         var source = """

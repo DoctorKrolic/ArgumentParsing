@@ -71,7 +71,7 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                 var commandHandler = specialCommandHandlers[i];
 
                 if (commandHandler is not { Value: INamedTypeSymbol namedHandlerType } ||
-                    !namedHandlerType.AllInterfaces.Contains(iSpecialCommandHandlerType))
+                    (namedHandlerType.TypeKind != TypeKind.Error && !namedHandlerType.AllInterfaces.Contains(iSpecialCommandHandlerType)))
                 {
                     var associatedSyntaxNode = namedParametersList?[i];
                     if (associatedSyntaxNode is TypeOfExpressionSyntax typeofExpression)
