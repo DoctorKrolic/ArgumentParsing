@@ -515,7 +515,10 @@ public partial class ArgumentParserGenerator
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var environmentInfo = new EnvironmentInfo(canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload);
+        var generateDefaultVersionSpecialCommandAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Version.GenerateDefaultVersionSpecialCommandAttribute");
+        var forceDefaultVersionCommand = compilation.Assembly.GetAttributes().Any(a => a.AttributeClass?.Equals(generateDefaultVersionSpecialCommandAttributeType, SymbolEqualityComparer.Default) == true);
+
+        var environmentInfo = new EnvironmentInfo(canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload, forceDefaultVersionCommand);
 
         var assembly = compilation.Assembly;
         var assemblyVersionInfo = new AssemblyVersionInfo(

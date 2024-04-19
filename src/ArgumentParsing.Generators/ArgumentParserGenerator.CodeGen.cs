@@ -12,7 +12,7 @@ public partial class ArgumentParserGenerator
     private static void EmitArgumentParser(SourceProductionContext context, (ArgumentParserInfo, EnvironmentInfo) infos)
     {
         var (parserInfo, environmentInfo) = infos;
-        var (canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload) = environmentInfo;
+        var (canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload, _) = environmentInfo;
 
         var cancellationToken = context.CancellationToken;
 
@@ -1008,11 +1008,11 @@ public partial class ArgumentParserGenerator
         context.AddSource($"HelpCommandHandler.{qualifiedName}.g.cs", writer.ToString().Trim());
     }
 
-    private static void EmitVersionCommandHandler(SourceProductionContext context, (AssemblyVersionInfo, bool hasAnyParsers) info)
+    private static void EmitVersionCommandHandler(SourceProductionContext context, (AssemblyVersionInfo, bool needsToGenerate) info)
     {
-        var (versionInfo, hasAnyParsers) = info;
+        var (versionInfo, needsToGenerate) = info;
 
-        if (!hasAnyParsers)
+        if (!needsToGenerate)
         {
             return;
         }

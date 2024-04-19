@@ -44,6 +44,11 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .Collect()
             .Select((parsers, _) => !parsers.IsEmpty);
 
-        context.RegisterSourceOutput(assemblyVersionInfo.Combine(hasAnyParsersWithDefaultHandlers), EmitVersionCommandHandler);
+        var forceDefaultVersionCommand = environmentInfo
+            .Select((info, _) => info.ForceDefaultVersionCommand)
+            .Combine(hasAnyParsersWithDefaultHandlers)
+            .Select((pair, _) => pair.Left || pair.Right);
+
+        context.RegisterSourceOutput(assemblyVersionInfo.Combine(forceDefaultVersionCommand), EmitVersionCommandHandler);
     }
 }
