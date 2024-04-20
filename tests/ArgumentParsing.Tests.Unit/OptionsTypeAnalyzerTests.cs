@@ -1888,6 +1888,27 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
         await VerifyAnalyzerAsync(source);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("private")]
+    [InlineData("protected")]
+    [InlineData("private protected")]
+    public async Task HelpTextGenerator_UnableToFindMethod_InvalidSignature_NotAccessible_NestedType(string containingTypeAccessibility)
+    {
+        var source = $$"""
+            class Outer
+            {
+                [OptionsType, HelpTextGenerator(typeof(MyOptions), {|ARGP0047:"GenerateHelpText"|})]
+                {{containingTypeAccessibility}} class {|ARGP0032:MyOptions|}
+                {
+                    public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+                }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
     [Fact]
     public async Task HelpTextGenerator_Valid_InOptionsType()
     {

@@ -112,10 +112,9 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                      !helpTextGeneratorType.GetMembers(methodName).Any(m => m is IMethodSymbol
                      {
                          IsStatic: true,
-                         DeclaredAccessibility: >= Accessibility.Internal,
                          ReturnType.SpecialType: SpecialType.System_String,
                          Parameters: [{ HasExplicitDefaultValue: true, ExplicitDefaultValue: null, Type: var parameterType }]
-                     } && parameterType.Equals(knownTypes.ParseErrorCollectionType, SymbolEqualityComparer.Default)))
+                     } && m.HasMinimalAccessibility(Accessibility.Internal) && parameterType.Equals(knownTypes.ParseErrorCollectionType, SymbolEqualityComparer.Default)))
             {
                 var secondArgSyntax = ((AttributeSyntax?)helpTextGeneratorAttribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken))?.ArgumentList?.Arguments[1].Expression;
 

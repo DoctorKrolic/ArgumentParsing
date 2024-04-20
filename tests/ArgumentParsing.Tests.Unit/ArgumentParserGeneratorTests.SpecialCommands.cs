@@ -726,6 +726,27 @@ public partial class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("private")]
+    [InlineData("protected")]
+    [InlineData("private protected")]
+    public async Task SpecialCommandHandlers_HelpTextGenerator_UnableToFindMethod_InvalidSignature_NotAccessible_NestedType(string containingTypeAccessibility)
+    {
+        var source = $$"""
+            class Outer
+            {
+                [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+                {{containingTypeAccessibility}} class MyOptions
+                {
+                    public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+                }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     [Fact]
     public async Task SpecialCommandHandlers_HelpTextGenerator_Valid_InOptionsType()
     {

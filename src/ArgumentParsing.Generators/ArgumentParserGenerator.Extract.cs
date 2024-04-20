@@ -156,10 +156,9 @@ public partial class ArgumentParserGenerator
             if (helpTextGeneratorType.GetMembers(methodName).FirstOrDefault(m => m is IMethodSymbol
                 {
                     IsStatic: true,
-                    DeclaredAccessibility: >= Accessibility.Internal,
                     ReturnType.SpecialType: SpecialType.System_String,
                     Parameters: [{ HasExplicitDefaultValue: true, ExplicitDefaultValue: null, Type: var parameterType }]
-                } && parameterType.Equals(comp.ParseErrorCollectionType(), SymbolEqualityComparer.Default)) is not IMethodSymbol helpTextGeneratorMethod)
+                } && m.HasMinimalAccessibility(Accessibility.Internal) && parameterType.Equals(comp.ParseErrorCollectionType(), SymbolEqualityComparer.Default)) is not IMethodSymbol helpTextGeneratorMethod)
             {
                 return default;
             }
