@@ -109,6 +109,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             }
             else if (secondArg.Value is string methodName &&
                      SyntaxFacts.IsValidIdentifier(methodName) &&
+                     helpTextGeneratorType.TypeKind != TypeKind.Error &&
                      !helpTextGeneratorType.GetMembers(methodName).Any(m => m is IMethodSymbol
                      {
                          IsStatic: true,

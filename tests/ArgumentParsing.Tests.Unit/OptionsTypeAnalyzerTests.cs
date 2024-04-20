@@ -1675,6 +1675,19 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     }
 
     [Fact]
+    public async Task HelpTextGenerator_InvalidTypeSpecifier_ErrorType()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof({|CS0246:ErrorType|}), "A")]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task HelpTextGenerator_InvalidMethodName_Null()
     {
         var source = """
