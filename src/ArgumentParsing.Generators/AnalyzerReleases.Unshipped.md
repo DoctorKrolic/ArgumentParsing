@@ -9,3 +9,6 @@ ARGP0041 | ArgumentParsing | Warning |
 ARGP0042 | ArgumentParsing | Error |
 ARGP0043 | ArgumentParsing | Error |
 ARGP0044 | ArgumentParsing | Warning |
+ARGP0045 | ArgumentParsing | Error |
+ARGP0046 | ArgumentParsing | Error |
+ARGP0047 | ArgumentParsing | Error |

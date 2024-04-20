@@ -41,7 +41,10 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.RequiredRemainingParameters,
             DiagnosticDescriptors.TooLowAccessibilityOfOptionsType,
             DiagnosticDescriptors.NoOptionNames,
-            DiagnosticDescriptors.PropertyCannotHaveMultipleParserRoles);
+            DiagnosticDescriptors.PropertyCannotHaveMultipleParserRoles,
+            DiagnosticDescriptors.InvalidHelpTextGeneratorTypeSpecifier,
+            DiagnosticDescriptors.InvalidIdentifierName,
+            DiagnosticDescriptors.CannotFindHelpTextGeneratorMethod);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -64,6 +67,8 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 IReadOnlyCollectionOfTType = comp.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyCollection_T),
                 IReadOnlyListOfTType = comp.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyList_T),
                 ImmutableArrayOfTType = comp.ImmutableArrayOfTType(),
+                HelpTextGeneratorAttributeType = comp.HelpTextGeneratorAttributeType(),
+                ParseErrorCollectionType = comp.ParseErrorCollectionType(),
             };
 
             var languageVersion = ((CSharpCompilation)comp).LanguageVersion;
@@ -74,11 +79,63 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeOptionsType(SymbolAnalysisContext context, LanguageVersion languageVersion, KnownTypes knownTypes)
     {
         var optionsType = (INamedTypeSymbol)context.Symbol;
+        var attributes = optionsType.GetAttributes();
 
-        if (!optionsType.GetAttributes()
-            .Any(a => a.AttributeClass?.Equals(knownTypes.OptionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
+        if (!attributes.Any(a => a.AttributeClass?.Equals(knownTypes.OptionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
         {
             return;
+        }
+
+        var helpTextGeneratorAttribute = attributes.FirstOrDefault(a => a.AttributeClass?.Equals(knownTypes.HelpTextGeneratorAttributeType, SymbolEqualityComparer.Default) == true);
+        if (helpTextGeneratorAttribute is not null)
+        {
+            var firstArg = helpTextGeneratorAttribute.ConstructorArguments[0];
+            var secondArg = helpTextGeneratorAttribute.ConstructorArguments[1];
+
+            if (firstArg.IsNull ||
+                firstArg.Value is not INamedTypeSymbol { SpecialType: SpecialType.None, IsUnboundGenericType: false } helpTextGeneratorType)
+            {
+                var firstArgTypeSpecifierSyntax = ((AttributeSyntax?)helpTextGeneratorAttribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken))?.ArgumentList?.Arguments[0].Expression;
+                if (firstArgTypeSpecifierSyntax is TypeOfExpressionSyntax typeOfExpression)
+                {
+                    firstArgTypeSpecifierSyntax = typeOfExpression.Type;
+                }
+
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.InvalidHelpTextGeneratorTypeSpecifier,
+                        firstArgTypeSpecifierSyntax?.GetLocation() ?? optionsType.Locations.First(),
+                        firstArg.IsNull ? (firstArgTypeSpecifierSyntax?.ToString() ?? "null") : firstArg.Value));
+            }
+            else if (secondArg.Value is string methodName &&
+                     SyntaxFacts.IsValidIdentifier(methodName) &&
+                     !helpTextGeneratorType.GetMembers(methodName).Any(m => m is IMethodSymbol
+                     {
+                         IsStatic: true,
+                         DeclaredAccessibility: >= Accessibility.Internal,
+                         ReturnType.SpecialType: SpecialType.System_String,
+                         Parameters: [{ HasExplicitDefaultValue: true, ExplicitDefaultValue: null, Type: var parameterType }]
+                     } && parameterType.Equals(knownTypes.ParseErrorCollectionType, SymbolEqualityComparer.Default)))
+            {
+                var secondArgSyntax = ((AttributeSyntax?)helpTextGeneratorAttribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken))?.ArgumentList?.Arguments[1].Expression;
+
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.CannotFindHelpTextGeneratorMethod,
+                        secondArgSyntax?.GetLocation() ?? optionsType.Locations.First(),
+                        methodName));
+            }
+
+            if (secondArg.Value is not string helpTextGeneratorMethodName || !SyntaxFacts.IsValidIdentifier(helpTextGeneratorMethodName))
+            {
+                var secondArgSyntax = ((AttributeSyntax?)helpTextGeneratorAttribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken))?.ArgumentList?.Arguments[1].Expression;
+
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.InvalidIdentifierName,
+                        secondArgSyntax?.GetLocation() ?? optionsType.Locations.First(),
+                        secondArg.IsNull ? (secondArgSyntax?.ToString() ?? "null") : secondArg.Value));
+            }
         }
 
         if (optionsType.DeclaredAccessibility < Accessibility.Internal)
@@ -683,5 +740,9 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
         public required INamedTypeSymbol IReadOnlyListOfTType { get; init; }
 
         public required INamedTypeSymbol? ImmutableArrayOfTType { get; init; }
+
+        public required INamedTypeSymbol? HelpTextGeneratorAttributeType { get; init; }
+
+        public required INamedTypeSymbol? ParseErrorCollectionType { get; init; }
     }
 }

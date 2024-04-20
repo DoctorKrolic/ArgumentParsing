@@ -371,4 +371,30 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidHelpTextGeneratorTypeSpecifier = new(
+        id: "ARGP0045",
+        title: "Invalid help text generator type specifier",
+        messageFormat: "'{0}' is an invalid help text generator specifier",
+        description: "Help text generator specifier must be a non-null non-special named type. In case it is a generic type, it must have all its type arguments specified.",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidIdentifierName = new(
+        id: "ARGP0046",
+        title: "Invalid identifier name",
+        messageFormat: "'{0}' is an invalid identifier name",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor CannotFindHelpTextGeneratorMethod = new(
+        id: "ARGP0047",
+        title: "Cannot find help text generator method",
+        messageFormat: "Unable to find accessible method '{0}' with the expected signature",
+        description: "Valid help text generator method is a static method with return type 'string' and a single parameter of 'ParseErrorCollection' type with explicit default value of 'null'.",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

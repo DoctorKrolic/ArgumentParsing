@@ -1569,4 +1569,341 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
 
         await VerifyAnalyzerAsync(source);
     }
+
+    [Fact]
+    public async Task HelpTextGenerator_InvalidTypeSpecifier_Null()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator({|#0:null|}, "A")]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0045")
+                .WithLocation(0)
+                .WithArguments("null")
+        ]);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_InvalidTypeSpecifier_Default()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator({|#0:default|}, "A")]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0045")
+                .WithLocation(0)
+                .WithArguments("default")
+        ]);
+    }
+
+    [Theory]
+    [InlineData("int[]")]
+    [InlineData("MyOptions[]")]
+    public async Task HelpTextGenerator_InvalidTypeSpecifier_NotNamedType(string notNamedType)
+    {
+        var source = $$"""
+            [OptionsType, HelpTextGenerator(typeof({|#0:{{notNamedType}}|}), "A")]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0045")
+                .WithLocation(0)
+                .WithArguments(notNamedType)
+        ]);
+    }
+
+    [Theory]
+    [InlineData("int")]
+    [InlineData("object")]
+    [InlineData("string")]
+    [InlineData("System.DateTime")]
+    public async Task HelpTextGenerator_InvalidTypeSpecifier_SpecialType(string specialType)
+    {
+        var source = $$"""
+            [OptionsType, HelpTextGenerator(typeof({|#0:{{specialType}}|}), "A")]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0045")
+                .WithLocation(0)
+                .WithArguments(specialType)
+        ]);
+    }
+
+    [Theory]
+    [InlineData("System.Collections.Generic.List<>")]
+    [InlineData("System.Collections.Generic.Dictionary<,>")]
+    [InlineData("System.Collections.Immutable.ImmutableArray<>")]
+    public async Task HelpTextGenerator_InvalidTypeSpecifier_OpenGeneric(string openGeneric)
+    {
+        var source = $$"""
+            [OptionsType, HelpTextGenerator(typeof({|#0:{{openGeneric}}|}), "A")]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0045")
+                .WithLocation(0)
+                .WithArguments(openGeneric)
+        ]);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_InvalidMethodName_Null()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|#0:null|})]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0046")
+                .WithLocation(0)
+                .WithArguments("null")
+        ]);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_InvalidMethodName_Default()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|#0:default|})]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0046")
+                .WithLocation(0)
+                .WithArguments("default")
+        ]);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("$name")]
+    [InlineData("my name")]
+    [InlineData("2name")]
+    [InlineData("name&")]
+    [InlineData("my-name")]
+    public async Task HelpTextGenerator_InvalidMethodName(string invalidName)
+    {
+        var source = $$"""
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|#0:"{{invalidName}}"|})]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0046")
+                .WithLocation(0)
+                .WithArguments(invalidName)
+        ]);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_InvalidTypeSpecifierAndMethodName()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator({|#0:null|}, {|#1:default|})]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0045")
+                .WithLocation(0)
+                .WithArguments("null"),
+            DiagnosticResult
+                .CompilerError("ARGP0046")
+                .WithLocation(1)
+                .WithArguments("default")
+        ]);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_UnableToFindMethod_NoMethod()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|ARGP0047:"GenerateHelpText"|})]
+            class MyOptions
+            {
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_UnableToFindMethod_NotMethod()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|ARGP0047:"MyHelpText"|})]
+            class MyOptions
+            {
+                public static string MyHelpText { get; set; }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_UnableToFindMethod_InvalidSignature_NotStatic()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|ARGP0047:"GenerateHelpText"|})]
+            class MyOptions
+            {
+                public string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_UnableToFindMethod_InvalidSignature_NoParameters()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|ARGP0047:"GenerateHelpText"|})]
+            class MyOptions
+            {
+                public static string GenerateHelpText() => "";
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_UnableToFindMethod_InvalidSignature_TooManyParameters()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|ARGP0047:"GenerateHelpText"|})]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection e1 = null, ParseErrorCollection e2 = null) => "";
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_UnableToFindMethod_InvalidSignature_NoDefaultValue()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|ARGP0047:"GenerateHelpText"|})]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors) => "";
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_UnableToFindMethod_InvalidSignature_ReturnTypeNotString()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|ARGP0047:"GenerateHelpText"|})]
+            class MyOptions
+            {
+                public static void GenerateHelpText(ParseErrorCollection errors = null) { }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("private")]
+    [InlineData("protected")]
+    [InlineData("private protected")]
+    public async Task HelpTextGenerator_UnableToFindMethod_InvalidSignature_NotAccessible(string accessibility)
+    {
+        var source = $$"""
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), {|ARGP0047:"GenerateHelpText"|})]
+            class MyOptions
+            {
+                {{accessibility}} static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_Valid_InOptionsType()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task HelpTextGenerator_Valid_InOtherType()
+    {
+        var source = """
+            [OptionsType, HelpTextGenerator(typeof(MyOptionsHelp), "GetHelpText")]
+            class MyOptions
+            {
+            }
+
+            class MyOptionsHelp
+            {
+                public static string GetHelpText(ParseErrorCollection errors = null) => "";
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
 }
