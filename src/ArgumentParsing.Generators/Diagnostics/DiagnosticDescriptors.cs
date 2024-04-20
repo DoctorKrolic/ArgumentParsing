@@ -265,7 +265,7 @@ public static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor TooLowAccessibilityOfOptionsType = new(
         id: "ARGP0032",
         title: "Options type has too low accessibility",
-        messageFormat: "Options type has too low accessibility, so default '--help' command handler won't be generated for it",
+        messageFormat: "Options type has too low accessibility, so 'ExecuteDefaults' method won't be generated for it",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
