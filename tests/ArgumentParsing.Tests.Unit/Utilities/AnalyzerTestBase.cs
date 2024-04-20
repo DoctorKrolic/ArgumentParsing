@@ -42,6 +42,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
             global using ArgumentParsing;
             global using ArgumentParsing.Results;
             global using ArgumentParsing.SpecialCommands;
+            global using ArgumentParsing.SpecialCommands.Help;
             global using System;
             """;
 

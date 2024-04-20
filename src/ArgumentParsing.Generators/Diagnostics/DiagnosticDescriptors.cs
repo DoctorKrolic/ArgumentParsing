@@ -362,4 +362,13 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor HelpTextGeneratorOnNonOptionsType = new(
+        id: "ARGP0044",
+        title: "Usage of [HelpTextGenerator] on non-options type",
+        messageFormat: "Type, annotated with [HelpTextGenerator] attribute is non-options type",
+        description: "[HelpTextGenerator] is only valid on options types. Consider annotating target type with [OptionsType] attribute.",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

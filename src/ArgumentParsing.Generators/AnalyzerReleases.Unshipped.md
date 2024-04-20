@@ -8,3 +8,4 @@ ARGP0040 | ArgumentParsing | Error |
 ARGP0041 | ArgumentParsing | Warning |
 ARGP0042 | ArgumentParsing | Error |
 ARGP0043 | ArgumentParsing | Error |
+ARGP0044 | ArgumentParsing | Warning |
