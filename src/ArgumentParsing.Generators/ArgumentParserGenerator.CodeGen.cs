@@ -17,7 +17,7 @@ public partial class ArgumentParserGenerator
         var cancellationToken = context.CancellationToken;
 
         var (hierarchy, method, optionsInfo, specialCommandHandlers) = parserInfo;
-        var (qualifiedName, hasAtLeastInternalAccessibility, optionInfos, parameterInfos, remainingParametersInfo) = optionsInfo;
+        var (qualifiedName, hasAtLeastInternalAccessibility, optionInfos, parameterInfos, remainingParametersInfo, helpTextGeneratorInfo) = optionsInfo;
 
         var writer = new CodeWriter();
 
@@ -864,7 +864,7 @@ public partial class ArgumentParserGenerator
     private static void EmitHelpCommandHandler(SourceProductionContext context, (OptionsHelpInfo, AssemblyVersionInfo) infos)
     {
         var (optionsHelpInfo, assemblyVersionInfo) = infos;
-        var (qualifiedName, optionHelpInfos, parameterHelpInfos, remainingParametersHelpInfo) = optionsHelpInfo;
+        var (qualifiedName, optionHelpInfos, parameterHelpInfos, remainingParametersHelpInfo, helpTextGeneratorInfo) = optionsHelpInfo;
 
         var writer = new CodeWriter();
 

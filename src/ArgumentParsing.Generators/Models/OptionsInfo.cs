@@ -7,4 +7,5 @@ internal sealed record OptionsInfo(
     bool HasAtLeastInternalAccessibility,
     ImmutableEquatableArray<OptionInfo> OptionInfos,
     ImmutableEquatableArray<ParameterInfo> ParameterInfos,
-    RemainingParametersInfo? RemainingParametersInfo);
+    RemainingParametersInfo? RemainingParametersInfo,
+    HelpTextGeneratorInfo? HelpTextGeneratorInfo);

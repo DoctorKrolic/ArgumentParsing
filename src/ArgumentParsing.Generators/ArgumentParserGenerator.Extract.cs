@@ -138,8 +138,38 @@ public partial class ArgumentParserGenerator
         return (argumentParserInfo, optionsHelpInfo);
     }
 
-    private static (OptionsInfo? OptionsInfo, OptionsHelpInfo? OptionsHelpInfo) ExtractInfoFromOptionsType(INamedTypeSymbol optionsType, Compilation compilation, CancellationToken cancellationToken)
+    private static (OptionsInfo? OptionsInfo, OptionsHelpInfo? OptionsHelpInfo) ExtractInfoFromOptionsType(INamedTypeSymbol optionsType, Compilation comp, CancellationToken cancellationToken)
     {
+        HelpTextGeneratorInfo? helpTextGeneratorInfo = null;
+
+        if (optionsType.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Equals(comp.HelpTextGeneratorAttributeType(), SymbolEqualityComparer.Default) == true) is { } helpTextGeneratorAttribute)
+        {
+            var firstArg = helpTextGeneratorAttribute.ConstructorArguments[0];
+            var secondArg = helpTextGeneratorAttribute.ConstructorArguments[1];
+
+            if (firstArg.Value is not INamedTypeSymbol { TypeKind: not TypeKind.Error, SpecialType: SpecialType.None, IsUnboundGenericType: false } helpTextGeneratorType ||
+                secondArg.Value is not string methodName)
+            {
+                return default;
+            }
+
+            if (helpTextGeneratorType.GetMembers(methodName).FirstOrDefault(m => m is IMethodSymbol
+                {
+                    IsStatic: true,
+                    DeclaredAccessibility: >= Accessibility.Internal,
+                    ReturnType.SpecialType: SpecialType.System_String,
+                    Parameters: [{ HasExplicitDefaultValue: true, ExplicitDefaultValue: null, Type: var parameterType }]
+                } && parameterType.Equals(comp.ParseErrorCollectionType(), SymbolEqualityComparer.Default)) is not IMethodSymbol helpTextGeneratorMethod)
+            {
+                return default;
+            }
+
+            helpTextGeneratorInfo = new(
+                helpTextGeneratorType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                methodName,
+                helpTextGeneratorMethod.Parameters[0].Name);
+        }
+
         var optionsBuilder = ImmutableArray.CreateBuilder<OptionInfo>();
         var optionsHelpBuilder = ImmutableArray.CreateBuilder<OptionHelpInfo>();
 
@@ -182,11 +212,11 @@ public partial class ArgumentParserGenerator
 
             string? helpDescription = null;
 
-            var optionAttributeType = compilation.OptionAttributeType();
-            var parameterAttributeType = compilation.ParameterAttributeType();
-            var remainingParametersAttributeType = compilation.RemainingParametersAttributeType();
-            var requiredAttributeType = compilation.SystemComponentModelDataAnnotationsRequiredAttributeType();
-            var helpInfoAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Help.HelpInfoAttribute")!;
+            var optionAttributeType = comp.OptionAttributeType();
+            var parameterAttributeType = comp.ParameterAttributeType();
+            var remainingParametersAttributeType = comp.RemainingParametersAttributeType();
+            var requiredAttributeType = comp.SystemComponentModelDataAnnotationsRequiredAttributeType();
+            var helpInfoAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Help.HelpInfoAttribute")!;
 
             foreach (var attr in property.GetAttributes())
             {
@@ -325,7 +355,7 @@ public partial class ArgumentParserGenerator
                     }
                 }
 
-                var (parseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType) = GetParseStrategy(propertyType, compilation);
+                var (parseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType) = GetParseStrategy(propertyType, comp);
 
                 if (parseStrategy == ParseStrategy.None)
                 {
@@ -369,7 +399,7 @@ public partial class ArgumentParserGenerator
                     return default;
                 }
 
-                var (parseStrategy, nullableUnderlyingType, sequenceType, _) = GetParseStrategy(propertyType, compilation);
+                var (parseStrategy, nullableUnderlyingType, sequenceType, _) = GetParseStrategy(propertyType, comp);
                 if (parseStrategy == ParseStrategy.None || sequenceType != SequenceType.None)
                 {
                     return default;
@@ -400,7 +430,7 @@ public partial class ArgumentParserGenerator
 
                 declaredRemainingParameters = true;
 
-                var (parseStrategy, _, sequenceType, sequenceUnderlyingType) = GetParseStrategy(propertyType, compilation);
+                var (parseStrategy, _, sequenceType, sequenceUnderlyingType) = GetParseStrategy(propertyType, comp);
                 if (parseStrategy == ParseStrategy.None || sequenceType == SequenceType.None)
                 {
                     return default;
@@ -458,13 +488,15 @@ public partial class ArgumentParserGenerator
             optionsType.DeclaredAccessibility >= Accessibility.Internal,
             optionsBuilder.ToImmutable(),
             parametersBuilder.ToImmutable(),
-            remainingParametersInfo);
+            remainingParametersInfo,
+            helpTextGeneratorInfo);
 
         var optionsHelpInfo = new OptionsHelpInfo(
             qualifiedName,
             optionsHelpBuilder.ToImmutable(),
             parametersHelpBuilder.ToImmutable(),
-            remainingParametersHelpInfo);
+            remainingParametersHelpInfo,
+            helpTextGeneratorInfo);
 
         return (optionsInfo, optionsHelpInfo);
 

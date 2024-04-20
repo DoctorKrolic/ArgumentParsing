@@ -92,8 +92,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             var firstArg = helpTextGeneratorAttribute.ConstructorArguments[0];
             var secondArg = helpTextGeneratorAttribute.ConstructorArguments[1];
 
-            if (firstArg.IsNull ||
-                firstArg.Value is not INamedTypeSymbol { SpecialType: SpecialType.None, IsUnboundGenericType: false } helpTextGeneratorType)
+            if (firstArg.Value is not INamedTypeSymbol { SpecialType: SpecialType.None, IsUnboundGenericType: false } helpTextGeneratorType)
             {
                 var firstArgTypeSpecifierSyntax = ((AttributeSyntax?)helpTextGeneratorAttribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken))?.ArgumentList?.Arguments[0].Expression;
                 if (firstArgTypeSpecifierSyntax is TypeOfExpressionSyntax typeOfExpression)

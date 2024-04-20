@@ -2235,7 +2235,9 @@ public sealed partial class ArgumentParserGeneratorTests
                     """
                     global using ArgumentParsing;
                     global using ArgumentParsing.Results;
+                    global using ArgumentParsing.Results.Errors;
                     global using ArgumentParsing.SpecialCommands;
+                    global using ArgumentParsing.SpecialCommands.Help;
                     global using System;
 
                     [OptionsType]
