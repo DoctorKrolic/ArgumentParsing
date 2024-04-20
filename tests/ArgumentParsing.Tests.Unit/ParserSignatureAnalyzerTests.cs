@@ -506,6 +506,46 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         ]);
     }
 
+    [Fact]
+    public async Task SpecialCommandHandlers_DefaultElement_CollectionExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [{|#0:default|}])]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(0)
+                .WithArguments("default")
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_DefaultElement_ArrayCreationExpression()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { {|#0:default|} })]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0043")
+                .WithLocation(0)
+                .WithArguments("default")
+        ]);
+    }
+
     [Theory]
     [InlineData("C")]
     [InlineData("int")]

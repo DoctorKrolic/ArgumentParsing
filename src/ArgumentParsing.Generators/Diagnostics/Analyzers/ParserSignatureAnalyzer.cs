@@ -83,7 +83,7 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                         Diagnostic.Create(
                             DiagnosticDescriptors.InvalidSpecialCommandHandlerTypeSpecifier,
                             associatedSyntaxNode?.GetLocation() ?? attributeSyntax?.GetLocation() ?? method.Locations.First(),
-                            commandHandler.IsNull ? "null" : commandHandler.Value));
+                            commandHandler.IsNull ? (associatedSyntaxNode?.ToString() ?? "null") : commandHandler.Value));
                 }
             }
         }
