@@ -137,7 +137,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        if (optionsType.DeclaredAccessibility < Accessibility.Internal)
+        if (!optionsType.HasMinimalAccessibility(Accessibility.Internal))
         {
             context.ReportDiagnostic(
                 Diagnostic.Create(

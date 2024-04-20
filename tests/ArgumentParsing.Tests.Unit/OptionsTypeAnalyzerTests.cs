@@ -1529,6 +1529,28 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
 
         await VerifyAnalyzerAsync(source);
     }
+    [Theory]
+    [InlineData("")]
+    [InlineData("private")]
+    [InlineData("protected")]
+    public async Task TooLowOptionsTypeAccessibility_NestedType(string containingTypeAccessibility)
+    {
+        var source = $$"""
+            class Outer
+            {
+                {{containingTypeAccessibility}} class C
+                {
+                    [OptionsType]
+                    public class {|ARGP0032:Options|}
+                    {
+                    }
+                }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
 
     [Fact]
     public async Task NoShortAndLongName()

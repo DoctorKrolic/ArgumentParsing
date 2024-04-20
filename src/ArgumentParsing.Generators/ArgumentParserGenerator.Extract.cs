@@ -484,7 +484,7 @@ public partial class ArgumentParserGenerator
         var qualifiedName = optionsType.ToDisplayString(s_qualifiedNameFormat);
         var optionsInfo = new OptionsInfo(
             qualifiedName,
-            optionsType.DeclaredAccessibility >= Accessibility.Internal,
+            optionsType.HasMinimalAccessibility(Accessibility.Internal),
             optionsBuilder.ToImmutable(),
             parametersBuilder.ToImmutable(),
             remainingParametersInfo,
