@@ -772,7 +772,7 @@ public partial class ArgumentParserGeneratorTests
                                 action(result.Options);
                                 break;
                             case global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors:
-                                string errorScreenText = global::ArgumentParsing.Generated.HelpCommandHandler_MyOptions.GenerateHelpText(result.Errors);
+                                string errorScreenText = global::MyOptions.GenerateHelpText(result.Errors);
                                 global::System.Console.Error.WriteLine(errorScreenText);
                                 global::System.Environment.Exit(1);
                                 break;
@@ -933,47 +933,16 @@ public partial class ArgumentParserGeneratorTests
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
-                    /// <summary>
-                    /// Generates help text for <see cref="global::MyOptions"/> type.
-                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
-                    /// </summary>
-                    /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text</returns>
-                    public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
-                    {
-                        global::System.Text.StringBuilder helpBuilder = new();
-                        helpBuilder.AppendLine("TestProject 0.0.0");
-                        helpBuilder.AppendLine("Copyright (C) " + global::System.DateTime.UtcNow.Year.ToString());
-                        helpBuilder.AppendLine();
-                        if ((object)errors != null)
-                        {
-                            helpBuilder.AppendLine("ERROR(S):");
-                            foreach (global::ArgumentParsing.Results.Errors.ParseError error in errors)
-                            {
-                                helpBuilder.AppendLine("  " + error.GetMessage());
-                            }
-                            helpBuilder.AppendLine();
-                        }
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("COMMANDS:");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --help\tShow help screen");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --version\tShow version information");
-                        return helpBuilder.ToString();
-                    }
-
                     /// <inheritdoc/>
                     public int HandleCommand()
                     {
-                        global::System.Console.Out.WriteLine(GenerateHelpText());
+                        global::System.Console.Out.WriteLine(global::MyOptions.GenerateHelpText(errors: null));
                         return 0;
                     }
                 }
             }
             """;
 
-        // TODO: codegen
         await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("HelpCommandHandler.MyOptions.g.cs", helpCommandHandler), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 
@@ -1027,7 +996,7 @@ public partial class ArgumentParserGeneratorTests
                                 action(result.Options);
                                 break;
                             case global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors:
-                                string errorScreenText = global::ArgumentParsing.Generated.HelpCommandHandler_MyOptions.GenerateHelpText(result.Errors);
+                                string errorScreenText = global::MyOptionsHelp.GetHelpText(result.Errors);
                                 global::System.Console.Error.WriteLine(errorScreenText);
                                 global::System.Environment.Exit(1);
                                 break;
@@ -1188,47 +1157,16 @@ public partial class ArgumentParserGeneratorTests
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
-                    /// <summary>
-                    /// Generates help text for <see cref="global::MyOptions"/> type.
-                    /// If <paramref name="errors"/> parameter is supplied, generated text will contain an error section
-                    /// </summary>
-                    /// <param name="errors">Parse errors to include into help text</param>
-                    /// <returns>Generated help text</returns>
-                    public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)
-                    {
-                        global::System.Text.StringBuilder helpBuilder = new();
-                        helpBuilder.AppendLine("TestProject 0.0.0");
-                        helpBuilder.AppendLine("Copyright (C) " + global::System.DateTime.UtcNow.Year.ToString());
-                        helpBuilder.AppendLine();
-                        if ((object)errors != null)
-                        {
-                            helpBuilder.AppendLine("ERROR(S):");
-                            foreach (global::ArgumentParsing.Results.Errors.ParseError error in errors)
-                            {
-                                helpBuilder.AppendLine("  " + error.GetMessage());
-                            }
-                            helpBuilder.AppendLine();
-                        }
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("COMMANDS:");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --help\tShow help screen");
-                        helpBuilder.AppendLine();
-                        helpBuilder.AppendLine("  --version\tShow version information");
-                        return helpBuilder.ToString();
-                    }
-
                     /// <inheritdoc/>
                     public int HandleCommand()
                     {
-                        global::System.Console.Out.WriteLine(GenerateHelpText());
+                        global::System.Console.Out.WriteLine(global::MyOptionsHelp.GetHelpText(errors: null));
                         return 0;
                     }
                 }
             }
             """;
 
-        // TODO: codegen
         await VerifyGeneratorAsync(source, ("MyOptions.g.cs", generated), ("HelpCommandHandler.MyOptions.g.cs", helpCommandHandler), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
     }
 

@@ -29,7 +29,7 @@ public partial class ArgumentParserGenerator
         var generatorType = typeof(ArgumentParserGenerator);
         var generatedCodeAttribute = $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{generatorType.FullName}\", \"{generatorType.Assembly.GetName().Version}\")]";
 
-        if (hasAtLeastInternalAccessibility && !specialCommandHandlers.HasValue)
+        if (hasAtLeastInternalAccessibility && (!specialCommandHandlers.HasValue) || helpTextGeneratorInfo is not null)
         {
             writer.WriteLine("namespace ArgumentParsing.Generated");
             writer.OpenBlock();
@@ -56,7 +56,14 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("action(result.Options);");
             writer.WriteLine("break;");
             writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors:", identDelta: -1);
-            writer.WriteLine($"string errorScreenText = global::ArgumentParsing.Generated.HelpCommandHandler_{qualifiedName.Replace('.', '_')}.GenerateHelpText(result.Errors);");
+            if (helpTextGeneratorInfo is null)
+            {
+                writer.WriteLine($"string errorScreenText = global::ArgumentParsing.Generated.HelpCommandHandler_{qualifiedName.Replace('.', '_')}.GenerateHelpText(result.Errors);");
+            }
+            else
+            {
+                writer.WriteLine($"string errorScreenText = {helpTextGeneratorInfo.TypeName}.{helpTextGeneratorInfo.MethodName}(result.Errors);");
+            }
             writer.WriteLine("global::System.Console.Error.WriteLine(errorScreenText);");
             writer.WriteLine("global::System.Environment.Exit(1);");
             writer.WriteLine("break;");
@@ -885,123 +892,126 @@ public partial class ArgumentParserGenerator
         writer.WriteLine(ExcludeFromCodeCoverageAttribute);
         writer.WriteLine($"internal sealed class HelpCommandHandler_{qualifiedName.Replace('.', '_')} : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler");
         writer.OpenBlock();
-        writer.WriteLine("/// <summary>");
-        writer.WriteLine($"/// Generates help text for <see cref=\"global::{qualifiedName}\"/> type.");
-        writer.WriteLine("/// If <paramref name=\"errors\"/> parameter is supplied, generated text will contain an error section");
-        writer.WriteLine("/// </summary>");
-        writer.WriteLine("/// <param name=\"errors\">Parse errors to include into help text</param>");
-        writer.WriteLine("/// <returns>Generated help text</returns>");
-        writer.WriteLine("public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)");
-        writer.OpenBlock();
-        writer.WriteLine("global::System.Text.StringBuilder helpBuilder = new();");
-        writer.WriteLine($"helpBuilder.AppendLine(\"{assemblyVersionInfo.Name} {assemblyVersionInfo.Version.ToString(3)}\");");
-        writer.WriteLine("helpBuilder.AppendLine(\"Copyright (C) \" + global::System.DateTime.UtcNow.Year.ToString());");
-        writer.WriteLine("helpBuilder.AppendLine();");
-        writer.WriteLine("if ((object)errors != null)");
-        writer.OpenBlock();
-        writer.WriteLine("helpBuilder.AppendLine(\"ERROR(S):\");");
-        writer.WriteLine("foreach (global::ArgumentParsing.Results.Errors.ParseError error in errors)");
-        writer.OpenBlock();
-        writer.WriteLine("helpBuilder.AppendLine(\"  \" + error.GetMessage());");
-        writer.CloseBlock();
-        writer.WriteLine("helpBuilder.AppendLine();");
-        writer.CloseBlock();
-        if (optionHelpInfos.Any())
+        if (helpTextGeneratorInfo is null)
         {
-            writer.WriteLine("helpBuilder.AppendLine(\"OPTIONS:\");");
-            foreach (var info in optionHelpInfos)
+            writer.WriteLine("/// <summary>");
+            writer.WriteLine($"/// Generates help text for <see cref=\"global::{qualifiedName}\"/> type.");
+            writer.WriteLine("/// If <paramref name=\"errors\"/> parameter is supplied, generated text will contain an error section");
+            writer.WriteLine("/// </summary>");
+            writer.WriteLine("/// <param name=\"errors\">Parse errors to include into help text</param>");
+            writer.WriteLine("/// <returns>Generated help text</returns>");
+            writer.WriteLine("public static string GenerateHelpText(global::ArgumentParsing.Results.Errors.ParseErrorCollection? errors = null)");
+            writer.OpenBlock();
+            writer.WriteLine("global::System.Text.StringBuilder helpBuilder = new();");
+            writer.WriteLine($"helpBuilder.AppendLine(\"{assemblyVersionInfo.Name} {assemblyVersionInfo.Version.ToString(3)}\");");
+            writer.WriteLine("helpBuilder.AppendLine(\"Copyright (C) \" + global::System.DateTime.UtcNow.Year.ToString());");
+            writer.WriteLine("helpBuilder.AppendLine();");
+            writer.WriteLine("if ((object)errors != null)");
+            writer.OpenBlock();
+            writer.WriteLine("helpBuilder.AppendLine(\"ERROR(S):\");");
+            writer.WriteLine("foreach (global::ArgumentParsing.Results.Errors.ParseError error in errors)");
+            writer.OpenBlock();
+            writer.WriteLine("helpBuilder.AppendLine(\"  \" + error.GetMessage());");
+            writer.CloseBlock();
+            writer.WriteLine("helpBuilder.AppendLine();");
+            writer.CloseBlock();
+            if (optionHelpInfos.Any())
             {
-                writer.WriteLine("helpBuilder.AppendLine();");
-                writer.Write("helpBuilder.AppendLine(\"  ");
-                if (info.ShortName.HasValue)
+                writer.WriteLine("helpBuilder.AppendLine(\"OPTIONS:\");");
+                foreach (var info in optionHelpInfos)
                 {
-                    writer.Write($"-{info.ShortName.Value}");
-                }
-                if (info.ShortName.HasValue && info.LongName is not null)
-                {
-                    writer.Write(", ");
-                }
-                if (info.LongName is not null)
-                {
-                    writer.Write($"--{info.LongName}");
-                }
-                var isRequired = info.IsRequired;
-                var helpDescription = info.HelpDescription;
-                if (isRequired || helpDescription is not null)
-                {
-                    writer.Write("\\t");
-                }
-                if (isRequired)
-                {
-                    writer.Write("Required");
-                }
-                if (helpDescription is not null)
-                {
+                    writer.WriteLine("helpBuilder.AppendLine();");
+                    writer.Write("helpBuilder.AppendLine(\"  ");
+                    if (info.ShortName.HasValue)
+                    {
+                        writer.Write($"-{info.ShortName.Value}");
+                    }
+                    if (info.ShortName.HasValue && info.LongName is not null)
+                    {
+                        writer.Write(", ");
+                    }
+                    if (info.LongName is not null)
+                    {
+                        writer.Write($"--{info.LongName}");
+                    }
+                    var isRequired = info.IsRequired;
+                    var helpDescription = info.HelpDescription;
+                    if (isRequired || helpDescription is not null)
+                    {
+                        writer.Write("\\t");
+                    }
                     if (isRequired)
                     {
-                        writer.Write(". ");
+                        writer.Write("Required");
                     }
+                    if (helpDescription is not null)
+                    {
+                        if (isRequired)
+                        {
+                            writer.Write(". ");
+                        }
 
-                    writer.Write(helpDescription);
+                        writer.Write(helpDescription);
+                    }
+                    writer.WriteLine("\");");
+                }
+            }
+            if (parameterHelpInfos.Any())
+            {
+                writer.WriteLine("helpBuilder.AppendLine();");
+                writer.WriteLine("helpBuilder.AppendLine(\"PARAMETERS:\");");
+                for (var i = 0; i < parameterHelpInfos.Length; i++)
+                {
+                    var info = parameterHelpInfos[i];
+
+                    writer.WriteLine("helpBuilder.AppendLine();");
+                    writer.Write($"helpBuilder.AppendLine(\"  {info.Name} (at index {i})");
+                    var isRequired = info.IsRequired;
+                    var helpDescription = info.HelpDescription;
+                    if (isRequired || helpDescription is not null)
+                    {
+                        writer.Write("\\t");
+                    }
+                    if (isRequired)
+                    {
+                        writer.Write("Required");
+                    }
+                    if (helpDescription is not null)
+                    {
+                        if (isRequired)
+                        {
+                            writer.Write(". ");
+                        }
+
+                        writer.Write(helpDescription);
+                    }
+                    writer.WriteLine("\");");
+                }
+            }
+            if (remainingParametersHelpInfo is not null)
+            {
+                writer.WriteLine("helpBuilder.AppendLine();");
+                writer.Write("helpBuilder.AppendLine(\"  Remaining parameters");
+                if (remainingParametersHelpInfo.HelpDescription is not null)
+                {
+                    writer.Write($"\\t{remainingParametersHelpInfo.HelpDescription}");
                 }
                 writer.WriteLine("\");");
             }
-        }
-        if (parameterHelpInfos.Any())
-        {
             writer.WriteLine("helpBuilder.AppendLine();");
-            writer.WriteLine("helpBuilder.AppendLine(\"PARAMETERS:\");");
-            for (var i = 0; i < parameterHelpInfos.Length; i++)
-            {
-                var info = parameterHelpInfos[i];
-
-                writer.WriteLine("helpBuilder.AppendLine();");
-                writer.Write($"helpBuilder.AppendLine(\"  {info.Name} (at index {i})");
-                var isRequired = info.IsRequired;
-                var helpDescription = info.HelpDescription;
-                if (isRequired || helpDescription is not null)
-                {
-                    writer.Write("\\t");
-                }
-                if (isRequired)
-                {
-                    writer.Write("Required");
-                }
-                if (helpDescription is not null)
-                {
-                    if (isRequired)
-                    {
-                        writer.Write(". ");
-                    }
-
-                    writer.Write(helpDescription);
-                }
-                writer.WriteLine("\");");
-            }
-        }
-        if (remainingParametersHelpInfo is not null)
-        {
+            writer.WriteLine("helpBuilder.AppendLine(\"COMMANDS:\");");
             writer.WriteLine("helpBuilder.AppendLine();");
-            writer.Write("helpBuilder.AppendLine(\"  Remaining parameters");
-            if (remainingParametersHelpInfo.HelpDescription is not null)
-            {
-                writer.Write($"\\t{remainingParametersHelpInfo.HelpDescription}");
-            }
-            writer.WriteLine("\");");
+            writer.WriteLine("helpBuilder.AppendLine(\"  --help\\tShow help screen\");");
+            writer.WriteLine("helpBuilder.AppendLine();");
+            writer.WriteLine("helpBuilder.AppendLine(\"  --version\\tShow version information\");");
+            writer.WriteLine("return helpBuilder.ToString();");
+            writer.CloseBlock();
+            writer.WriteLine();
         }
-        writer.WriteLine("helpBuilder.AppendLine();");
-        writer.WriteLine("helpBuilder.AppendLine(\"COMMANDS:\");");
-        writer.WriteLine("helpBuilder.AppendLine();");
-        writer.WriteLine("helpBuilder.AppendLine(\"  --help\\tShow help screen\");");
-        writer.WriteLine("helpBuilder.AppendLine();");
-        writer.WriteLine("helpBuilder.AppendLine(\"  --version\\tShow version information\");");
-        writer.WriteLine("return helpBuilder.ToString();");
-        writer.CloseBlock();
-        writer.WriteLine();
         writer.WriteLine("/// <inheritdoc/>");
         writer.WriteLine("public int HandleCommand()");
         writer.OpenBlock();
-        writer.WriteLine("global::System.Console.Out.WriteLine(GenerateHelpText());");
+        writer.WriteLine($"global::System.Console.Out.WriteLine({(helpTextGeneratorInfo is null ? "GenerateHelpText()" : $"{helpTextGeneratorInfo.TypeName}.{helpTextGeneratorInfo.MethodName}({helpTextGeneratorInfo.ParameterName}: null)")});");
         writer.WriteLine("return 0;");
         writer.CloseRemainingBlocks();
 
