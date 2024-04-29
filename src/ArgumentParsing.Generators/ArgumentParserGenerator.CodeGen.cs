@@ -31,6 +31,8 @@ public partial class ArgumentParserGenerator
 
         if (hasAtLeastInternalAccessibility && (!specialCommandHandlers.HasValue) || helpTextGeneratorInfo is not null)
         {
+            var hasSpecialCommandHandlers = !specialCommandHandlers.HasValue || !specialCommandHandlers.Value.IsEmpty;
+
             writer.WriteLine("namespace ArgumentParsing.Generated");
             writer.OpenBlock();
             writer.WriteLine("internal static partial class ParseResultExtensions");
@@ -40,7 +42,10 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("/// <list type=\"bullet\">");
             writer.WriteLine("/// <item>If <paramref name=\"result\"/> is in <see cref=\"global::ArgumentParsing.Results.ParseResultState.ParsedOptions\"/> state invokes provided <paramref name=\"action\"/> with parsed options object</item>");
             writer.WriteLine("/// <item>If <paramref name=\"result\"/> is in <see cref=\"global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors\"/> state writes help screen text with parse errors to <see cref=\"global::System.Console.Error\"/> and exits application with code 1</item>");
-            writer.WriteLine("/// <item>If <paramref name=\"result\"/> is in <see cref=\"global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand\"/> state executes parsed handler and exits application with code, returned from the handler</item>");
+            if (hasSpecialCommandHandlers)
+            {
+                writer.WriteLine("/// <item>If <paramref name=\"result\"/> is in <see cref=\"global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand\"/> state executes parsed handler and exits application with code, returned from the handler</item>");
+            }
             writer.WriteLine("/// </list>");
             writer.WriteLine("/// </summary>");
             writer.WriteLine("/// <param name=\"result\">Parse result</param>");
@@ -67,10 +72,13 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("global::System.Console.Error.WriteLine(errorScreenText);");
             writer.WriteLine("global::System.Environment.Exit(1);");
             writer.WriteLine("break;");
-            writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:", identDelta: -1);
-            writer.WriteLine("int exitCode = result.SpecialCommandHandler.HandleCommand();");
-            writer.WriteLine("global::System.Environment.Exit(exitCode);");
-            writer.WriteLine("break;");
+            if (hasSpecialCommandHandlers)
+            {
+                writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:", identDelta: -1);
+                writer.WriteLine("int exitCode = result.SpecialCommandHandler.HandleCommand();");
+                writer.WriteLine("global::System.Environment.Exit(exitCode);");
+                writer.WriteLine("break;");
+            }
             writer.Ident--;
             writer.CloseRemainingBlocks();
             writer.WriteLine();
