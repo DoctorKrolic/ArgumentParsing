@@ -397,4 +397,12 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor OptionsTypeHasHelpTextGeneratorButNoHelpCommandHandlerInParser = new(
+        id: "ARGP0048",
+        title: "Associated options type has a custom help text generator, but no '--help' special command handler found for the parser",
+        messageFormat: "Associated options type '{0}' has a custom help text generator, but no '--help' special command handler found for the parser",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

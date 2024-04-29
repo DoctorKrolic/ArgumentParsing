@@ -19,7 +19,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.InvalidOptionsType,
             DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute,
             DiagnosticDescriptors.ParserArgumentIsASet,
-            DiagnosticDescriptors.InvalidSpecialCommandHandlerTypeSpecifier);
+            DiagnosticDescriptors.InvalidSpecialCommandHandlerTypeSpecifier,
+            DiagnosticDescriptors.OptionsTypeHasHelpTextGeneratorButNoHelpCommandHandlerInParser);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -36,6 +37,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                 ParseResultOfTType = comp.ParseResultOfTType(),
                 OptionsTypeAttributeType = comp.OptionsTypeAttributeType(),
                 ISpecialCommandHandlerType = comp.ISpecialCommandHandlerType(),
+                SpecialCommandAliasesAttributeType = comp.SpecialCommandAliasesAttributeType(),
+                HelpTextGeneratorAttributeType = comp.HelpTextGeneratorAttributeType(),
             };
 
             context.RegisterSymbolAction(context => AnalyzeParserSignature(context, knownTypes), SymbolKind.Method);
@@ -52,11 +55,12 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        var hasHelpCommand = true;
         var iSpecialCommandHandlerType = knownTypes.ISpecialCommandHandlerType;
 
         if (iSpecialCommandHandlerType is not null &&
             generatedArgParserAttrData.NamedArguments
-            .FirstOrDefault(static n => n.Key == "SpecialCommandHandlers").Value is { IsNull: false, Values: { IsDefaultOrEmpty: false } specialCommandHandlers })
+            .FirstOrDefault(static n => n.Key == "SpecialCommandHandlers").Value is { IsNull: false, Values: var specialCommandHandlers })
         {
             var attributeSyntax = (AttributeSyntax?)generatedArgParserAttrData.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
             var specialCommandHandlersCollectionSyntax = attributeSyntax?.ArgumentList?.Arguments.First(static a => a.NameEquals?.Name.Identifier.ValueText == "SpecialCommandHandlers").Expression;
@@ -65,6 +69,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                 : (specialCommandHandlersCollectionSyntax is ArrayCreationExpressionSyntax arrayCreation
                     ? arrayCreation.Initializer?.Expressions
                     : null)).ToArray();
+
+            hasHelpCommand = false;
 
             for (var i = 0; i < specialCommandHandlers.Length; i++)
             {
@@ -84,6 +90,11 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.InvalidSpecialCommandHandlerTypeSpecifier,
                             associatedSyntaxNode?.GetLocation() ?? attributeSyntax?.GetLocation() ?? method.Locations.First(),
                             commandHandler.IsNull ? (associatedSyntaxNode?.ToString() ?? "null") : commandHandler.Value));
+                }
+                else if (namedHandlerType.GetAttributes().FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.SpecialCommandAliasesAttributeType)) is { } aliasesAttr &&
+                         aliasesAttr.ConstructorArguments is [{ Kind: TypedConstantKind.Array, Values: var aliases }])
+                {
+                    hasHelpCommand |= aliases.Any(static a => (string?)a.Value == "--help");
                 }
             }
         }
@@ -174,11 +185,24 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                         DiagnosticDescriptors.InvalidOptionsType, genericArgumentErrorSyntax.GetLocation()));
             }
         }
-        else if (!namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(knownTypes.OptionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
+        else
         {
-            context.ReportDiagnostic(
-                Diagnostic.Create(
-                    DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute, genericArgumentErrorSyntax.GetLocation()));
+            var attributes = namedOptionsType.GetAttributes();
+
+            if (!attributes.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.OptionsTypeAttributeType)))
+            {
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute, genericArgumentErrorSyntax.GetLocation()));
+            }
+            else if (!hasHelpCommand && attributes.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.HelpTextGeneratorAttributeType)))
+            {
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.OptionsTypeHasHelpTextGeneratorButNoHelpCommandHandlerInParser,
+                        method.Locations.First(),
+                        namedOptionsType));
+            }
         }
     }
 
@@ -193,5 +217,9 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
         public required INamedTypeSymbol? OptionsTypeAttributeType { get; init; }
 
         public required INamedTypeSymbol? ISpecialCommandHandlerType { get; init; }
+
+        public required INamedTypeSymbol? SpecialCommandAliasesAttributeType { get; init; }
+
+        public required INamedTypeSymbol? HelpTextGeneratorAttributeType { get; init; }
     }
 }

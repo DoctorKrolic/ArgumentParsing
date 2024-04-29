@@ -714,4 +714,199 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
 
         await VerifyAnalyzerAsync(source);
     }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_HelpTextGeneratorButNoHelpCommand1()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [])]
+                public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_HelpTextGeneratorButNoHelpCommand2()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+
+            class MySpecialCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_HelpTextGeneratorButNoHelpCommand3()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+
+            [SpecialCommandAliases]
+            class MySpecialCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_HelpTextGeneratorButNoHelpCommand4()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+
+            [SpecialCommandAliases("--not-help")]
+            class MySpecialCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_HelpTextGeneratorButNoHelpCommand5()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+
+            [SpecialCommandAliases("--not-help-1", "--not-help-2")]
+            class MySpecialCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_HelpTextGeneratorAndHelpCommand1()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_HelpTextGeneratorAndHelpCommand2()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+
+            [SpecialCommandAliases("--help")]
+            class MySpecialCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_HelpTextGeneratorAndHelpCommand3()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+
+            [SpecialCommandAliases("-?", "--help")]
+            class MySpecialCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
 }
