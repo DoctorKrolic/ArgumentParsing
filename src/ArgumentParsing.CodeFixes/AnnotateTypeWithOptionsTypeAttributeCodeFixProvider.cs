@@ -41,9 +41,9 @@ public sealed class AnnotateTypeWithOptionsTypeAttributeCodeFixProvider : CodeFi
         var compilation = semanticModel.Compilation;
 
         // We can get ParseResult<ActualOptionsType> in case the whole type is aliased, so unwrap options type from ParseResult here
-        if (optionsType?.OriginalDefinition.Equals(compilation.ParseResultOfTType(), SymbolEqualityComparer.Default) == true)
+        if (SymbolEqualityComparer.Default.Equals(optionsType?.OriginalDefinition, compilation.ParseResultOfTType()))
         {
-            optionsType = ((INamedTypeSymbol)optionsType).TypeArguments[0];
+            optionsType = ((INamedTypeSymbol)optionsType!).TypeArguments[0];
         }
 
         if (optionsType?.Locations.First() is not { IsInSource: true } optionsTypeSourceLocation)

@@ -56,7 +56,7 @@ public sealed class SpecialCommandHandlerAnalyzer : DiagnosticAnalyzer
                     diagnosticLocation));
         }
 
-        var aliasesAttribute = type.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Equals(knownTypes.SpecialCommandAliasesAttributeType, SymbolEqualityComparer.Default) == true);
+        var aliasesAttribute = type.GetAttributes().FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.SpecialCommandAliasesAttributeType));
         var constructorArg = aliasesAttribute?.ConstructorArguments[0];
 
         if (aliasesAttribute is null ||

@@ -54,7 +54,7 @@ public sealed class DeclareSpecialCommandAliasCodeFixProvider : CodeFixProvider
 
             var aliasesAttributeReference = commandHandler
                 .GetAttributes()
-                .First(a => a.AttributeClass?.Equals(specialCommandAliasesAttributeType, SymbolEqualityComparer.Default) == true)
+                .First(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, specialCommandAliasesAttributeType))
                 .ApplicationSyntaxReference;
 
             if (aliasesAttributeReference is null)

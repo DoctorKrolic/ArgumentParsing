@@ -33,14 +33,14 @@ public sealed class ParserRelatedPropertyMarkedWithRequiredAttributeSuppressor :
 
             var compilation = semanticModel.Compilation;
 
-            if (!propertySymbol.ContainingType.GetAttributes().Any(a => a.AttributeClass?.Equals(compilation.OptionsTypeAttributeType(), SymbolEqualityComparer.Default) == true))
+            if (!propertySymbol.ContainingType.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, compilation.OptionsTypeAttributeType())))
             {
                 continue;
             }
 
-            if (propertySymbol.GetAttributes().Any(a => a.AttributeClass?.Equals(compilation.OptionAttributeType(), SymbolEqualityComparer.Default) == true ||
-                                                        a.AttributeClass?.Equals(compilation.ParameterAttributeType(), SymbolEqualityComparer.Default) == true ||
-                                                        a.AttributeClass?.Equals(compilation.RemainingParametersAttributeType(), SymbolEqualityComparer.Default) == true))
+            if (propertySymbol.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, compilation.OptionAttributeType()) ||
+                                                        SymbolEqualityComparer.Default.Equals(a.AttributeClass, compilation.ParameterAttributeType()) ||
+                                                        SymbolEqualityComparer.Default.Equals(a.AttributeClass, compilation.RemainingParametersAttributeType())))
             {
                 context.ReportSuppression(Suppression.Create(SuppressionDescriptors.ParserRelatedPropertyMarkedWithRequiredAttributeInOptionsType, diagnostic));
             }

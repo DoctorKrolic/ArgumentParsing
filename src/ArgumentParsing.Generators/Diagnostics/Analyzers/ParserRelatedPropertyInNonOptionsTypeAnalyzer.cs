@@ -36,15 +36,15 @@ public sealed class ParserRelatedPropertyInNonOptionsTypeAnalyzer : DiagnosticAn
         var property = (IPropertySymbol)context.Symbol;
 
         if (!property.GetAttributes()
-            .Any(a => a.AttributeClass?.Equals(knownTypes.OptionAttributeType, SymbolEqualityComparer.Default) == true ||
-                      a.AttributeClass?.Equals(knownTypes.ParameterAttributeType, SymbolEqualityComparer.Default) == true ||
-                      a.AttributeClass?.Equals(knownTypes.RemainingParametersAttributeType, SymbolEqualityComparer.Default) == true))
+            .Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.OptionAttributeType) ||
+                      SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.ParameterAttributeType) ||
+                      SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.RemainingParametersAttributeType)))
         {
             return;
         }
 
         if (property.ContainingType.GetAttributes()
-            .Any(a => a.AttributeClass?.Equals(knownTypes.OptionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
+            .Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.OptionsTypeAttributeType)))
         {
             return;
         }

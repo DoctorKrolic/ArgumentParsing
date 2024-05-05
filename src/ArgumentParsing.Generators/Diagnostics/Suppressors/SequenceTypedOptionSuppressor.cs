@@ -33,12 +33,12 @@ public sealed class SequenceTypedOptionSuppressor : DiagnosticSuppressor
 
             var compilation = semanticModel.Compilation;
 
-            if (!propertySymbol.ContainingType.GetAttributes().Any(a => a.AttributeClass?.Equals(compilation.OptionsTypeAttributeType(), SymbolEqualityComparer.Default) == true))
+            if (!propertySymbol.ContainingType.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, compilation.OptionsTypeAttributeType())))
             {
                 continue;
             }
 
-            if (!propertySymbol.GetAttributes().Any(a => a.AttributeClass?.Equals(compilation.OptionAttributeType(), SymbolEqualityComparer.Default) == true))
+            if (!propertySymbol.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, compilation.OptionAttributeType())))
             {
                 continue;
             }

@@ -22,7 +22,7 @@ public partial class ArgumentParserGenerator
         var comp = context.SemanticModel.Compilation;
         var genArgParserAttrType = comp.GetTypeByMetadataName(GeneratedArgumentParserAttributeName)!;
 
-        var genArgParserAttrData = context.Attributes.First(a => a.AttributeClass?.Equals(genArgParserAttrType, SymbolEqualityComparer.Default) == true);
+        var genArgParserAttrData = context.Attributes.First(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, genArgParserAttrType));
         ImmutableArray<SpecialCommandHandlerInfo>.Builder? specialCommandHandlerInfosBuilder = null;
 
         if (genArgParserAttrData.NamedArguments.FirstOrDefault(static n => n.Key == "SpecialCommandHandlers").Value is { IsNull: false, Values: { IsDefault: false } specialCommandHandlers })
@@ -42,7 +42,7 @@ public partial class ArgumentParserGenerator
 
                 var aliasesAttrData = commandHandlerType
                     .GetAttributes()
-                    .FirstOrDefault(a => a.AttributeClass?.Equals(specialCommandAliasesAttributeType, SymbolEqualityComparer.Default) == true);
+                    .FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, specialCommandAliasesAttributeType));
 
                 if (aliasesAttrData is null)
                 {
@@ -107,7 +107,7 @@ public partial class ArgumentParserGenerator
 
         if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType ||
             !namedOptionsType.Constructors.Any(static c => c.DeclaredAccessibility >= Accessibility.Internal && c.Parameters.IsEmpty) ||
-            !namedOptionsType.GetAttributes().Any(a => a.AttributeClass?.Equals(comp.OptionsTypeAttributeType(), SymbolEqualityComparer.Default) == true))
+            !namedOptionsType.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, comp.OptionsTypeAttributeType())))
         {
             return default;
         }
@@ -142,7 +142,7 @@ public partial class ArgumentParserGenerator
     {
         HelpTextGeneratorInfo? helpTextGeneratorInfo = null;
 
-        if (optionsType.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Equals(comp.HelpTextGeneratorAttributeType(), SymbolEqualityComparer.Default) == true) is { } helpTextGeneratorAttribute)
+        if (optionsType.GetAttributes().FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, comp.HelpTextGeneratorAttributeType())) is { } helpTextGeneratorAttribute)
         {
             var firstArg = helpTextGeneratorAttribute.ConstructorArguments[0];
             var secondArg = helpTextGeneratorAttribute.ConstructorArguments[1];
@@ -547,7 +547,7 @@ public partial class ArgumentParserGenerator
         cancellationToken.ThrowIfCancellationRequested();
 
         var generateDefaultVersionSpecialCommandAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Version.GenerateDefaultVersionSpecialCommandAttribute");
-        var forceDefaultVersionCommand = compilation.Assembly.GetAttributes().Any(a => a.AttributeClass?.Equals(generateDefaultVersionSpecialCommandAttributeType, SymbolEqualityComparer.Default) == true);
+        var forceDefaultVersionCommand = compilation.Assembly.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, generateDefaultVersionSpecialCommandAttributeType));
 
         var environmentInfo = new EnvironmentInfo(canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload, forceDefaultVersionCommand);
 

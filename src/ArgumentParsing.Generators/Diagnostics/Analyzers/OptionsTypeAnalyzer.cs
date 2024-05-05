@@ -81,12 +81,12 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
         var optionsType = (INamedTypeSymbol)context.Symbol;
         var attributes = optionsType.GetAttributes();
 
-        if (!attributes.Any(a => a.AttributeClass?.Equals(knownTypes.OptionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
+        if (!attributes.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.OptionsTypeAttributeType)))
         {
             return;
         }
 
-        var helpTextGeneratorAttribute = attributes.FirstOrDefault(a => a.AttributeClass?.Equals(knownTypes.HelpTextGeneratorAttributeType, SymbolEqualityComparer.Default) == true);
+        var helpTextGeneratorAttribute = attributes.FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.HelpTextGeneratorAttributeType));
         if (helpTextGeneratorAttribute is not null)
         {
             var firstArg = helpTextGeneratorAttribute.ConstructorArguments[0];

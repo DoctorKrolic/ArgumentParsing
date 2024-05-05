@@ -33,13 +33,13 @@ public sealed class HelpTextGeneratorOnNonOptionsTypeAnalyzer : DiagnosticAnalyz
     {
         var type = (INamedTypeSymbol)context.Symbol;
         var attributes = type.GetAttributes();
-        var helpTextGeneratorAttribute = attributes.FirstOrDefault(a => a.AttributeClass?.Equals(knownTypes.HelpTextGeneratorAttributeType, SymbolEqualityComparer.Default) == true);
+        var helpTextGeneratorAttribute = attributes.FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.HelpTextGeneratorAttributeType));
         if (helpTextGeneratorAttribute is null)
         {
             return;
         }
 
-        if (!attributes.Any(a => a.AttributeClass?.Equals(knownTypes.OptionsTypeAttributeType, SymbolEqualityComparer.Default) == true))
+        if (!attributes.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.OptionsTypeAttributeType)))
         {
             context.ReportDiagnostic(
                 Diagnostic.Create(

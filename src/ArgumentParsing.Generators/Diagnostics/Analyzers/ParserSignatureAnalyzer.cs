@@ -50,7 +50,7 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
         var method = (IMethodSymbol)context.Symbol;
 
         if (method.GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.Equals(knownTypes.GeneratedArgumentParserAttributeType, SymbolEqualityComparer.Default) == true) is not { } generatedArgParserAttrData)
+            .FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.GeneratedArgumentParserAttributeType)) is not { } generatedArgParserAttrData)
         {
             return;
         }
