@@ -363,11 +363,11 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static readonly DiagnosticDescriptor HelpTextGeneratorOnNonOptionsType = new(
+    public static readonly DiagnosticDescriptor MarkerAttributeOnNonOptionsType = new(
         id: "ARGP0044",
-        title: "Usage of [HelpTextGenerator] on non-options type",
-        messageFormat: "Type, annotated with [HelpTextGenerator] attribute is non-options type",
-        description: "[HelpTextGenerator] is only valid on options types. Consider annotating target type with [OptionsType] attribute.",
+        title: "Usage of marker attribute on non-options type",
+        messageFormat: "[{0}] attribute is applied to non-options type",
+        description: "This marker attribute only has effect when applied to an options type. Consider annotating target type with [OptionsType] attribute.",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);

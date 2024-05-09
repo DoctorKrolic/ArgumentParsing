@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace ArgumentParsing.Generators.Diagnostics.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class HelpTextGeneratorOnNonOptionsTypeAnalyzer : DiagnosticAnalyzer
+public sealed class MarkerAttributeOnNonOptionsTypeAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
-        ImmutableArray.Create(DiagnosticDescriptors.HelpTextGeneratorOnNonOptionsType);
+        ImmutableArray.Create(DiagnosticDescriptors.MarkerAttributeOnNonOptionsType);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -43,8 +43,9 @@ public sealed class HelpTextGeneratorOnNonOptionsTypeAnalyzer : DiagnosticAnalyz
         {
             context.ReportDiagnostic(
                 Diagnostic.Create(
-                    DiagnosticDescriptors.HelpTextGeneratorOnNonOptionsType,
-                    helpTextGeneratorAttribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken).GetLocation() ?? type.Locations.First()));
+                    DiagnosticDescriptors.MarkerAttributeOnNonOptionsType,
+                    helpTextGeneratorAttribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken).GetLocation() ?? type.Locations.First(),
+                    "HelpTextGenerator"));
         }
     }
 

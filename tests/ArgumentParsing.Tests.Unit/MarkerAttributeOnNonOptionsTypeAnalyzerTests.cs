@@ -1,14 +1,15 @@
 using ArgumentParsing.Generators.Diagnostics.Analyzers;
 using ArgumentParsing.Tests.Unit.Utilities;
+using Microsoft.CodeAnalysis.Testing;
 
 namespace ArgumentParsing.Tests.Unit;
 
-public sealed class HelpTextGeneratorOnNonOptionsTypeAnalyzerTests : AnalyzerTestBase<HelpTextGeneratorOnNonOptionsTypeAnalyzer>
+public sealed class MarkerAttributeOnNonOptionsTypeAnalyzerTests : AnalyzerTestBase<MarkerAttributeOnNonOptionsTypeAnalyzer>
 {
     [Theory]
     [InlineData("class")]
     [InlineData("struct")]
-    public async Task NoDiagnosticsWhenOnOptionsType1(string typeKeyword)
+    public async Task HelpTextGenerator_NoDiagnosticsWhenOnOptionsType1(string typeKeyword)
     {
         var source = $$"""
             [OptionsType, HelpTextGenerator(default, default)]
@@ -23,7 +24,7 @@ public sealed class HelpTextGeneratorOnNonOptionsTypeAnalyzerTests : AnalyzerTes
     [Theory]
     [InlineData("class")]
     [InlineData("struct")]
-    public async Task NoDiagnosticsWhenOnOptionsType2(string typeKeyword)
+    public async Task HelpTextGenerator_NoDiagnosticsWhenOnOptionsType2(string typeKeyword)
     {
         var source = $$"""
             [OptionsType]
@@ -39,7 +40,7 @@ public sealed class HelpTextGeneratorOnNonOptionsTypeAnalyzerTests : AnalyzerTes
     [Theory]
     [InlineData("class")]
     [InlineData("struct")]
-    public async Task NoDiagnosticsWhenOnOptionsType3(string typeKeyword)
+    public async Task HelpTextGenerator_NoDiagnosticsWhenOnOptionsType3(string typeKeyword)
     {
         var source = $$"""
             [HelpTextGenerator(default, default)]
@@ -59,15 +60,21 @@ public sealed class HelpTextGeneratorOnNonOptionsTypeAnalyzerTests : AnalyzerTes
     [Theory]
     [InlineData("class")]
     [InlineData("struct")]
-    public async Task WarningOnNonOptionsType(string typeKeyword)
+    public async Task HelpTextGenerator_WarningOnNonOptionsType(string typeKeyword)
     {
         var source = $$"""
-            [{|ARGP0044:HelpTextGenerator(default, default)|}]
+            [{|#0:HelpTextGenerator(default, default)|}]
             {{typeKeyword}} MyOptions
             {
             }
             """;
 
-        await VerifyAnalyzerAsync(source);
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerWarning("ARGP0044")
+                .WithLocation(0)
+                .WithArguments("HelpTextGenerator")
+        ]);
     }
 }
