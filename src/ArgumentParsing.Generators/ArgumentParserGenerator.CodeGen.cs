@@ -876,10 +876,10 @@ public partial class ArgumentParserGenerator
         context.AddSource($"{qualifiedName}.g.cs", writer.ToString().Trim());
     }
 
-    private static void EmitHelpCommandHandler(SourceProductionContext context, (OptionsHelpInfo, AssemblyVersionInfo) infos)
+    private static void EmitHelpCommandHandler(SourceProductionContext context, (OptionsInfo, AssemblyVersionInfo) infos)
     {
-        var (optionsHelpInfo, assemblyVersionInfo) = infos;
-        var (qualifiedName, optionHelpInfos, parameterHelpInfos, remainingParametersHelpInfo, helpTextGeneratorInfo) = optionsHelpInfo;
+        var (optionsInfo, assemblyVersionInfo) = infos;
+        var (qualifiedName, _, optionInfos, parameterInfos, remainingParametersInfo, helpTextGeneratorInfo) = optionsInfo;
 
         var writer = new CodeWriter();
 
@@ -923,10 +923,10 @@ public partial class ArgumentParserGenerator
             writer.CloseBlock();
             writer.WriteLine("helpBuilder.AppendLine();");
             writer.CloseBlock();
-            if (optionHelpInfos.Any())
+            if (optionInfos.Any())
             {
                 writer.WriteLine("helpBuilder.AppendLine(\"OPTIONS:\");");
-                foreach (var info in optionHelpInfos)
+                foreach (var info in optionInfos)
                 {
                     writer.WriteLine("helpBuilder.AppendLine();");
                     writer.Write("helpBuilder.AppendLine(\"  ");
@@ -964,13 +964,13 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine("\");");
                 }
             }
-            if (parameterHelpInfos.Any())
+            if (parameterInfos.Any())
             {
                 writer.WriteLine("helpBuilder.AppendLine();");
                 writer.WriteLine("helpBuilder.AppendLine(\"PARAMETERS:\");");
-                for (var i = 0; i < parameterHelpInfos.Length; i++)
+                for (var i = 0; i < parameterInfos.Length; i++)
                 {
-                    var info = parameterHelpInfos[i];
+                    var info = parameterInfos[i];
 
                     writer.WriteLine("helpBuilder.AppendLine();");
                     writer.Write($"helpBuilder.AppendLine(\"  {info.Name} (at index {i})");
@@ -996,13 +996,13 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine("\");");
                 }
             }
-            if (remainingParametersHelpInfo is not null)
+            if (remainingParametersInfo is not null)
             {
                 writer.WriteLine("helpBuilder.AppendLine();");
                 writer.Write("helpBuilder.AppendLine(\"  Remaining parameters");
-                if (remainingParametersHelpInfo.HelpDescription is not null)
+                if (remainingParametersInfo.HelpDescription is not null)
                 {
-                    writer.Write($"\\t{remainingParametersHelpInfo.HelpDescription}");
+                    writer.Write($"\\t{remainingParametersInfo.HelpDescription}");
                 }
                 writer.WriteLine("\");");
             }

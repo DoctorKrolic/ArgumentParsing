@@ -11,7 +11,7 @@ public partial class ArgumentParserGenerator
 {
     private static readonly SymbolDisplayFormat s_qualifiedNameFormat = SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
 
-    private static (ArgumentParserInfo? ArgumentParserInfo, OptionsHelpInfo? OptionsHelpInfo) ExtractMainInfo(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    private static ArgumentParserInfo? ExtractArgumentParserInfo(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
     {
         var argumentParserMethodSyntax = (MethodDeclarationSyntax)context.TargetNode;
         var argumentParserMethodSymbol = (IMethodSymbol)context.TargetSymbol;
@@ -37,7 +37,7 @@ public partial class ArgumentParserGenerator
                     !commandHandlerType.AllInterfaces.Any(i => i.Equals(iSpecialCommandHandlerType, SymbolEqualityComparer.Default)) ||
                     !commandHandlerType.Constructors.Any(static c => c.DeclaredAccessibility >= Accessibility.Internal && c.Parameters.IsEmpty))
                 {
-                    return default;
+                    return null;
                 }
 
                 var aliasesAttrData = commandHandlerType
@@ -46,13 +46,13 @@ public partial class ArgumentParserGenerator
 
                 if (aliasesAttrData is null)
                 {
-                    return default;
+                    return null;
                 }
 
                 var firstConstructorArg = aliasesAttrData.ConstructorArguments.First();
                 if (firstConstructorArg.IsNull || firstConstructorArg.Values.IsEmpty)
                 {
-                    return default;
+                    return null;
                 }
 
                 var aliasesBuilder = ImmutableArray.CreateBuilder<string>();
@@ -60,7 +60,7 @@ public partial class ArgumentParserGenerator
                 {
                     if (alias is not { IsNull: false, Value: string aliasVal } || !aliasVal.IsValidName(allowDashPrefix: true))
                     {
-                        return default;
+                        return null;
                     }
 
                     aliasesBuilder.Add(aliasVal);
@@ -74,7 +74,7 @@ public partial class ArgumentParserGenerator
 
         if (argumentParserMethodSymbol.Parameters is not [var singleParameter])
         {
-            return default;
+            return null;
         }
 
         var singleParameterSyntax = argumentParserMethodSyntax.ParameterList.Parameters[0];
@@ -84,14 +84,14 @@ public partial class ArgumentParserGenerator
             singleParameter.ScopedKind != ScopedKind.None ||
             argumentParserMethodSymbol.IsExtensionMethod)
         {
-            return default;
+            return null;
         }
 
         var singleParameterType = singleParameter.Type;
 
         if (!singleParameterType.IsEnumerableCollectionOfStrings())
         {
-            return default;
+            return null;
         }
 
         parameterInfo = new(singleParameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), singleParameter.Name);
@@ -102,25 +102,25 @@ public partial class ArgumentParserGenerator
         if (returnType is not INamedTypeSymbol { TypeArguments: [var optionsType] } namedReturnType ||
             !namedReturnType.ConstructedFrom.Equals(comp.ParseResultOfTType(), SymbolEqualityComparer.Default))
         {
-            return default;
+            return null;
         }
 
         if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType ||
             !namedOptionsType.Constructors.Any(static c => c.DeclaredAccessibility >= Accessibility.Internal && c.Parameters.IsEmpty) ||
             !namedOptionsType.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, comp.OptionsTypeAttributeType())))
         {
-            return default;
+            return null;
         }
 
         validOptionsType = namedOptionsType;
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var (optionsInfo, optionsHelpInfo) = ExtractInfoFromOptionsType(validOptionsType, comp, cancellationToken);
+        var optionsInfo = ExtractOptionsInfo(validOptionsType, comp, cancellationToken);
 
         if (optionsInfo is null)
         {
-            return default;
+            return null;
         }
 
         var methodInfo = new ArgumentParserMethodInfo(
@@ -135,10 +135,10 @@ public partial class ArgumentParserGenerator
             optionsInfo,
             specialCommandHandlerInfosBuilder?.ToImmutable());
 
-        return (argumentParserInfo, optionsHelpInfo);
+        return argumentParserInfo;
     }
 
-    private static (OptionsInfo? OptionsInfo, OptionsHelpInfo? OptionsHelpInfo) ExtractInfoFromOptionsType(INamedTypeSymbol optionsType, Compilation comp, CancellationToken cancellationToken)
+    private static OptionsInfo? ExtractOptionsInfo(INamedTypeSymbol optionsType, Compilation comp, CancellationToken cancellationToken)
     {
         HelpTextGeneratorInfo? helpTextGeneratorInfo = null;
 
@@ -150,7 +150,7 @@ public partial class ArgumentParserGenerator
             if (firstArg.Value is not INamedTypeSymbol { TypeKind: not TypeKind.Error, SpecialType: SpecialType.None, IsUnboundGenericType: false } helpTextGeneratorType ||
                 secondArg.Value is not string methodName)
             {
-                return default;
+                return null;
             }
 
             if (helpTextGeneratorType.GetMembers(methodName).FirstOrDefault(m => m is IMethodSymbol
@@ -160,7 +160,7 @@ public partial class ArgumentParserGenerator
                     Parameters: [{ HasExplicitDefaultValue: true, ExplicitDefaultValue: null, Type: var parameterType }]
                 } && m.HasMinimalAccessibility(Accessibility.Internal) && parameterType.Equals(comp.ParseErrorCollectionType(), SymbolEqualityComparer.Default)) is not IMethodSymbol helpTextGeneratorMethod)
             {
-                return default;
+                return null;
             }
 
             helpTextGeneratorInfo = new(
@@ -170,17 +170,14 @@ public partial class ArgumentParserGenerator
         }
 
         var optionsBuilder = ImmutableArray.CreateBuilder<OptionInfo>();
-        var optionsHelpBuilder = ImmutableArray.CreateBuilder<OptionHelpInfo>();
 
         var seenShortNames = new HashSet<char>();
         var seenLongNames = new HashSet<string>();
 
         var parameterMap = new Dictionary<int, ParameterInfo>();
-        var parameterHelpDescriptionsMap = new Dictionary<ParameterInfo, string?>();
 
         var declaredRemainingParameters = false;
         RemainingParametersInfo? remainingParametersInfo = null;
-        RemainingParametersHelpInfo? remainingParametersHelpInfo = null;
 
         foreach (var member in optionsType.GetMembers())
         {
@@ -188,7 +185,7 @@ public partial class ArgumentParserGenerator
 
             if (member is IFieldSymbol { IsRequired: true })
             {
-                return default;
+                return null;
             }
 
             if (member is not IPropertySymbol property)
@@ -305,19 +302,19 @@ public partial class ArgumentParserGenerator
             {
                 if (property.IsRequired)
                 {
-                    return default;
+                    return null;
                 }
 
                 continue;
             }
             else if (countOfParserRelatedAttributes > 1)
             {
-                return default;
+                return null;
             }
 
             if (property is not { DeclaredAccessibility: >= Accessibility.Internal, SetMethod.DeclaredAccessibility: >= Accessibility.Internal })
             {
-                return default;
+                return null;
             }
 
             var propertyName = property.Name;
@@ -332,7 +329,7 @@ public partial class ArgumentParserGenerator
 
                     if (!char.IsLetter(snv) || !seenShortNames.Add(snv))
                     {
-                        return default;
+                        return null;
                     }
                 }
 
@@ -343,14 +340,14 @@ public partial class ArgumentParserGenerator
 
                 if (!shortName.HasValue && longName is null)
                 {
-                    return default;
+                    return null;
                 }
 
                 if (longName is not null)
                 {
                     if (!longName.IsValidName() || !seenLongNames.Add(longName))
                     {
-                        return default;
+                        return null;
                     }
                 }
 
@@ -358,12 +355,12 @@ public partial class ArgumentParserGenerator
 
                 if (parseStrategy == ParseStrategy.None)
                 {
-                    return default;
+                    return null;
                 }
 
                 if (isRequired && parseStrategy == ParseStrategy.Flag && nullableUnderlyingType is null)
                 {
-                    return default;
+                    return null;
                 }
 
                 optionsBuilder.Add(new(
@@ -374,12 +371,7 @@ public partial class ArgumentParserGenerator
                     parseStrategy,
                     isRequired,
                     nullableUnderlyingType,
-                    sequenceType));
-
-                optionsHelpBuilder.Add(new(
-                    shortName,
-                    longName,
-                    isRequired,
+                    sequenceType,
                     helpDescription));
             }
             else if (isParameter)
@@ -388,20 +380,20 @@ public partial class ArgumentParserGenerator
 
                 if (parameterIndex < 0 || hasParameter)
                 {
-                    return default;
+                    return null;
                 }
 
                 parameterName ??= propertyName.ToKebabCase();
 
                 if (!parameterName.IsValidName())
                 {
-                    return default;
+                    return null;
                 }
 
                 var (parseStrategy, nullableUnderlyingType, sequenceType, _) = GetParseStrategy(propertyType, comp);
                 if (parseStrategy == ParseStrategy.None || sequenceType != SequenceType.None)
                 {
-                    return default;
+                    return null;
                 }
 
                 if (!hasParameter)
@@ -412,10 +404,10 @@ public partial class ArgumentParserGenerator
                         propertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         parseStrategy,
                         isRequired,
-                        nullableUnderlyingType);
+                        nullableUnderlyingType,
+                        helpDescription);
 
                     parameterMap.Add(parameterIndex, parameterInfo);
-                    parameterHelpDescriptionsMap.Add(parameterInfo, helpDescription);
                 }
             }
             else
@@ -424,7 +416,7 @@ public partial class ArgumentParserGenerator
 
                 if (declaredRemainingParameters)
                 {
-                    return default;
+                    return null;
                 }
 
                 declaredRemainingParameters = true;
@@ -432,22 +424,20 @@ public partial class ArgumentParserGenerator
                 var (parseStrategy, _, sequenceType, sequenceUnderlyingType) = GetParseStrategy(propertyType, comp);
                 if (parseStrategy == ParseStrategy.None || sequenceType == SequenceType.None)
                 {
-                    return default;
+                    return null;
                 }
 
                 remainingParametersInfo = new(
                     propertyName,
                     sequenceUnderlyingType!,
                     parseStrategy,
-                    sequenceType);
-
-                remainingParametersHelpInfo = new(helpDescription);
+                    sequenceType,
+                    helpDescription);
             }
         }
 
         var lastSeenIndex = 0;
         var parametersBuilder = ImmutableArray.CreateBuilder<ParameterInfo>();
-        var parametersHelpBuilder = ImmutableArray.CreateBuilder<ParameterHelpInfo>();
 
         foreach (var pair in parameterMap.OrderBy(pair => pair.Key))
         {
@@ -455,12 +445,11 @@ public partial class ArgumentParserGenerator
 
             if (index > (lastSeenIndex + 1))
             {
-                return default;
+                return null;
             }
 
             var parameterInfo = pair.Value;
             parametersBuilder.Add(parameterInfo);
-            parametersHelpBuilder.Add(new(parameterInfo.Name, parameterInfo.IsRequired, parameterHelpDescriptionsMap[parameterInfo]));
             lastSeenIndex = index;
         }
 
@@ -472,7 +461,7 @@ public partial class ArgumentParserGenerator
             {
                 if (!canNextParameterBeRequired)
                 {
-                    return default;
+                    return null;
                 }
             }
             else
@@ -490,14 +479,7 @@ public partial class ArgumentParserGenerator
             remainingParametersInfo,
             helpTextGeneratorInfo);
 
-        var optionsHelpInfo = new OptionsHelpInfo(
-            qualifiedName,
-            optionsHelpBuilder.ToImmutable(),
-            parametersHelpBuilder.ToImmutable(),
-            remainingParametersHelpInfo,
-            helpTextGeneratorInfo);
-
-        return (optionsInfo, optionsHelpInfo);
+        return optionsInfo;
 
         static (ParseStrategy, string? NullableUnderlyingType, SequenceType, string? SequenceUnderlyingType) GetParseStrategy(ITypeSymbol type, Compilation compilation)
         {

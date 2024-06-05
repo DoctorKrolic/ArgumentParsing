@@ -4,4 +4,5 @@ internal sealed record RemainingParametersInfo(
     string PropertyName,
     string Type,
     ParseStrategy ParseStrategy,
-    SequenceType SequenceType);
+    SequenceType SequenceType,
+    string? HelpDescription);
