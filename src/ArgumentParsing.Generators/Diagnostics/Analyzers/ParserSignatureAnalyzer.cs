@@ -167,13 +167,16 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
         if (returnType is not INamedTypeSymbol { TypeArguments: [var optionsType] } namedReturnType ||
             !namedReturnType.ConstructedFrom.Equals(knownTypes.ParseResultOfTType, SymbolEqualityComparer.Default))
         {
-            context.ReportDiagnostic(
-                Diagnostic.Create(
-                    DiagnosticDescriptors.ReturnTypeMustBeParseResult,
-                    returnTypeSyntax.GetLocation(),
-                    effectiveSeverity: returnType.TypeKind == TypeKind.Error ? DiagnosticSeverity.Hidden : DiagnosticDescriptors.ReturnTypeMustBeParseResult.DefaultSeverity,
-                    additionalLocations: null,
-                    properties: null));
+            if (returnType.TypeKind != TypeKind.Error || returnType.Name != "ParseResult")
+            {
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.ReturnTypeMustBeParseResult,
+                        returnTypeSyntax.GetLocation(),
+                        effectiveSeverity: returnType.TypeKind == TypeKind.Error ? DiagnosticSeverity.Hidden : DiagnosticDescriptors.ReturnTypeMustBeParseResult.DefaultSeverity,
+                        additionalLocations: null,
+                        properties: null));
+            }
         }
         else if (optionsType is not INamedTypeSymbol { SpecialType: SpecialType.None, TypeKind: TypeKind.Class or TypeKind.Struct } namedOptionsType ||
                  !namedOptionsType.Constructors.Any(static c => c.DeclaredAccessibility >= Accessibility.Internal && c.Parameters.IsEmpty))

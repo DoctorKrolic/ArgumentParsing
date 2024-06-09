@@ -10,11 +10,22 @@ namespace ArgumentParsing.Tests.Unit.Utilities;
 public abstract class AnalyzerTestBase<TAnalyzer>
     where TAnalyzer : DiagnosticAnalyzer, new()
 {
-    protected static Task VerifyAnalyzerAsync(string source, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null, CompilerDiagnostics compilerDiagnostics = CompilerDiagnostics.Errors)
-        => VerifyAnalyzerAsync(source, [], languageVersion, referenceAssemblies, compilerDiagnostics);
+    protected static Task VerifyAnalyzerAsync(
+        string source,
+        LanguageVersion languageVersion = LanguageVersion.Latest,
+        ReferenceAssemblies referenceAssemblies = null,
+        CompilerDiagnostics compilerDiagnostics = CompilerDiagnostics.Errors,
+        bool addCommonUsings = true)
+        => VerifyAnalyzerAsync(source, [], languageVersion, referenceAssemblies, compilerDiagnostics, addCommonUsings);
 
-    protected static Task VerifyAnalyzerAsync(string source, DiagnosticResult[] diagnostics, LanguageVersion languageVersion = LanguageVersion.Latest, ReferenceAssemblies referenceAssemblies = null, CompilerDiagnostics compilerDiagnostics = CompilerDiagnostics.Errors)
-        => VerifyAnalyzerWithCodeFixAsync<EmptyCodeFixProvider>(source, fixedSource: null, diagnostics, languageVersion, referenceAssemblies, compilerDiagnostics);
+    protected static Task VerifyAnalyzerAsync(
+        string source,
+        DiagnosticResult[] diagnostics,
+        LanguageVersion languageVersion = LanguageVersion.Latest,
+        ReferenceAssemblies referenceAssemblies = null,
+        CompilerDiagnostics compilerDiagnostics = CompilerDiagnostics.Errors,
+        bool addCommonUsings = true)
+        => VerifyAnalyzerWithCodeFixAsync<EmptyCodeFixProvider>(source, fixedSource: null, diagnostics, languageVersion, referenceAssemblies, compilerDiagnostics, addCommonUsings: addCommonUsings);
 
     protected static Task VerifyAnalyzerWithCodeFixAsync<TCodeFix>(
         string source,
@@ -22,10 +33,11 @@ public abstract class AnalyzerTestBase<TAnalyzer>
         LanguageVersion languageVersion = LanguageVersion.Latest,
         ReferenceAssemblies referenceAssemblies = null,
         CompilerDiagnostics compilerDiagnostics = CompilerDiagnostics.Errors,
-        int codeActionIndex = 0)
+        int codeActionIndex = 0,
+        bool addCommonUsings = true)
         where TCodeFix : CodeFixProvider, new()
     {
-        return VerifyAnalyzerWithCodeFixAsync<TCodeFix>(source, fixedSource, [], languageVersion, referenceAssemblies, compilerDiagnostics, codeActionIndex);
+        return VerifyAnalyzerWithCodeFixAsync<TCodeFix>(source, fixedSource, [], languageVersion, referenceAssemblies, compilerDiagnostics, codeActionIndex, addCommonUsings);
     }
 
     protected static async Task VerifyAnalyzerWithCodeFixAsync<TCodeFix>(
@@ -35,7 +47,8 @@ public abstract class AnalyzerTestBase<TAnalyzer>
         LanguageVersion languageVersion = LanguageVersion.Latest,
         ReferenceAssemblies referenceAssemblies = null,
         CompilerDiagnostics compilerDiagnostics = CompilerDiagnostics.Errors,
-        int codeActionIndex = 0)
+        int codeActionIndex = 0,
+        bool addCommonUsings = true)
         where TCodeFix : CodeFixProvider, new()
     {
         var usings = """
@@ -78,7 +91,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
             ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net80,
         };
 
-        if (languageVersion >= LanguageVersion.CSharp10)
+        if (addCommonUsings && languageVersion >= LanguageVersion.CSharp10)
         {
             test.TestState.Sources.Add(usings);
         }
@@ -89,7 +102,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
         {
             test.FixedState.Sources.Add(fixedSource);
             test.FixedState.Sources.Add(emptyOptions);
-            if (languageVersion >= LanguageVersion.CSharp10)
+            if (addCommonUsings && languageVersion >= LanguageVersion.CSharp10)
             {
                 test.FixedState.Sources.Add(usings);
             }

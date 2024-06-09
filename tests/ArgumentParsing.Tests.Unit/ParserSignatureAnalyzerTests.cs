@@ -297,6 +297,25 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Theory]
+    [InlineData("ParseResult")]
+    [InlineData("ParseResult<string>")]
+    [InlineData("ParseResult<{|CS0246:ErrorType|}>")]
+    public async Task InvalidReturnType_ErrorType_LooksLikeParseResult(string typeNameMarkup)
+    {
+        var source = $$"""
+            using ArgumentParsing;
+
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial {|CS0246:{{typeNameMarkup}}|} {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source, addCommonUsings: false);
+    }
+
+    [Theory]
     [InlineData("int")]
     [InlineData("string")]
     [InlineData("Action")]
