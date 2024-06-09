@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FunctionalTests": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..//..//tests//ArgumentParsing.Tests.Functional//ArgumentParsing.Tests.Functional.csproj"
+    }
+  }
+}
