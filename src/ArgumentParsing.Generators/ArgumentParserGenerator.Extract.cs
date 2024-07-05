@@ -528,10 +528,7 @@ public partial class ArgumentParserGenerator
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var generateDefaultVersionSpecialCommandAttributeType = compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Version.GenerateDefaultVersionSpecialCommandAttribute");
-        var forceDefaultVersionCommand = compilation.Assembly.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, generateDefaultVersionSpecialCommandAttributeType));
-
-        var environmentInfo = new EnvironmentInfo(canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload, forceDefaultVersionCommand);
+        var environmentInfo = new EnvironmentInfo(canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload);
 
         var assembly = compilation.Assembly;
         var assemblyVersionInfo = new AssemblyVersionInfo(

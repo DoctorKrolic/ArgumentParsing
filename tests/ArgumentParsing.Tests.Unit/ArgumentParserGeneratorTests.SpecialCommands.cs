@@ -347,18 +347,6 @@ public partial class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_ForceDefaultVersionCommand()
-    {
-        var source = """
-            using ArgumentParsing.SpecialCommands.Version;
-
-            [assembly: GenerateDefaultVersionSpecialCommand]
-            """;
-
-        await VerifyGeneratorAsync(source, ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
-    }
-
-    [Fact]
     public async Task SpecialCommandHandlers_HelpTextGenerator_InvalidTypeSpecifier_Null()
     {
         var source = """

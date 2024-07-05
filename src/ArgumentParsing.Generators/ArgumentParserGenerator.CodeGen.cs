@@ -12,7 +12,7 @@ public partial class ArgumentParserGenerator
     private static void EmitArgumentParser(SourceProductionContext context, (ArgumentParserInfo, EnvironmentInfo) infos)
     {
         var (parserInfo, environmentInfo) = infos;
-        var (canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload, _) = environmentInfo;
+        var (canUseOptimalSpanBasedAlgorithm, hasStringStartsWithCharOverload) = environmentInfo;
 
         var cancellationToken = context.CancellationToken;
 
