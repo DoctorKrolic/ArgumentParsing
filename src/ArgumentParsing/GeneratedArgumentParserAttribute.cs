@@ -7,6 +7,11 @@ namespace ArgumentParsing;
 public sealed class GeneratedArgumentParserAttribute : Attribute
 {
     /// <summary>
+    /// Built-in special command handlers of this parser
+    /// </summary>
+    public BuiltInCommandHandlers BuiltInCommandHandlers { get; set; } = BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version;
+
+    /// <summary>
     /// Additional special command handlers' types of this parser
     /// </summary>
     public Type[] AdditionalCommandHandlers { get; set; } = [];
