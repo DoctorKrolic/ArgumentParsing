@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using ArgumentParsing.Generators.Extensions;
+using ArgumentParsing.Generators.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -56,11 +57,18 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
         }
 
         var hasHelpCommand = true;
+        var namedArgs = generatedArgParserAttrData.NamedArguments;
+
+        if (namedArgs.FirstOrDefault(static n => n.Key == "BuiltInCommandHandlers").Value is { Value: byte builtInHandlersByte })
+        {
+            var builtInHandlers = (BuiltInCommandHandlers)builtInHandlersByte;
+            hasHelpCommand = builtInHandlers.HasFlag(BuiltInCommandHandlers.Help);
+        }
+
         var iSpecialCommandHandlerType = knownTypes.ISpecialCommandHandlerType;
 
         if (iSpecialCommandHandlerType is not null &&
-            generatedArgParserAttrData.NamedArguments
-            .FirstOrDefault(static n => n.Key == "AdditionalCommandHandlers").Value is { IsNull: false, Values: var additionalCommandHandlers })
+            namedArgs.FirstOrDefault(static n => n.Key == "AdditionalCommandHandlers").Value is { IsNull: false, Values: var additionalCommandHandlers })
         {
             var attributeSyntax = (AttributeSyntax?)generatedArgParserAttrData.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
             var additionalCommandHandlersCollectionSyntax = attributeSyntax?.ArgumentList?.Arguments.First(static a => a.NameEquals?.Name.Identifier.ValueText == "AdditionalCommandHandlers").Expression;
@@ -69,8 +77,6 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                 : (additionalCommandHandlersCollectionSyntax is ArrayCreationExpressionSyntax arrayCreation
                     ? arrayCreation.Initializer?.Expressions
                     : null)).ToArray();
-
-            hasHelpCommand = false;
 
             for (var i = 0; i < additionalCommandHandlers.Length; i++)
             {
