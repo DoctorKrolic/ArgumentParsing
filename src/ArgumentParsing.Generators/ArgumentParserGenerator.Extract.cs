@@ -23,11 +23,18 @@ public partial class ArgumentParserGenerator
         var genArgParserAttrType = comp.GetTypeByMetadataName(GeneratedArgumentParserAttributeName)!;
 
         var genArgParserAttrData = context.Attributes.First(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, genArgParserAttrType));
-        ImmutableArray<SpecialCommandHandlerInfo>.Builder? additionalCommandHandlerInfosBuilder = null;
+        var builtInCommandHandlers = BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version;
+        var additionalCommandHandlerInfosBuilder = ImmutableArray.CreateBuilder<SpecialCommandHandlerInfo>();
 
-        if (genArgParserAttrData.NamedArguments.FirstOrDefault(static n => n.Key == "AdditionalCommandHandlers").Value is { IsNull: false, Values: { IsDefault: false } additionalCommandHandlers })
+        var namedArgs = genArgParserAttrData.NamedArguments;
+
+        if (namedArgs.FirstOrDefault(static n => n.Key == "BuiltInCommandHandlers").Value is { Value: byte builtInHandlersByte })
         {
-            additionalCommandHandlerInfosBuilder = ImmutableArray.CreateBuilder<SpecialCommandHandlerInfo>();
+            builtInCommandHandlers = (BuiltInCommandHandlers)builtInHandlersByte;
+        }
+
+        if (namedArgs.FirstOrDefault(static n => n.Key == "AdditionalCommandHandlers").Value is { IsNull: false, Values: { IsDefault: false } additionalCommandHandlers })
+        {
             var iSpecialCommandHandlerType = comp.ISpecialCommandHandlerType();
             var specialCommandAliasesAttributeType = comp.SpecialCommandAliasesAttributeType();
 
@@ -133,7 +140,8 @@ public partial class ArgumentParserGenerator
             HierarchyInfo.From(argumentParserMethodSymbol.ContainingType),
             methodInfo,
             optionsInfo,
-            additionalCommandHandlerInfosBuilder?.ToImmutable());
+            builtInCommandHandlers,
+            additionalCommandHandlerInfosBuilder.ToImmutable());
 
         return argumentParserInfo;
     }
