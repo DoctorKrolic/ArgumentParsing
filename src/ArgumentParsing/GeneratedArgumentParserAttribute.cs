@@ -7,9 +7,7 @@ namespace ArgumentParsing;
 public sealed class GeneratedArgumentParserAttribute : Attribute
 {
     /// <summary>
-    /// List of special command handlers' types of this parser.
-    /// If <see langword="null"/> is supplied, parser generates and uses
-    /// default implementations of <c>--help</c> and <c>--version</c> commands
+    /// Additional special command handlers' types of this parser
     /// </summary>
-    public Type[]? SpecialCommandHandlers { get; set; }
+    public Type[] AdditionalCommandHandlers { get; set; } = [];
 }

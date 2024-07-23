@@ -463,7 +463,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = null)]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = null)]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -477,7 +477,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -491,7 +491,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [{|#0:null|}])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [{|#0:null|}])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -511,7 +511,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { {|#0:null|} })]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = new Type[] { {|#0:null|} })]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -531,7 +531,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [{|#0:default|}])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [{|#0:default|}])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -551,7 +551,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { {|#0:default|} })]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = new Type[] { {|#0:default|} })]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -574,7 +574,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = $$"""
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({|#0:{{invalidType}}|})])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof({|#0:{{invalidType}}|})])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -597,7 +597,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = $$"""
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { typeof({|#0:{{invalidType}}|}) })]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = new Type[] { typeof({|#0:{{invalidType}}|}) })]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -617,7 +617,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({|CS0246:ErrorType|})])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof({|CS0246:ErrorType|})])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -631,7 +631,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { typeof({|CS0246:ErrorType|}) })]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = new Type[] { typeof({|CS0246:ErrorType|}) })]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -645,7 +645,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({|#0:C|}), typeof({|#1:MyClass|})])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof({|#0:C|}), typeof({|#1:MyClass|})])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -673,7 +673,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { typeof({|#0:C|}), typeof({|#1:MyClass|}) })]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = new Type[] { typeof({|#0:C|}), typeof({|#1:MyClass|}) })]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -701,7 +701,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -721,7 +721,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -740,7 +740,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [])]
                 public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
             }
 
@@ -760,7 +760,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(MySpecialCommandHandler)])]
                 public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
             }
 
@@ -785,7 +785,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(MySpecialCommandHandler)])]
                 public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
             }
 
@@ -811,7 +811,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(MySpecialCommandHandler)])]
                 public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
             }
 
@@ -837,7 +837,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(MySpecialCommandHandler)])]
                 public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
             }
 
@@ -883,7 +883,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(MySpecialCommandHandler)])]
                 public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -909,7 +909,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(MySpecialCommandHandler)])]
                 public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 

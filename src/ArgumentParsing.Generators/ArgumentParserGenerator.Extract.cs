@@ -23,15 +23,15 @@ public partial class ArgumentParserGenerator
         var genArgParserAttrType = comp.GetTypeByMetadataName(GeneratedArgumentParserAttributeName)!;
 
         var genArgParserAttrData = context.Attributes.First(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, genArgParserAttrType));
-        ImmutableArray<SpecialCommandHandlerInfo>.Builder? specialCommandHandlerInfosBuilder = null;
+        ImmutableArray<SpecialCommandHandlerInfo>.Builder? additionalCommandHandlerInfosBuilder = null;
 
-        if (genArgParserAttrData.NamedArguments.FirstOrDefault(static n => n.Key == "SpecialCommandHandlers").Value is { IsNull: false, Values: { IsDefault: false } specialCommandHandlers })
+        if (genArgParserAttrData.NamedArguments.FirstOrDefault(static n => n.Key == "AdditionalCommandHandlers").Value is { IsNull: false, Values: { IsDefault: false } additionalCommandHandlers })
         {
-            specialCommandHandlerInfosBuilder = ImmutableArray.CreateBuilder<SpecialCommandHandlerInfo>();
+            additionalCommandHandlerInfosBuilder = ImmutableArray.CreateBuilder<SpecialCommandHandlerInfo>();
             var iSpecialCommandHandlerType = comp.ISpecialCommandHandlerType();
             var specialCommandAliasesAttributeType = comp.SpecialCommandAliasesAttributeType();
 
-            foreach (var commandHandler in specialCommandHandlers)
+            foreach (var commandHandler in additionalCommandHandlers)
             {
                 if (commandHandler.Value is not INamedTypeSymbol commandHandlerType ||
                     !commandHandlerType.AllInterfaces.Any(i => i.Equals(iSpecialCommandHandlerType, SymbolEqualityComparer.Default)) ||
@@ -66,7 +66,7 @@ public partial class ArgumentParserGenerator
                     aliasesBuilder.Add(aliasVal);
                 }
 
-                specialCommandHandlerInfosBuilder.Add(new(
+                additionalCommandHandlerInfosBuilder.Add(new(
                     commandHandlerType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                     aliasesBuilder.ToImmutable()));
             }
@@ -133,7 +133,7 @@ public partial class ArgumentParserGenerator
             HierarchyInfo.From(argumentParserMethodSymbol.ContainingType),
             methodInfo,
             optionsInfo,
-            specialCommandHandlerInfosBuilder?.ToImmutable());
+            additionalCommandHandlerInfosBuilder?.ToImmutable());
 
         return argumentParserInfo;
     }

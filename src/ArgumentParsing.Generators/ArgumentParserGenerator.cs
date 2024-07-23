@@ -30,7 +30,7 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .Select((info, _) => info.AssemblyVersionInfo);
 
         var optionsHelpInfos = argumentParserInfos
-            .Where(info => !info.SpecialCommandHandlersInfos.HasValue)
+            .Where(info => !info.AdditionalCommandHandlersInfos.HasValue)
             .Select((info, _) => info.OptionsInfo)
             .WithComparer(HelpOnlyOptionsInfoComparer.Instance)
             .Combine(assemblyVersionInfo);
@@ -39,7 +39,7 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
 
         // Candidate for `Any` API: https://github.com/dotnet/roslyn/issues/59690
         var hasAnyParsersWithDefaultHandlers = argumentParserInfos
-            .Where(a => !a.SpecialCommandHandlersInfos.HasValue)
+            .Where(a => !a.AdditionalCommandHandlersInfos.HasValue)
             .Collect()
             .Select((parsers, _) => !parsers.IsEmpty);
 

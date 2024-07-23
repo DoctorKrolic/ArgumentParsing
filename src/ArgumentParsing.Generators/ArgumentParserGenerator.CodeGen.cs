@@ -16,7 +16,7 @@ public partial class ArgumentParserGenerator
 
         var cancellationToken = context.CancellationToken;
 
-        var (hierarchy, method, optionsInfo, specialCommandHandlers) = parserInfo;
+        var (hierarchy, method, optionsInfo, additionalCommandHandlers) = parserInfo;
         var (qualifiedName, hasAtLeastInternalAccessibility, optionInfos, parameterInfos, remainingParametersInfo, helpTextGeneratorInfo) = optionsInfo;
 
         var writer = new CodeWriter();
@@ -29,9 +29,9 @@ public partial class ArgumentParserGenerator
         var generatorType = typeof(ArgumentParserGenerator);
         var generatedCodeAttribute = $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{generatorType.FullName}\", \"{generatorType.Assembly.GetName().Version}\")]";
 
-        if (hasAtLeastInternalAccessibility && (!specialCommandHandlers.HasValue) || helpTextGeneratorInfo is not null)
+        if (hasAtLeastInternalAccessibility && (!additionalCommandHandlers.HasValue) || helpTextGeneratorInfo is not null)
         {
-            var hasSpecialCommandHandlers = !specialCommandHandlers.HasValue || !specialCommandHandlers.Value.IsEmpty;
+            var hasSpecialCommandHandlers = !additionalCommandHandlers.HasValue || !additionalCommandHandlers.Value.IsEmpty;
 
             writer.WriteLine("namespace ArgumentParsing.Generated");
             writer.OpenBlock();
@@ -134,7 +134,7 @@ public partial class ArgumentParserGenerator
 
         var hasAnyOptions = optionInfos.Length > 0;
         var hasAnyParameters = parameterInfos.Length > 0;
-        var hasAnySpecialCommandHandlers = !specialCommandHandlers.HasValue || !specialCommandHandlers.Value.IsEmpty;
+        var hasAnySpecialCommandHandlers = !additionalCommandHandlers.HasValue || !additionalCommandHandlers.Value.IsEmpty;
 
         writer.WriteLine();
         writer.WriteLine($"int state = {(hasAnySpecialCommandHandlers ? "-3" : "0")};");
@@ -172,9 +172,9 @@ public partial class ArgumentParserGenerator
             writer.OpenBlock();
             writer.WriteLine("switch (arg)");
             writer.OpenBlock();
-            if (specialCommandHandlers.HasValue)
+            if (additionalCommandHandlers.HasValue)
             {
-                foreach (var commandHandler in specialCommandHandlers.Value)
+                foreach (var commandHandler in additionalCommandHandlers.Value)
                 {
                     foreach (var alias in commandHandler.Aliases)
                     {

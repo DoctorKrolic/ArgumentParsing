@@ -60,21 +60,21 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
 
         if (iSpecialCommandHandlerType is not null &&
             generatedArgParserAttrData.NamedArguments
-            .FirstOrDefault(static n => n.Key == "SpecialCommandHandlers").Value is { IsNull: false, Values: var specialCommandHandlers })
+            .FirstOrDefault(static n => n.Key == "AdditionalCommandHandlers").Value is { IsNull: false, Values: var additionalCommandHandlers })
         {
             var attributeSyntax = (AttributeSyntax?)generatedArgParserAttrData.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
-            var specialCommandHandlersCollectionSyntax = attributeSyntax?.ArgumentList?.Arguments.First(static a => a.NameEquals?.Name.Identifier.ValueText == "SpecialCommandHandlers").Expression;
-            var namedParametersList = (specialCommandHandlersCollectionSyntax is CollectionExpressionSyntax collectionExpression
+            var additionalCommandHandlersCollectionSyntax = attributeSyntax?.ArgumentList?.Arguments.First(static a => a.NameEquals?.Name.Identifier.ValueText == "AdditionalCommandHandlers").Expression;
+            var namedParametersList = (additionalCommandHandlersCollectionSyntax is CollectionExpressionSyntax collectionExpression
                 ? collectionExpression.Elements.Select(static ce => ((ExpressionElementSyntax)ce).Expression)
-                : (specialCommandHandlersCollectionSyntax is ArrayCreationExpressionSyntax arrayCreation
+                : (additionalCommandHandlersCollectionSyntax is ArrayCreationExpressionSyntax arrayCreation
                     ? arrayCreation.Initializer?.Expressions
                     : null)).ToArray();
 
             hasHelpCommand = false;
 
-            for (var i = 0; i < specialCommandHandlers.Length; i++)
+            for (var i = 0; i < additionalCommandHandlers.Length; i++)
             {
-                var commandHandler = specialCommandHandlers[i];
+                var commandHandler = additionalCommandHandlers[i];
 
                 if (commandHandler is not { Value: INamedTypeSymbol namedHandlerType } ||
                     (namedHandlerType.TypeKind != TypeKind.Error && !namedHandlerType.AllInterfaces.Contains(iSpecialCommandHandlerType)))

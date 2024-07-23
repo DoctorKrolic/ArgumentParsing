@@ -18,7 +18,7 @@ public sealed partial class CustomSpecialCommandHandlerTests
         public int HandleCommand() => 0;
     }
 
-    [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
+    [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
     private static partial ParseResult<Options> ParseArguments(string[] args);
     #endregion
 

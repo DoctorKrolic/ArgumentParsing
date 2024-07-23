@@ -3,12 +3,12 @@ namespace ArgumentParsing.Tests.Unit;
 public partial class ArgumentParserGeneratorTests
 {
     [Fact]
-    public async Task SpecialCommandHandlers_ExplicitNull()
+    public async Task SpecialCommandHandlers_Additional_ExplicitNull()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = null)]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = null)]
                 public static partial ParseResult<EmptyOptions> ParseArguments(string[] args);
             }
             """;
@@ -17,12 +17,12 @@ public partial class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_Empty()
+    public async Task SpecialCommandHandlers_Additional_Empty()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [])]
                 public static partial ParseResult<EmptyOptions> ParseArguments(string[] args);
             }
             """;
@@ -156,12 +156,12 @@ public partial class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_NullElement()
+    public async Task SpecialCommandHandlers_Additional_NullElement()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [null])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [null])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -173,12 +173,12 @@ public partial class ArgumentParserGeneratorTests
     [InlineData("C")]
     [InlineData("int")]
     [InlineData("string")]
-    public async Task SpecialCommandHandlers_InvalidType(string invalidType)
+    public async Task SpecialCommandHandlers_Additional_InvalidType(string invalidType)
     {
         var source = $$"""
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({{invalidType}})])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof({{invalidType}})])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -187,12 +187,12 @@ public partial class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_CommandHandlerWithoutAliasesAttribute()
+    public async Task SpecialCommandHandlers_AdditionalHandlerWithoutAliasesAttribute()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -206,12 +206,12 @@ public partial class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_CommandHandlerWithNullAliases()
+    public async Task SpecialCommandHandlers_AdditionalHandlerWithNullAliases()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -231,12 +231,12 @@ public partial class ArgumentParserGeneratorTests
     [InlineData("([])")]
     [InlineData("(new string[0])")]
     [InlineData("(new string[] { })")]
-    public async Task SpecialCommandHandlers_CommandHandlerWithEmptyAliases(string emptyAliasesSyntax)
+    public async Task SpecialCommandHandlers_AdditionalHandlerWithEmptyAliases(string emptyAliasesSyntax)
     {
         var source = $$"""
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -255,12 +255,12 @@ public partial class ArgumentParserGeneratorTests
     [InlineData("--my$name")]
     [InlineData("2me")]
     [InlineData("my command")]
-    public async Task SpecialCommandHandlers_InvalidAlias(string invalidAlias)
+    public async Task SpecialCommandHandlers_AdditionalHandlerWithInvalidAlias(string invalidAlias)
     {
         var source = $$"""
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -275,12 +275,12 @@ public partial class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_InvalidAlias_Null()
+    public async Task SpecialCommandHandlers_AdditionalHandlerWithInvalidAliases_Null()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -295,12 +295,12 @@ public partial class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_NoParameterlessConstructor()
+    public async Task SpecialCommandHandlers_Additional_NoParameterlessConstructor()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -323,12 +323,12 @@ public partial class ArgumentParserGeneratorTests
     [InlineData("private")]
     [InlineData("protected")]
     [InlineData("private protected")]
-    public async Task SpecialCommandHandlers_InaccessibleParameterlessConstructor(string accessibility)
+    public async Task SpecialCommandHandlers_Additional_InaccessibleParameterlessConstructor(string accessibility)
     {
         var source = $$"""
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -1180,12 +1180,12 @@ public partial class ArgumentParserGeneratorTests
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_HelpTextGeneratorAndEmptyCommandHandlers_NoSpecialCommandHandlerDefaultsCodeGen()
+    public async Task SpecialCommandHandlers_HelpTextGeneratorAndEmptyAdditionalCommandHandlers_NoSpecialCommandHandlerDefaultsCodeGen()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [])]
                 public static partial ParseResult<MyOptions> ParseArguments(string[] args);
             }
 
