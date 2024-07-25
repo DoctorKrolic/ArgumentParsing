@@ -21,7 +21,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute,
             DiagnosticDescriptors.ParserArgumentIsASet,
             DiagnosticDescriptors.InvalidSpecialCommandHandlerTypeSpecifier,
-            DiagnosticDescriptors.OptionsTypeHasHelpTextGeneratorButNoHelpCommandHandlerInParser);
+            DiagnosticDescriptors.OptionsTypeHasHelpTextGeneratorButNoHelpCommandHandlerInParser,
+            DiagnosticDescriptors.DuplicateSpecialCommand);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -56,13 +57,26 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var hasHelpCommand = true;
+        var hasHelpCommand = false;
+        var registeredCommands = new HashSet<string>();
         var namedArgs = generatedArgParserAttrData.NamedArguments;
+
+        var builtInHandlers = BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version;
 
         if (namedArgs.FirstOrDefault(static n => n.Key == "BuiltInCommandHandlers").Value is { Value: byte builtInHandlersByte })
         {
-            var builtInHandlers = (BuiltInCommandHandlers)builtInHandlersByte;
-            hasHelpCommand = builtInHandlers.HasFlag(BuiltInCommandHandlers.Help);
+            builtInHandlers = (BuiltInCommandHandlers)builtInHandlersByte;
+        }
+
+        if (builtInHandlers.HasFlag(BuiltInCommandHandlers.Help))
+        {
+            hasHelpCommand = true;
+            registeredCommands.Add("--help");
+        }
+
+        if (builtInHandlers.HasFlag(BuiltInCommandHandlers.Version))
+        {
+            registeredCommands.Add("--version");
         }
 
         var iSpecialCommandHandlerType = knownTypes.ISpecialCommandHandlerType;
@@ -100,7 +114,29 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                 else if (namedHandlerType.GetAttributes().FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.SpecialCommandAliasesAttributeType)) is { } aliasesAttr &&
                          aliasesAttr.ConstructorArguments is [{ Kind: TypedConstantKind.Array, Values: var aliases }])
                 {
-                    hasHelpCommand |= aliases.Any(static a => (string?)a.Value == "--help");
+                    foreach (var alias in aliases)
+                    {
+                        var aliasValue = (string?)alias.Value;
+
+                        if (aliasValue is null)
+                        {
+                            continue;
+                        }
+
+                        if (aliasValue == "--help")
+                        {
+                            hasHelpCommand = true;
+                        }
+
+                        if (!registeredCommands.Add(aliasValue))
+                        {
+                            context.ReportDiagnostic(
+                                Diagnostic.Create(
+                                    DiagnosticDescriptors.DuplicateSpecialCommand,
+                                    method.Locations.First(),
+                                    aliasValue));
+                        }
+                    }
                 }
             }
         }

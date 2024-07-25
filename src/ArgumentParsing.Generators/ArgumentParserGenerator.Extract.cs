@@ -33,6 +33,18 @@ public partial class ArgumentParserGenerator
             builtInCommandHandlers = (BuiltInCommandHandlers)builtInHandlersByte;
         }
 
+        var registeredCommands = new HashSet<string>();
+
+        if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help))
+        {
+            registeredCommands.Add("--help");
+        }
+
+        if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version))
+        {
+            registeredCommands.Add("--version");
+        }
+
         if (namedArgs.FirstOrDefault(static n => n.Key == "AdditionalCommandHandlers").Value is { IsNull: false, Values: { IsDefault: false } additionalCommandHandlers })
         {
             var iSpecialCommandHandlerType = comp.ISpecialCommandHandlerType();
@@ -66,6 +78,11 @@ public partial class ArgumentParserGenerator
                 foreach (var alias in firstConstructorArg.Values)
                 {
                     if (alias is not { IsNull: false, Value: string aliasVal } || !aliasVal.IsValidName(allowDashPrefix: true))
+                    {
+                        return null;
+                    }
+
+                    if (!registeredCommands.Add(aliasVal))
                     {
                         return null;
                     }

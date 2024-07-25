@@ -851,4 +851,163 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
 
         await VerifyAnalyzerAsync(source);
     }
+
+    [Theory]
+    [InlineData("--help")]
+    [InlineData("--version")]
+    public async Task SpecialCommandHandlers_Duplicates_WithBuiltIns_ImplicitBuiltIns(string builtIn)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(MyBuiltInReplacementCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|#0:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+
+            [SpecialCommandAliases("{{builtIn}}")]
+            class MyBuiltInReplacementCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0049")
+                .WithLocation(0)
+                .WithArguments(builtIn)
+        ]);
+    }
+
+    [Theory]
+    [InlineData("--help")]
+    [InlineData("--version")]
+    public async Task SpecialCommandHandlers_Duplicates_WithBuiltIns_ExplicitBuiltIns(string builtIn)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser(BuiltInCommandHandlers = BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version, AdditionalCommandHandlers = [typeof(MyBuiltInReplacementCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|#0:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+
+            [SpecialCommandAliases("{{builtIn}}")]
+            class MyBuiltInReplacementCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0049")
+                .WithLocation(0)
+                .WithArguments(builtIn)
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_Duplicates_AmongAdditionalHandlers()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(MyHandler1), typeof(MyHandler2)])]
+                public static partial ParseResult<MyOptions> {|#0:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+
+            [SpecialCommandAliases("--info")]
+            class MyHandler1 : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            [SpecialCommandAliases("--info")]
+            class MyHandler2 : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0049")
+                .WithLocation(0)
+                .WithArguments("--info")
+        ]);
+    }
+
+    [Theory]
+    [InlineData("BuiltInCommandHandlers.None")]
+    [InlineData("BuiltInCommandHandlers.Version")]
+    [InlineData("BuiltInCommandHandlers.None | BuiltInCommandHandlers.Version")]
+    public async Task SpecialCommandHandlers_NoDuplicateWithDisabledBuiltIn_Help(string builtInsWithDisabledHelp)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser(BuiltInCommandHandlers = {{builtInsWithDisabledHelp}}, AdditionalCommandHandlers = [typeof(MyHelpCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+
+            [SpecialCommandAliases("--help")]
+            class MyHelpCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("BuiltInCommandHandlers.None")]
+    [InlineData("BuiltInCommandHandlers.Help")]
+    [InlineData("BuiltInCommandHandlers.None | BuiltInCommandHandlers.Help")]
+    public async Task SpecialCommandHandlers_NoDuplicateWithDisabledBuiltIn_Version(string builtInsWithDisabledVersion)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser(BuiltInCommandHandlers = {{builtInsWithDisabledVersion}}, AdditionalCommandHandlers = [typeof(MyVersionCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+
+            [SpecialCommandAliases("--version")]
+            class MyVersionCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
 }
