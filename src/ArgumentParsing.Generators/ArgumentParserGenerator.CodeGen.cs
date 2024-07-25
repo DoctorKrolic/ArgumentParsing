@@ -16,7 +16,7 @@ public partial class ArgumentParserGenerator
 
         var cancellationToken = context.CancellationToken;
 
-        var (hierarchy, method, optionsInfo, specialCommandHandlers) = parserInfo;
+        var (hierarchy, method, optionsInfo, builtInCommandHandlers, additionalCommandHandlers) = parserInfo;
         var (qualifiedName, hasAtLeastInternalAccessibility, optionInfos, parameterInfos, remainingParametersInfo, helpTextGeneratorInfo) = optionsInfo;
 
         var writer = new CodeWriter();
@@ -29,10 +29,12 @@ public partial class ArgumentParserGenerator
         var generatorType = typeof(ArgumentParserGenerator);
         var generatedCodeAttribute = $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{generatorType.FullName}\", \"{generatorType.Assembly.GetName().Version}\")]";
 
-        if (hasAtLeastInternalAccessibility && (!specialCommandHandlers.HasValue) || helpTextGeneratorInfo is not null)
-        {
-            var hasSpecialCommandHandlers = !specialCommandHandlers.HasValue || !specialCommandHandlers.Value.IsEmpty;
+        var hasAnySpecialCommandHandlers = builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help) ||
+            builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version) ||
+            !additionalCommandHandlers.IsEmpty;
 
+        if (hasAtLeastInternalAccessibility && builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help) || helpTextGeneratorInfo is not null)
+        {
             writer.WriteLine("namespace ArgumentParsing.Generated");
             writer.OpenBlock();
             writer.WriteLine("internal static partial class ParseResultExtensions");
@@ -42,7 +44,7 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("/// <list type=\"bullet\">");
             writer.WriteLine("/// <item>If <paramref name=\"result\"/> is in <see cref=\"global::ArgumentParsing.Results.ParseResultState.ParsedOptions\"/> state invokes provided <paramref name=\"action\"/> with parsed options object</item>");
             writer.WriteLine("/// <item>If <paramref name=\"result\"/> is in <see cref=\"global::ArgumentParsing.Results.ParseResultState.ParsedWithErrors\"/> state writes help screen text with parse errors to <see cref=\"global::System.Console.Error\"/> and exits application with code 1</item>");
-            if (hasSpecialCommandHandlers)
+            if (hasAnySpecialCommandHandlers)
             {
                 writer.WriteLine("/// <item>If <paramref name=\"result\"/> is in <see cref=\"global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand\"/> state executes parsed handler and exits application with code, returned from the handler</item>");
             }
@@ -72,7 +74,7 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("global::System.Console.Error.WriteLine(errorScreenText);");
             writer.WriteLine("global::System.Environment.Exit(1);");
             writer.WriteLine("break;");
-            if (hasSpecialCommandHandlers)
+            if (hasAnySpecialCommandHandlers)
             {
                 writer.WriteLine("case global::ArgumentParsing.Results.ParseResultState.ParsedSpecialCommand:", identDelta: -1);
                 writer.WriteLine("int exitCode = result.SpecialCommandHandler.HandleCommand();");
@@ -134,7 +136,6 @@ public partial class ArgumentParserGenerator
 
         var hasAnyOptions = optionInfos.Length > 0;
         var hasAnyParameters = parameterInfos.Length > 0;
-        var hasAnySpecialCommandHandlers = !specialCommandHandlers.HasValue || !specialCommandHandlers.Value.IsEmpty;
 
         writer.WriteLine();
         writer.WriteLine($"int state = {(hasAnySpecialCommandHandlers ? "-3" : "0")};");
@@ -172,28 +173,28 @@ public partial class ArgumentParserGenerator
             writer.OpenBlock();
             writer.WriteLine("switch (arg)");
             writer.OpenBlock();
-            if (specialCommandHandlers.HasValue)
-            {
-                foreach (var commandHandler in specialCommandHandlers.Value)
-                {
-                    foreach (var alias in commandHandler.Aliases)
-                    {
-                        writer.WriteLine($"case \"{alias}\":");
-                    }
-                    writer.Ident++;
-                    writer.WriteLine($"return new {method.ReturnType}(new {commandHandler.Type}());");
-                    writer.Ident--;
-                }
-            }
-            else
+            if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help))
             {
                 writer.WriteLine("case \"--help\":");
                 writer.Ident++;
                 writer.WriteLine($"return new {method.ReturnType}(new global::ArgumentParsing.Generated.HelpCommandHandler_{qualifiedName.Replace('.', '_')}());");
                 writer.Ident--;
+            }
+            if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version))
+            {
                 writer.WriteLine("case \"--version\":");
                 writer.Ident++;
                 writer.WriteLine($"return new {method.ReturnType}(new global::ArgumentParsing.Generated.VersionCommandHandler());");
+                writer.Ident--;
+            }
+            foreach (var commandHandler in additionalCommandHandlers)
+            {
+                foreach (var alias in commandHandler.Aliases)
+                {
+                    writer.WriteLine($"case \"{alias}\":");
+                }
+                writer.Ident++;
+                writer.WriteLine($"return new {method.ReturnType}(new {commandHandler.Type}());");
                 writer.Ident--;
             }
             writer.CloseBlock();

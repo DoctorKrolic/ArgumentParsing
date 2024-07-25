@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using ArgumentParsing.Generators.Extensions;
+using ArgumentParsing.Generators.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -20,7 +21,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute,
             DiagnosticDescriptors.ParserArgumentIsASet,
             DiagnosticDescriptors.InvalidSpecialCommandHandlerTypeSpecifier,
-            DiagnosticDescriptors.OptionsTypeHasHelpTextGeneratorButNoHelpCommandHandlerInParser);
+            DiagnosticDescriptors.OptionsTypeHasHelpTextGeneratorButNoHelpCommandHandlerInParser,
+            DiagnosticDescriptors.DuplicateSpecialCommand);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -55,26 +57,44 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var hasHelpCommand = true;
+        var hasHelpCommand = false;
+        var registeredCommands = new HashSet<string>();
+        var namedArgs = generatedArgParserAttrData.NamedArguments;
+
+        var builtInHandlers = BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version;
+
+        if (namedArgs.FirstOrDefault(static n => n.Key == "BuiltInCommandHandlers").Value is { Value: byte builtInHandlersByte })
+        {
+            builtInHandlers = (BuiltInCommandHandlers)builtInHandlersByte;
+        }
+
+        if (builtInHandlers.HasFlag(BuiltInCommandHandlers.Help))
+        {
+            hasHelpCommand = true;
+            registeredCommands.Add("--help");
+        }
+
+        if (builtInHandlers.HasFlag(BuiltInCommandHandlers.Version))
+        {
+            registeredCommands.Add("--version");
+        }
+
         var iSpecialCommandHandlerType = knownTypes.ISpecialCommandHandlerType;
 
         if (iSpecialCommandHandlerType is not null &&
-            generatedArgParserAttrData.NamedArguments
-            .FirstOrDefault(static n => n.Key == "SpecialCommandHandlers").Value is { IsNull: false, Values: var specialCommandHandlers })
+            namedArgs.FirstOrDefault(static n => n.Key == "AdditionalCommandHandlers").Value is { IsNull: false, Values: var additionalCommandHandlers })
         {
             var attributeSyntax = (AttributeSyntax?)generatedArgParserAttrData.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
-            var specialCommandHandlersCollectionSyntax = attributeSyntax?.ArgumentList?.Arguments.First(static a => a.NameEquals?.Name.Identifier.ValueText == "SpecialCommandHandlers").Expression;
-            var namedParametersList = (specialCommandHandlersCollectionSyntax is CollectionExpressionSyntax collectionExpression
+            var additionalCommandHandlersCollectionSyntax = attributeSyntax?.ArgumentList?.Arguments.First(static a => a.NameEquals?.Name.Identifier.ValueText == "AdditionalCommandHandlers").Expression;
+            var namedParametersList = (additionalCommandHandlersCollectionSyntax is CollectionExpressionSyntax collectionExpression
                 ? collectionExpression.Elements.Select(static ce => ((ExpressionElementSyntax)ce).Expression)
-                : (specialCommandHandlersCollectionSyntax is ArrayCreationExpressionSyntax arrayCreation
+                : (additionalCommandHandlersCollectionSyntax is ArrayCreationExpressionSyntax arrayCreation
                     ? arrayCreation.Initializer?.Expressions
                     : null)).ToArray();
 
-            hasHelpCommand = false;
-
-            for (var i = 0; i < specialCommandHandlers.Length; i++)
+            for (var i = 0; i < additionalCommandHandlers.Length; i++)
             {
-                var commandHandler = specialCommandHandlers[i];
+                var commandHandler = additionalCommandHandlers[i];
 
                 if (commandHandler is not { Value: INamedTypeSymbol namedHandlerType } ||
                     (namedHandlerType.TypeKind != TypeKind.Error && !namedHandlerType.AllInterfaces.Contains(iSpecialCommandHandlerType)))
@@ -94,7 +114,29 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                 else if (namedHandlerType.GetAttributes().FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.SpecialCommandAliasesAttributeType)) is { } aliasesAttr &&
                          aliasesAttr.ConstructorArguments is [{ Kind: TypedConstantKind.Array, Values: var aliases }])
                 {
-                    hasHelpCommand |= aliases.Any(static a => (string?)a.Value == "--help");
+                    foreach (var alias in aliases)
+                    {
+                        var aliasValue = (string?)alias.Value;
+
+                        if (aliasValue is null)
+                        {
+                            continue;
+                        }
+
+                        if (aliasValue == "--help")
+                        {
+                            hasHelpCommand = true;
+                        }
+
+                        if (!registeredCommands.Add(aliasValue))
+                        {
+                            context.ReportDiagnostic(
+                                Diagnostic.Create(
+                                    DiagnosticDescriptors.DuplicateSpecialCommand,
+                                    method.Locations.First(),
+                                    aliasValue));
+                        }
+                    }
                 }
             }
         }

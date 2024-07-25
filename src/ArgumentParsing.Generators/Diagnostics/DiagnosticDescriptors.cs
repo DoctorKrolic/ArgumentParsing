@@ -405,4 +405,12 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor DuplicateSpecialCommand = new(
+        id: "ARGP0049",
+        title: "Duplicate special command",
+        messageFormat: "Special command '{0}' is already defined for this parser",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

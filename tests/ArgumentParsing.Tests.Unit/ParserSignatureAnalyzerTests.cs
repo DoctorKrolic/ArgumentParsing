@@ -458,12 +458,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_ExplicitNull()
+    public async Task SpecialCommandHandlers_Additional_ExplicitNull()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = null)]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = null)]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -472,12 +472,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_Empty()
+    public async Task SpecialCommandHandlers_Additional_Empty()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -486,12 +486,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_NullElement_CollectionExpression()
+    public async Task SpecialCommandHandlers_Additional_NullElement_CollectionExpression()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [{|#0:null|}])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [{|#0:null|}])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -506,12 +506,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_NullElement_ArrayCreationExpression()
+    public async Task SpecialCommandHandlers_Additional_NullElement_ArrayCreationExpression()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { {|#0:null|} })]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = new Type[] { {|#0:null|} })]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -526,12 +526,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_DefaultElement_CollectionExpression()
+    public async Task SpecialCommandHandlers_Additional_DefaultElement_CollectionExpression()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [{|#0:default|}])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [{|#0:default|}])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -546,12 +546,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_DefaultElement_ArrayCreationExpression()
+    public async Task SpecialCommandHandlers_Additional_DefaultElement_ArrayCreationExpression()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { {|#0:default|} })]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = new Type[] { {|#0:default|} })]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -569,12 +569,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     [InlineData("C")]
     [InlineData("int")]
     [InlineData("string")]
-    public async Task SpecialCommandHandlers_InvalidType_CollectionExpression(string invalidType)
+    public async Task SpecialCommandHandlers_Additional_InvalidType_CollectionExpression(string invalidType)
     {
         var source = $$"""
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({|#0:{{invalidType}}|})])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof({|#0:{{invalidType}}|})])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -592,12 +592,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     [InlineData("C")]
     [InlineData("int")]
     [InlineData("string")]
-    public async Task SpecialCommandHandlers_InvalidType_ArrayCreationExpression(string invalidType)
+    public async Task SpecialCommandHandlers_Additional_InvalidType_ArrayCreationExpression(string invalidType)
     {
         var source = $$"""
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { typeof({|#0:{{invalidType}}|}) })]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = new Type[] { typeof({|#0:{{invalidType}}|}) })]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -612,12 +612,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_InvalidType_ErrorType_CollectionExpression()
+    public async Task SpecialCommandHandlers_Additional_InvalidType_ErrorType_CollectionExpression()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({|CS0246:ErrorType|})])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof({|CS0246:ErrorType|})])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -626,12 +626,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_InvalidType_ErrorType_ArrayCreationExpression()
+    public async Task SpecialCommandHandlers_Additional_InvalidType_ErrorType_ArrayCreationExpression()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { typeof({|CS0246:ErrorType|}) })]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = new Type[] { typeof({|CS0246:ErrorType|}) })]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -640,12 +640,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_MultipleInvalidTypes_CollectionExpression()
+    public async Task SpecialCommandHandlers_Additional_MultipleInvalidTypes_CollectionExpression()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof({|#0:C|}), typeof({|#1:MyClass|})])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof({|#0:C|}), typeof({|#1:MyClass|})])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -668,12 +668,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_MultipleInvalidTypes_ArrayCreationExpression()
+    public async Task SpecialCommandHandlers_Additional_MultipleInvalidTypes_ArrayCreationExpression()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = new Type[] { typeof({|#0:C|}), typeof({|#1:MyClass|}) })]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = new Type[] { typeof({|#0:C|}), typeof({|#1:MyClass|}) })]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -696,12 +696,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_ValidType()
+    public async Task SpecialCommandHandlers_Additional_ValidType()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -716,12 +716,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_ValidType_EvenWithoutAliases()
+    public async Task SpecialCommandHandlers_Additional_ValidType_EvenWithoutAliases()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(InfoSpecialCommandHandler)])]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -734,13 +734,16 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         await VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
-    public async Task SpecialCommandHandlers_HelpTextGeneratorButNoHelpCommand1()
+    [Theory]
+    [InlineData("BuiltInCommandHandlers.None")]
+    [InlineData("BuiltInCommandHandlers.Version")]
+    [InlineData("BuiltInCommandHandlers.None | BuiltInCommandHandlers.Version")]
+    public async Task SpecialCommandHandlers_Additional_HelpTextGeneratorButNoHelpCommand(string nonHelpBuiltInHandlers)
     {
-        var source = """
+        var source = $$"""
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [])]
+                [GeneratedArgumentParser(BuiltInCommandHandlers = {{nonHelpBuiltInHandlers}})]
                 public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
             }
 
@@ -755,110 +758,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_HelpTextGeneratorButNoHelpCommand2()
-    {
-        var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
-                public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
-            }
-
-            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
-            class MyOptions
-            {
-                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
-            }
-
-            class MySpecialCommandHandler : ISpecialCommandHandler
-            {
-                public int HandleCommand() => 0;
-            }
-            """;
-
-        await VerifyAnalyzerAsync(source);
-    }
-
-    [Fact]
-    public async Task SpecialCommandHandlers_HelpTextGeneratorButNoHelpCommand3()
-    {
-        var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
-                public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
-            }
-
-            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
-            class MyOptions
-            {
-                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
-            }
-
-            [SpecialCommandAliases]
-            class MySpecialCommandHandler : ISpecialCommandHandler
-            {
-                public int HandleCommand() => 0;
-            }
-            """;
-
-        await VerifyAnalyzerAsync(source);
-    }
-
-    [Fact]
-    public async Task SpecialCommandHandlers_HelpTextGeneratorButNoHelpCommand4()
-    {
-        var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
-                public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
-            }
-
-            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
-            class MyOptions
-            {
-                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
-            }
-
-            [SpecialCommandAliases("--not-help")]
-            class MySpecialCommandHandler : ISpecialCommandHandler
-            {
-                public int HandleCommand() => 0;
-            }
-            """;
-
-        await VerifyAnalyzerAsync(source);
-    }
-
-    [Fact]
-    public async Task SpecialCommandHandlers_HelpTextGeneratorButNoHelpCommand5()
-    {
-        var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
-                public static partial ParseResult<MyOptions> {|ARGP0048:{|CS8795:ParseArguments|}|}(string[] args);
-            }
-
-            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
-            class MyOptions
-            {
-                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
-            }
-
-            [SpecialCommandAliases("--not-help-1", "--not-help-2")]
-            class MySpecialCommandHandler : ISpecialCommandHandler
-            {
-                public int HandleCommand() => 0;
-            }
-            """;
-
-        await VerifyAnalyzerAsync(source);
-    }
-
-    [Fact]
-    public async Task SpecialCommandHandlers_HelpTextGeneratorAndHelpCommand1()
+    public async Task SpecialCommandHandlers_Additional_HelpTextGeneratorAndHelpCommand1()
     {
         var source = """
             partial class C
@@ -877,13 +777,36 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         await VerifyAnalyzerAsync(source);
     }
 
+    [Theory]
+    [InlineData("BuiltInCommandHandlers.Help")]
+    [InlineData("BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version")]
+    [InlineData("BuiltInCommandHandlers.None | BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version")]
+    public async Task SpecialCommandHandlers_Additional_HelpTextGeneratorAndHelpCommand2(string helpBuiltInHandlers)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser(BuiltInCommandHandlers = {{helpBuiltInHandlers}})]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType, HelpTextGenerator(typeof(MyOptions), "GenerateHelpText")]
+            class MyOptions
+            {
+                public static string GenerateHelpText(ParseErrorCollection errors = null) => "";
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
     [Fact]
-    public async Task SpecialCommandHandlers_HelpTextGeneratorAndHelpCommand2()
+    public async Task SpecialCommandHandlers_Additional_HelpTextGeneratorAndHelpCommand3()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                [GeneratedArgumentParser(BuiltInCommandHandlers = BuiltInCommandHandlers.None, AdditionalCommandHandlers = [typeof(MySpecialCommandHandler)])]
                 public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -904,12 +827,12 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Fact]
-    public async Task SpecialCommandHandlers_HelpTextGeneratorAndHelpCommand3()
+    public async Task SpecialCommandHandlers_Additional_HelpTextGeneratorAndHelpCommand4()
     {
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(SpecialCommandHandlers = [typeof(MySpecialCommandHandler)])]
+                [GeneratedArgumentParser(BuiltInCommandHandlers = BuiltInCommandHandlers.None, AdditionalCommandHandlers = [typeof(MySpecialCommandHandler)])]
                 public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
 
@@ -921,6 +844,165 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
 
             [SpecialCommandAliases("-?", "--help")]
             class MySpecialCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("--help")]
+    [InlineData("--version")]
+    public async Task SpecialCommandHandlers_Duplicates_WithBuiltIns_ImplicitBuiltIns(string builtIn)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(MyBuiltInReplacementCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|#0:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+
+            [SpecialCommandAliases("{{builtIn}}")]
+            class MyBuiltInReplacementCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0049")
+                .WithLocation(0)
+                .WithArguments(builtIn)
+        ]);
+    }
+
+    [Theory]
+    [InlineData("--help")]
+    [InlineData("--version")]
+    public async Task SpecialCommandHandlers_Duplicates_WithBuiltIns_ExplicitBuiltIns(string builtIn)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser(BuiltInCommandHandlers = BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version, AdditionalCommandHandlers = [typeof(MyBuiltInReplacementCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|#0:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+
+            [SpecialCommandAliases("{{builtIn}}")]
+            class MyBuiltInReplacementCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0049")
+                .WithLocation(0)
+                .WithArguments(builtIn)
+        ]);
+    }
+
+    [Fact]
+    public async Task SpecialCommandHandlers_Duplicates_AmongAdditionalHandlers()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(AdditionalCommandHandlers = [typeof(MyHandler1), typeof(MyHandler2)])]
+                public static partial ParseResult<MyOptions> {|#0:{|CS8795:ParseArguments|}|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+
+            [SpecialCommandAliases("--info")]
+            class MyHandler1 : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+
+            [SpecialCommandAliases("--info")]
+            class MyHandler2 : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0049")
+                .WithLocation(0)
+                .WithArguments("--info")
+        ]);
+    }
+
+    [Theory]
+    [InlineData("BuiltInCommandHandlers.None")]
+    [InlineData("BuiltInCommandHandlers.Version")]
+    [InlineData("BuiltInCommandHandlers.None | BuiltInCommandHandlers.Version")]
+    public async Task SpecialCommandHandlers_NoDuplicateWithDisabledBuiltIn_Help(string builtInsWithDisabledHelp)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser(BuiltInCommandHandlers = {{builtInsWithDisabledHelp}}, AdditionalCommandHandlers = [typeof(MyHelpCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+
+            [SpecialCommandAliases("--help")]
+            class MyHelpCommandHandler : ISpecialCommandHandler
+            {
+                public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source);
+    }
+
+    [Theory]
+    [InlineData("BuiltInCommandHandlers.None")]
+    [InlineData("BuiltInCommandHandlers.Help")]
+    [InlineData("BuiltInCommandHandlers.None | BuiltInCommandHandlers.Help")]
+    public async Task SpecialCommandHandlers_NoDuplicateWithDisabledBuiltIn_Version(string builtInsWithDisabledVersion)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser(BuiltInCommandHandlers = {{builtInsWithDisabledVersion}}, AdditionalCommandHandlers = [typeof(MyVersionCommandHandler)])]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+            }
+
+            [SpecialCommandAliases("--version")]
+            class MyVersionCommandHandler : ISpecialCommandHandler
             {
                 public int HandleCommand() => 0;
             }

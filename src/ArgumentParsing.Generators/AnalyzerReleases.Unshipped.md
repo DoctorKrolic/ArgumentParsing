@@ -13,3 +13,4 @@ ARGP0045 | ArgumentParsing | Error |
 ARGP0046 | ArgumentParsing | Error |
 ARGP0047 | ArgumentParsing | Error |
 ARGP0048 | ArgumentParsing | Warning |
+ARGP0049 | ArgumentParsing | Error |
