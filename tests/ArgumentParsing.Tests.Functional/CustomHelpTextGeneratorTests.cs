@@ -5,7 +5,7 @@ using ArgumentParsing.SpecialCommands.Help;
 
 namespace ArgumentParsing.Tests.Functional;
 
-[Collection("SpecialCommandTests")]
+[Collection("UsesSTDIO")]
 public sealed partial class CustomHelpTextGeneratorTests
 {
     #region OptionsAndParser
