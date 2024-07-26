@@ -3,9 +3,9 @@
     <MicrosoftCodeAnalysisVersion>4.8.0</MicrosoftCodeAnalysisVersion>
     <MicrosoftCodeAnalysisTestingVersion>1.1.2-beta1.24163.6</MicrosoftCodeAnalysisTestingVersion>
     <MicrosoftNetTestSdkVersion>17.8.0</MicrosoftNetTestSdkVersion>
-    <XUnitVersion>2.6.5</XUnitVersion>
-    <XUnitRunnerVisualStudioVersion>2.5.6</XUnitRunnerVisualStudioVersion>
-    <CoverletCollectorVersion>6.0.0</CoverletCollectorVersion>
+    <XUnitVersion>2.9.0</XUnitVersion>
+    <XUnitRunnerVisualStudioVersion>2.8.2</XUnitRunnerVisualStudioVersion>
+    <CoverletCollectorVersion>6.0.2</CoverletCollectorVersion>
     <PolySharpVersion>1.14.1</PolySharpVersion>
   </PropertyGroup>
 </Project>
