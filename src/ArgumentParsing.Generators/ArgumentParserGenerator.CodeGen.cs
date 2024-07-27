@@ -877,9 +877,9 @@ public partial class ArgumentParserGenerator
         context.AddSource($"{qualifiedName}.g.cs", writer.ToString().Trim());
     }
 
-    private static void EmitHelpCommandHandler(SourceProductionContext context, (OptionsInfo, AssemblyVersionInfo) infos)
+    private static void EmitHelpCommandHandler(SourceProductionContext context, ArgumentParserHelpInfo helpInfo)
     {
-        var (optionsInfo, assemblyVersionInfo) = infos;
+        var (optionsInfo, builtInCommandHandlers, additionalCommandHandlers, assemblyVersionInfo) = helpInfo;
         var (qualifiedName, _, optionInfos, parameterInfos, remainingParametersInfo, helpTextGeneratorInfo) = optionsInfo;
 
         var writer = new CodeWriter();
@@ -914,18 +914,18 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("global::System.Text.StringBuilder helpBuilder = new();");
             writer.WriteLine($"helpBuilder.AppendLine(\"{assemblyVersionInfo.Name} {assemblyVersionInfo.Version.ToString(3)}\");");
             writer.WriteLine("helpBuilder.AppendLine(\"Copyright (C) \" + global::System.DateTime.UtcNow.Year.ToString());");
-            writer.WriteLine("helpBuilder.AppendLine();");
             writer.WriteLine("if ((object)errors != null)");
             writer.OpenBlock();
+            writer.WriteLine("helpBuilder.AppendLine();");
             writer.WriteLine("helpBuilder.AppendLine(\"ERROR(S):\");");
             writer.WriteLine("foreach (global::ArgumentParsing.Results.Errors.ParseError error in errors)");
             writer.OpenBlock();
             writer.WriteLine("helpBuilder.AppendLine(\"  \" + error.GetMessage());");
             writer.CloseBlock();
-            writer.WriteLine("helpBuilder.AppendLine();");
             writer.CloseBlock();
             if (optionInfos.Any())
             {
+                writer.WriteLine("helpBuilder.AppendLine();");
                 writer.WriteLine("helpBuilder.AppendLine(\"OPTIONS:\");");
                 foreach (var info in optionInfos)
                 {
@@ -1007,12 +1007,28 @@ public partial class ArgumentParserGenerator
                 }
                 writer.WriteLine("\");");
             }
-            writer.WriteLine("helpBuilder.AppendLine();");
-            writer.WriteLine("helpBuilder.AppendLine(\"COMMANDS:\");");
-            writer.WriteLine("helpBuilder.AppendLine();");
-            writer.WriteLine("helpBuilder.AppendLine(\"  --help\\tShow help screen\");");
-            writer.WriteLine("helpBuilder.AppendLine();");
-            writer.WriteLine("helpBuilder.AppendLine(\"  --version\\tShow version information\");");
+            if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help) ||
+                builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version) ||
+                !additionalCommandHandlers.IsEmpty)
+            {
+                writer.WriteLine("helpBuilder.AppendLine();");
+                writer.WriteLine("helpBuilder.AppendLine(\"COMMANDS:\");");
+                if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help))
+                {
+                    writer.WriteLine("helpBuilder.AppendLine();");
+                    writer.WriteLine("helpBuilder.AppendLine(\"  --help\\tShow help screen\");");
+                }
+                if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version))
+                {
+                    writer.WriteLine("helpBuilder.AppendLine();");
+                    writer.WriteLine("helpBuilder.AppendLine(\"  --version\\tShow version information\");");
+                }
+                foreach (var additionalHandler in additionalCommandHandlers)
+                {
+                    writer.WriteLine("helpBuilder.AppendLine();");
+                    writer.WriteLine($"helpBuilder.AppendLine(\"  {string.Join(", ", additionalHandler.Aliases)}\");");
+                }
+            }
             writer.WriteLine("return helpBuilder.ToString();");
             writer.CloseBlock();
             writer.WriteLine();

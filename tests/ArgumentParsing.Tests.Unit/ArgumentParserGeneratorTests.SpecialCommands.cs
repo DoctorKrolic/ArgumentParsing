@@ -1340,15 +1340,14 @@ public partial class ArgumentParserGeneratorTests
                     global::System.Text.StringBuilder helpBuilder = new();
                     helpBuilder.AppendLine("TestProject 0.0.0");
                     helpBuilder.AppendLine("Copyright (C) " + global::System.DateTime.UtcNow.Year.ToString());
-                    helpBuilder.AppendLine();
                     if ((object)errors != null)
                     {
+                        helpBuilder.AppendLine();
                         helpBuilder.AppendLine("ERROR(S):");
                         foreach (global::ArgumentParsing.Results.Errors.ParseError error in errors)
                         {
                             helpBuilder.AppendLine("  " + error.GetMessage());
                         }
-                        helpBuilder.AppendLine();
                     }
                     helpBuilder.AppendLine();
                     helpBuilder.AppendLine("COMMANDS:");

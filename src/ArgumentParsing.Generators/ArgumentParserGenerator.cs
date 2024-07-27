@@ -32,9 +32,8 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
 
         var optionsHelpInfos = argumentParserInfos
             .Where(info => info.BuiltInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help))
-            .Select((info, _) => info.OptionsInfo)
-            .WithComparer(HelpOnlyOptionsInfoComparer.Instance)
-            .Combine(assemblyVersionInfo);
+            .Combine(assemblyVersionInfo)
+            .Select((pair, _) => new ArgumentParserHelpInfo(pair.Left.OptionsInfo, pair.Left.BuiltInCommandHandlers, pair.Left.AdditionalCommandHandlersInfos, pair.Right));
 
         context.RegisterSourceOutput(optionsHelpInfos, EmitHelpCommandHandler);
 
