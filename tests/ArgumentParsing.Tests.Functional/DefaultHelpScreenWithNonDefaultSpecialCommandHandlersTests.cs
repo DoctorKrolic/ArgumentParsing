@@ -1,6 +1,7 @@
 using ArgumentParsing.Generated;
 using ArgumentParsing.Results;
 using ArgumentParsing.SpecialCommands;
+using ArgumentParsing.SpecialCommands.Help;
 
 namespace ArgumentParsing.Tests.Functional;
 
@@ -19,7 +20,13 @@ public sealed partial class DefaultHelpScreenWithNonDefaultSpecialCommandHandler
         public int HandleCommand() => 0;
     }
 
-    [GeneratedArgumentParser(BuiltInCommandHandlers = BuiltInCommandHandlers.Help, AdditionalCommandHandlers = [typeof(MySpecialCommandHandler)])]
+    [SpecialCommandAliases("--my-other-command"), HelpInfo("Special command description")]
+    public sealed class MyOtherSpecialCommandHandler : ISpecialCommandHandler
+    {
+        public int HandleCommand() => 0;
+    }
+
+    [GeneratedArgumentParser(BuiltInCommandHandlers = BuiltInCommandHandlers.Help, AdditionalCommandHandlers = [typeof(MySpecialCommandHandler), typeof(MyOtherSpecialCommandHandler)])]
     private static partial ParseResult<Options> ParseArguments(string[] args);
     #endregion
 
@@ -52,6 +59,8 @@ public sealed partial class DefaultHelpScreenWithNonDefaultSpecialCommandHandler
               --help{'\t'}Show help screen
 
               --my-command
+
+              --my-other-command{'\t'}Special command description
 
             """;
         var actualOutput = stringWriter.ToString();

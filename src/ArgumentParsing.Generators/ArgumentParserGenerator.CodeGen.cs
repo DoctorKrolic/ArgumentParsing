@@ -1026,7 +1026,15 @@ public partial class ArgumentParserGenerator
                 foreach (var additionalHandler in additionalCommandHandlers)
                 {
                     writer.WriteLine("helpBuilder.AppendLine();");
-                    writer.WriteLine($"helpBuilder.AppendLine(\"  {string.Join(", ", additionalHandler.Aliases)}\");");
+                    writer.Write($"helpBuilder.AppendLine(\"  {string.Join(", ", additionalHandler.Aliases)}");
+                    if (additionalHandler.HelpDescription is { } helpDescription)
+                    {
+                        writer.WriteLine($"\\t{helpDescription}\");");
+                    }
+                    else
+                    {
+                        writer.WriteLine("\");");
+                    }
                 }
             }
             writer.WriteLine("return helpBuilder.ToString();");

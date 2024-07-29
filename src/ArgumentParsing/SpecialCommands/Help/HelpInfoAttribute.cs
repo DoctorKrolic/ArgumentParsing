@@ -4,7 +4,7 @@ namespace ArgumentParsing.SpecialCommands.Help;
 /// Used to specify help-related information, that will be used in default help text generation
 /// </summary>
 /// <param name="description">Help description of a member</param>
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct)]
 public sealed class HelpInfoAttribute(string description) : Attribute
 {
     /// <summary>

@@ -49,6 +49,7 @@ public partial class ArgumentParserGenerator
         {
             var iSpecialCommandHandlerType = comp.ISpecialCommandHandlerType();
             var specialCommandAliasesAttributeType = comp.SpecialCommandAliasesAttributeType();
+            var helpInfoAttributeType = comp.HelpInfoAttributeType();
 
             foreach (var commandHandler in additionalCommandHandlers)
             {
@@ -59,8 +60,8 @@ public partial class ArgumentParserGenerator
                     return null;
                 }
 
-                var aliasesAttrData = commandHandlerType
-                    .GetAttributes()
+                var commandHandlerAttributes = commandHandlerType.GetAttributes();
+                var aliasesAttrData = commandHandlerAttributes
                     .FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, specialCommandAliasesAttributeType));
 
                 if (aliasesAttrData is null)
@@ -90,9 +91,16 @@ public partial class ArgumentParserGenerator
                     aliasesBuilder.Add(aliasVal);
                 }
 
+                var helpInfoAttrData = commandHandlerAttributes
+                    .FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, helpInfoAttributeType));
+                var commandHandlerHelpDescription = helpInfoAttrData is null
+                    ? null
+                    : (string?)helpInfoAttrData.ConstructorArguments.FirstOrDefault().Value;
+
                 additionalCommandHandlerInfosBuilder.Add(new(
                     commandHandlerType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                    aliasesBuilder.ToImmutable()));
+                    aliasesBuilder.ToImmutable(),
+                    commandHandlerHelpDescription));
             }
         }
 
@@ -237,7 +245,7 @@ public partial class ArgumentParserGenerator
             var parameterAttributeType = comp.ParameterAttributeType();
             var remainingParametersAttributeType = comp.RemainingParametersAttributeType();
             var requiredAttributeType = comp.SystemComponentModelDataAnnotationsRequiredAttributeType();
-            var helpInfoAttributeType = comp.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Help.HelpInfoAttribute")!;
+            var helpInfoAttributeType = comp.HelpInfoAttributeType();
 
             foreach (var attr in property.GetAttributes())
             {
