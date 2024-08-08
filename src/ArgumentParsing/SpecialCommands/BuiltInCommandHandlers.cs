@@ -1,4 +1,4 @@
-namespace ArgumentParsing;
+namespace ArgumentParsing.SpecialCommands;
 
 /// <summary>
 /// Built-in special command handlers' flags

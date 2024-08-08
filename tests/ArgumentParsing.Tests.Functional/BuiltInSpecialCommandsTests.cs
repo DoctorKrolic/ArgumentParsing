@@ -1,4 +1,5 @@
 using ArgumentParsing.Results;
+using ArgumentParsing.SpecialCommands;
 
 namespace ArgumentParsing.Tests.Functional;
 

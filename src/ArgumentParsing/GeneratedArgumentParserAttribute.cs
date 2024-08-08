@@ -1,3 +1,5 @@
+using ArgumentParsing.SpecialCommands;
+
 namespace ArgumentParsing;
 
 /// <summary>
