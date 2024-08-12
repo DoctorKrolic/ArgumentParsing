@@ -7,7 +7,7 @@ namespace ArgumentParsing.SpecialCommands.Help;
 /// </summary>
 /// <param name="handler">Handler, for which help info is specified</param>
 /// <param name="description">Help description of a command</param>
-[AttributeUsage(AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class BuiltInCommandHelpInfoAttribute(BuiltInCommandHandlers handler, string description) : Attribute
 {
     /// <summary>

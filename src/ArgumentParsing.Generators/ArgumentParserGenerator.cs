@@ -31,15 +31,15 @@ public sealed partial class ArgumentParserGenerator : IIncrementalGenerator
             .Select((info, _) => info.AssemblyVersionInfo);
 
         var optionsHelpInfos = argumentParserInfos
-            .Where(info => info.BuiltInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help))
+            .Where(info => info.BuiltInCommandInfos.Any(i => i.Handler == BuiltInCommandHandlers.Help))
             .Combine(assemblyVersionInfo)
-            .Select((pair, _) => new ArgumentParserHelpInfo(pair.Left.OptionsInfo, pair.Left.BuiltInCommandHandlers, pair.Left.AdditionalCommandHandlersInfos, pair.Right));
+            .Select((pair, _) => new ArgumentParserHelpInfo(pair.Left.OptionsInfo, pair.Left.BuiltInCommandInfos, pair.Left.AdditionalCommandHandlersInfos, pair.Right));
 
         context.RegisterSourceOutput(optionsHelpInfos, EmitHelpCommandHandler);
 
         // Candidate for `Any` API: https://github.com/dotnet/roslyn/issues/59690
         var hasAnyParsersWithBuiltInVersionHandlerHandlers = argumentParserInfos
-            .Where(info => info.BuiltInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version))
+            .Where(info => info.BuiltInCommandInfos.Any(i => i.Handler == BuiltInCommandHandlers.Version))
             .Collect()
             .Select((parsers, _) => !parsers.IsEmpty);
 

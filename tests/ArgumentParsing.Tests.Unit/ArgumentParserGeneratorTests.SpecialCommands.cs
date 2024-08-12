@@ -1,3 +1,5 @@
+using ArgumentParsing.Tests.Unit.Utilities;
+
 namespace ArgumentParsing.Tests.Unit;
 
 public partial class ArgumentParserGeneratorTests
@@ -1133,6 +1135,38 @@ public partial class ArgumentParserGeneratorTests
             class MyHandler2 : ISpecialCommandHandler
             {
                 public int HandleCommand() => 0;
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Theory]
+    [MemberData(nameof(CommonTestData.InvalidHandlerForBuiltInCommandHelpInfo), MemberType = typeof(CommonTestData))]
+    public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_InvalidHandler_FirstArg(string invalidHandler)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                [BuiltInCommandHelpInfo({{invalidHandler}}, "")]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Theory]
+    [MemberData(nameof(CommonTestData.InvalidHandlerForBuiltInCommandHelpInfo), MemberType = typeof(CommonTestData))]
+    public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_InvalidHandler_NamedArgsSwapped(string invalidHandler)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                [BuiltInCommandHelpInfo(description: "", handler: {{invalidHandler}})]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
 

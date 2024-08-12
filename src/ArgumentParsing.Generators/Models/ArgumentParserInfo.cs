@@ -6,5 +6,5 @@ internal sealed record ArgumentParserInfo(
     HierarchyInfo ContainingTypeHierarchy,
     ArgumentParserMethodInfo MethodInfo,
     OptionsInfo OptionsInfo,
-    BuiltInCommandHandlers BuiltInCommandHandlers,
-    ImmutableEquatableArray<SpecialCommandHandlerInfo> AdditionalCommandHandlersInfos);
+    ImmutableEquatableArray<BuiltInCommandInfo> BuiltInCommandInfos,
+    ImmutableEquatableArray<AdditionalCommandHandlerInfo> AdditionalCommandHandlersInfos);

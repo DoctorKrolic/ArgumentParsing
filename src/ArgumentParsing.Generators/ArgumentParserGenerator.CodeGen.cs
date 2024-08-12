@@ -16,7 +16,7 @@ public partial class ArgumentParserGenerator
 
         var cancellationToken = context.CancellationToken;
 
-        var (hierarchy, method, optionsInfo, builtInCommandHandlers, additionalCommandHandlers) = parserInfo;
+        var (hierarchy, method, optionsInfo, builtInCommandInfos, additionalCommandHandlers) = parserInfo;
         var (qualifiedName, hasAtLeastInternalAccessibility, optionInfos, parameterInfos, remainingParametersInfo, helpTextGeneratorInfo) = optionsInfo;
 
         var writer = new CodeWriter();
@@ -29,11 +29,13 @@ public partial class ArgumentParserGenerator
         var generatorType = typeof(ArgumentParserGenerator);
         var generatedCodeAttribute = $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{generatorType.FullName}\", \"{generatorType.Assembly.GetName().Version}\")]";
 
-        var hasAnySpecialCommandHandlers = builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help) ||
-            builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version) ||
+        var hasBuiltInHelp = builtInCommandInfos.Any(i => i.Handler == BuiltInCommandHandlers.Help);
+        var hasBuiltInVersion = builtInCommandInfos.Any(i => i.Handler == BuiltInCommandHandlers.Version);
+        var hasAnySpecialCommandHandlers = hasBuiltInHelp ||
+            hasBuiltInVersion ||
             !additionalCommandHandlers.IsEmpty;
 
-        if (hasAtLeastInternalAccessibility && builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help) || helpTextGeneratorInfo is not null)
+        if (hasAtLeastInternalAccessibility && hasBuiltInHelp || helpTextGeneratorInfo is not null)
         {
             writer.WriteLine("namespace ArgumentParsing.Generated");
             writer.OpenBlock();
@@ -173,14 +175,14 @@ public partial class ArgumentParserGenerator
             writer.OpenBlock();
             writer.WriteLine("switch (arg)");
             writer.OpenBlock();
-            if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help))
+            if (hasBuiltInHelp)
             {
                 writer.WriteLine("case \"--help\":");
                 writer.Ident++;
                 writer.WriteLine($"return new {method.ReturnType}(new global::ArgumentParsing.Generated.HelpCommandHandler_{qualifiedName.Replace('.', '_')}());");
                 writer.Ident--;
             }
-            if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version))
+            if (hasBuiltInVersion)
             {
                 writer.WriteLine("case \"--version\":");
                 writer.Ident++;
@@ -879,7 +881,7 @@ public partial class ArgumentParserGenerator
 
     private static void EmitHelpCommandHandler(SourceProductionContext context, ArgumentParserHelpInfo helpInfo)
     {
-        var (optionsInfo, builtInCommandHandlers, additionalCommandHandlers, assemblyVersionInfo) = helpInfo;
+        var (optionsInfo, builtInCommandInfos, additionalCommandHandlers, assemblyVersionInfo) = helpInfo;
         var (qualifiedName, _, optionInfos, parameterInfos, remainingParametersInfo, helpTextGeneratorInfo) = optionsInfo;
 
         var writer = new CodeWriter();
@@ -1007,21 +1009,37 @@ public partial class ArgumentParserGenerator
                 }
                 writer.WriteLine("\");");
             }
-            if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help) ||
-                builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version) ||
+
+            var hasBuiltInHelp = builtInCommandInfos.Any(i => i.Handler == BuiltInCommandHandlers.Help);
+            var hasBuiltInVersion = builtInCommandInfos.Any(i => i.Handler == BuiltInCommandHandlers.Version);
+
+            if (hasBuiltInHelp ||
+                hasBuiltInVersion ||
                 !additionalCommandHandlers.IsEmpty)
             {
                 writer.WriteLine("helpBuilder.AppendLine();");
                 writer.WriteLine("helpBuilder.AppendLine(\"COMMANDS:\");");
-                if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help))
+                if (hasBuiltInHelp)
                 {
                     writer.WriteLine("helpBuilder.AppendLine();");
-                    writer.WriteLine("helpBuilder.AppendLine(\"  --help\\tShow help screen\");");
+                    var helpDescription = builtInCommandInfos.First(i => i.Handler == BuiltInCommandHandlers.Help).HelpDescription ?? "Show help screen";
+                    writer.Write("helpBuilder.AppendLine(\"  --help");
+                    if (helpDescription != string.Empty)
+                    {
+                        writer.Write($"\\t{helpDescription}");
+                    }
+                    writer.WriteLine("\");");
                 }
-                if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version))
+                if (hasBuiltInVersion)
                 {
                     writer.WriteLine("helpBuilder.AppendLine();");
-                    writer.WriteLine("helpBuilder.AppendLine(\"  --version\\tShow version information\");");
+                    var helpDescription = builtInCommandInfos.First(i => i.Handler == BuiltInCommandHandlers.Version).HelpDescription ?? "Show version information";
+                    writer.Write("helpBuilder.AppendLine(\"  --version");
+                    if (helpDescription != string.Empty)
+                    {
+                        writer.Write($"\\t{helpDescription}");
+                    }
+                    writer.WriteLine("\");");
                 }
                 foreach (var additionalHandler in additionalCommandHandlers)
                 {

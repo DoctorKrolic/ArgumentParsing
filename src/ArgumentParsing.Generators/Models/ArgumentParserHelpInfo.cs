@@ -4,6 +4,6 @@ namespace ArgumentParsing.Generators.Models;
 
 internal sealed record ArgumentParserHelpInfo(
     OptionsInfo OptionsInfo,
-    BuiltInCommandHandlers BuiltInCommandHandlers,
-    ImmutableEquatableArray<SpecialCommandHandlerInfo> AdditionalCommandHandlersInfos,
+    ImmutableEquatableArray<BuiltInCommandInfo> BuiltInCommandInfos,
+    ImmutableEquatableArray<AdditionalCommandHandlerInfo> AdditionalCommandHandlersInfos,
     AssemblyVersionInfo AssemblyVersionInfo);

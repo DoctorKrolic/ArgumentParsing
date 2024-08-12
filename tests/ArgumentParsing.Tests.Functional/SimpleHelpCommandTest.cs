@@ -65,7 +65,7 @@ public sealed partial class SimpleHelpCommandTest
               Remaining parameters{'\t'}Remaining parameters description
 
             COMMANDS:
-            
+
               --help{'\t'}Show help screen
 
               --version{'\t'}Show version information
@@ -108,7 +108,7 @@ public sealed partial class SimpleHelpCommandTest
               Remaining parameters{'\t'}Remaining parameters description
 
             COMMANDS:
-            
+
               --help{'\t'}Show help screen
 
               --version{'\t'}Show version information

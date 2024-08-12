@@ -956,7 +956,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Theory]
-    [MemberData(nameof(BuiltInsWithoutHelp))]
+    [MemberData(nameof(CommonTestData.BuiltInsWithoutHelp), MemberType = typeof(CommonTestData))]
     public async Task SpecialCommandHandlers_NoDuplicateWithoutBuiltIn_Help(string builtInsWithoutHelp)
     {
         var source = $$"""
@@ -982,7 +982,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Theory]
-    [MemberData(nameof(BuiltInsWithoutVersion))]
+    [MemberData(nameof(CommonTestData.BuiltInsWithoutVersion), MemberType = typeof(CommonTestData))]
     public async Task SpecialCommandHandlers_NoDuplicateWithoutBuiltIn_Version(string builtInsWithoutVersion)
     {
         var source = $$"""
@@ -1023,7 +1023,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Theory]
-    [MemberData(nameof(InvalidHandlerForBuiltInCommandHelpInfo))]
+    [MemberData(nameof(CommonTestData.InvalidHandlerForBuiltInCommandHelpInfo), MemberType = typeof(CommonTestData))]
     public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_InvalidHandler_FirstArg(string invalidHandler)
     {
         var source = $$"""
@@ -1039,7 +1039,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Theory]
-    [MemberData(nameof(InvalidHandlerForBuiltInCommandHelpInfo))]
+    [MemberData(nameof(CommonTestData.InvalidHandlerForBuiltInCommandHelpInfo), MemberType = typeof(CommonTestData))]
     public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_InvalidHandler_NamedArgsSwapped(string invalidHandler)
     {
         var source = $$"""
@@ -1053,13 +1053,6 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
 
         await VerifyAnalyzerAsync(source);
     }
-
-    public static TheoryData<string> InvalidHandlerForBuiltInCommandHelpInfo => new(
-    [
-        "BuiltInCommandHandlers.None",
-        "BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version",
-        "(BuiltInCommandHandlers)252",
-    ]);
 
     [Theory]
     [InlineData("BuiltInCommandHandlers.Help")]
@@ -1079,7 +1072,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Theory]
-    [MemberData(nameof(BuiltInsWithoutHelp))]
+    [MemberData(nameof(CommonTestData.BuiltInsWithoutHelp), MemberType = typeof(CommonTestData))]
     public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_UnnecessaryHelpInfo_Help_SeparateAttributeList(string builtInsWithoutHelp)
     {
         var source = $$"""
@@ -1100,7 +1093,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Theory]
-    [MemberData(nameof(BuiltInsWithoutHelp))]
+    [MemberData(nameof(CommonTestData.BuiltInsWithoutHelp), MemberType = typeof(CommonTestData))]
     public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_UnnecessaryHelpInfo_Help_SameAttributeList(string builtInsWithoutHelp)
     {
         var source = $$"""
@@ -1119,15 +1112,8 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
         ]);
     }
 
-    public static TheoryData<string> BuiltInsWithoutHelp => new(
-    [
-        "BuiltInCommandHandlers.None",
-        "BuiltInCommandHandlers.Version",
-        "BuiltInCommandHandlers.None | BuiltInCommandHandlers.Version",
-    ]);
-
     [Theory]
-    [MemberData(nameof(BuiltInsWithoutVersion))]
+    [MemberData(nameof(CommonTestData.BuiltInsWithoutVersion), MemberType = typeof(CommonTestData))]
     public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_UnnecessaryHelpInfo_Version_SeparateAttributeList(string builtInsWithoutVersion)
     {
         var source = $$"""
@@ -1148,7 +1134,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Theory]
-    [MemberData(nameof(BuiltInsWithoutVersion))]
+    [MemberData(nameof(CommonTestData.BuiltInsWithoutVersion), MemberType = typeof(CommonTestData))]
     public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_UnnecessaryHelpInfo_Version_SameAttributeList(string builtInsWithoutVersion)
     {
         var source = $$"""
@@ -1166,11 +1152,4 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
                 .WithArguments("BuiltInCommandHandlers.Version")
         ]);
     }
-
-    public static TheoryData<string> BuiltInsWithoutVersion => new(
-    [
-        "BuiltInCommandHandlers.None",
-        "BuiltInCommandHandlers.Help",
-        "BuiltInCommandHandlers.None | BuiltInCommandHandlers.Help",
-    ]);
 }

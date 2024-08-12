@@ -20,11 +20,11 @@ public partial class ArgumentParserGenerator
         INamedTypeSymbol? validOptionsType = null;
 
         var comp = context.SemanticModel.Compilation;
-        var genArgParserAttrType = comp.GetTypeByMetadataName(GeneratedArgumentParserAttributeName)!;
+        var genArgParserAttrType = comp.GetTypeByMetadataName(GeneratedArgumentParserAttributeName);
 
         var genArgParserAttrData = context.Attributes.First(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, genArgParserAttrType));
         var builtInCommandHandlers = BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version;
-        var additionalCommandHandlerInfosBuilder = ImmutableArray.CreateBuilder<SpecialCommandHandlerInfo>();
+        var additionalCommandHandlerInfosBuilder = ImmutableArray.CreateBuilder<AdditionalCommandHandlerInfo>();
 
         var namedArgs = genArgParserAttrData.NamedArguments;
 
@@ -104,6 +104,28 @@ public partial class ArgumentParserGenerator
             }
         }
 
+        var attributes = argumentParserMethodSymbol.GetAttributes();
+        var builtInHelpDescriptions = new Dictionary<BuiltInCommandHandlers, string>(attributes.Length - 1);
+        var builtInCommandHelpInfoAttributeType = comp.BuiltInCommandHelpInfoAttributeType();
+
+        foreach (var attribute in attributes)
+        {
+            if (!SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, builtInCommandHelpInfoAttributeType) ||
+                attribute.ConstructorArguments is not [{ Value: byte firstCtorArgValByte }, { Value: string commandHelpDescription }])
+            {
+                continue;
+            }
+
+            var firstConstructorVal = (BuiltInCommandHandlers)firstCtorArgValByte;
+
+            if (firstConstructorVal is not (BuiltInCommandHandlers.Help or BuiltInCommandHandlers.Version))
+            {
+                return null;
+            }
+
+            builtInHelpDescriptions.Add(firstConstructorVal, commandHelpDescription);
+        }
+
         if (argumentParserMethodSymbol.Parameters is not [var singleParameter])
         {
             return null;
@@ -161,11 +183,25 @@ public partial class ArgumentParserGenerator
             argumentParserMethodSymbol.Name,
             parameterInfo);
 
+        var builtInCommandInfos = ImmutableArray.CreateBuilder<BuiltInCommandInfo>(initialCapacity: 2);
+
+        if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Help))
+        {
+            builtInHelpDescriptions.TryGetValue(BuiltInCommandHandlers.Help, out var helpCommandDescription);
+            builtInCommandInfos.Add(new(BuiltInCommandHandlers.Help, helpCommandDescription));
+        }
+
+        if (builtInCommandHandlers.HasFlag(BuiltInCommandHandlers.Version))
+        {
+            builtInHelpDescriptions.TryGetValue(BuiltInCommandHandlers.Version, out var versionCommandDescription);
+            builtInCommandInfos.Add(new(BuiltInCommandHandlers.Version, versionCommandDescription));
+        }
+
         var argumentParserInfo = new ArgumentParserInfo(
             HierarchyInfo.From(argumentParserMethodSymbol.ContainingType),
             methodInfo,
             optionsInfo,
-            builtInCommandHandlers,
+            builtInCommandInfos.ToImmutable(),
             additionalCommandHandlerInfosBuilder.ToImmutable());
 
         return argumentParserInfo;
