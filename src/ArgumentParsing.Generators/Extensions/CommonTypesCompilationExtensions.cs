@@ -28,5 +28,7 @@ public static class CommonTypesCompilationExtensions
 
     public static INamedTypeSymbol? HelpTextGeneratorAttributeType(this Compilation compilation) => compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Help.HelpTextGeneratorAttribute");
 
+    public static INamedTypeSymbol? BuiltInCommandHelpInfoAttributeType(this Compilation compilation) => compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Help.BuiltInCommandHelpInfoAttribute");
+
     public static INamedTypeSymbol? ParseErrorCollectionType(this Compilation compilation) => compilation.GetTypeByMetadataName("ArgumentParsing.Results.Errors.ParseErrorCollection");
 }

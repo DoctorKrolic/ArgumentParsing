@@ -22,7 +22,9 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.ParserArgumentIsASet,
             DiagnosticDescriptors.InvalidSpecialCommandHandlerTypeSpecifier,
             DiagnosticDescriptors.OptionsTypeHasHelpTextGeneratorButNoHelpCommandHandlerInParser,
-            DiagnosticDescriptors.DuplicateSpecialCommand);
+            DiagnosticDescriptors.DuplicateSpecialCommand,
+            DiagnosticDescriptors.BuiltInCommandHelpInfoNeedsSpecificHandler,
+            DiagnosticDescriptors.UnnecessaryBuiltInCommandHelpInfo);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -41,6 +43,7 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                 ISpecialCommandHandlerType = comp.ISpecialCommandHandlerType(),
                 SpecialCommandAliasesAttributeType = comp.SpecialCommandAliasesAttributeType(),
                 HelpTextGeneratorAttributeType = comp.HelpTextGeneratorAttributeType(),
+                BuiltInCommandHelpInfoAttributeType = comp.BuiltInCommandHelpInfoAttributeType(),
             };
 
             context.RegisterSymbolAction(context => AnalyzeParserSignature(context, knownTypes), SymbolKind.Method);
@@ -50,9 +53,9 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeParserSignature(SymbolAnalysisContext context, KnownTypes knownTypes)
     {
         var method = (IMethodSymbol)context.Symbol;
+        var attributes = method.GetAttributes();
 
-        if (method.GetAttributes()
-            .FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.GeneratedArgumentParserAttributeType)) is not { } generatedArgParserAttrData)
+        if (attributes.FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.GeneratedArgumentParserAttributeType)) is not { } generatedArgParserAttrData)
         {
             return;
         }
@@ -138,6 +141,43 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                         }
                     }
                 }
+            }
+        }
+
+        foreach (var attribute in attributes)
+        {
+            if (!SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, knownTypes.BuiltInCommandHelpInfoAttributeType) ||
+                attribute.ConstructorArguments is not [{ Value: byte firstCtorArgValByte }, ..])
+            {
+                continue;
+            }
+
+            var firstConstructorVal = (BuiltInCommandHandlers)firstCtorArgValByte;
+
+            if (firstConstructorVal is not (BuiltInCommandHandlers.Help or BuiltInCommandHandlers.Version))
+            {
+                var constructorArgsSyntax = ((AttributeSyntax)attribute.ApplicationSyntaxReference!.GetSyntax(context.CancellationToken)).ArgumentList!.Arguments;
+                SyntaxNode diagnosticNode = constructorArgsSyntax.FirstOrDefault(c => c.NameColon is { Name.Identifier.ValueText: "handler" }) is { } handlerNamedArg
+                    ? handlerNamedArg.Expression
+                    : constructorArgsSyntax[0];
+
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.BuiltInCommandHelpInfoNeedsSpecificHandler,
+                        diagnosticNode.GetLocation()));
+            }
+            else if (!builtInHandlers.HasFlag(firstConstructorVal))
+            {
+                var attributeSyntax = (AttributeSyntax)attribute.ApplicationSyntaxReference!.GetSyntax(context.CancellationToken);
+                SyntaxNode diagnosticNode = attributeSyntax.Parent is AttributeListSyntax { Attributes.Count: 1 } attrList
+                    ? attrList
+                    : attributeSyntax;
+
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.UnnecessaryBuiltInCommandHelpInfo,
+                        diagnosticNode.GetLocation(),
+                        $"BuiltInCommandHandlers.{firstConstructorVal}"));
             }
         }
 
@@ -232,15 +272,15 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
         }
         else
         {
-            var attributes = namedOptionsType.GetAttributes();
+            var optionsTypeAttributes = namedOptionsType.GetAttributes();
 
-            if (!attributes.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.OptionsTypeAttributeType)))
+            if (!optionsTypeAttributes.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.OptionsTypeAttributeType)))
             {
                 context.ReportDiagnostic(
                     Diagnostic.Create(
                         DiagnosticDescriptors.OptionsTypeMustBeAnnotatedWithAttribute, genericArgumentErrorSyntax.GetLocation()));
             }
-            else if (!hasHelpCommand && attributes.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.HelpTextGeneratorAttributeType)))
+            else if (!hasHelpCommand && optionsTypeAttributes.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, knownTypes.HelpTextGeneratorAttributeType)))
             {
                 context.ReportDiagnostic(
                     Diagnostic.Create(
@@ -266,5 +306,7 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
         public required INamedTypeSymbol? SpecialCommandAliasesAttributeType { get; init; }
 
         public required INamedTypeSymbol? HelpTextGeneratorAttributeType { get; init; }
+
+        public required INamedTypeSymbol? BuiltInCommandHelpInfoAttributeType { get; init; }
     }
 }

@@ -413,4 +413,21 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor BuiltInCommandHelpInfoNeedsSpecificHandler = new(
+        id: "ARGP0050",
+        title: "'[BuiltInCommandHelpInfo]' attribute needs one specific command handler",
+        messageFormat: "'[BuiltInCommandHelpInfo]' attribute needs one specific command handler as its first constructor argument",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor UnnecessaryBuiltInCommandHelpInfo = new(
+        id: "ARGP0051",
+        title: "Unnecessary [BuiltInCommandHelpInfo] attribute",
+        messageFormat: "[BuiltInCommandHelpInfo] attribute for '{0}' is unnecessary since the parser doesn't include this command",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Hidden,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Unnecessary]);
 }
