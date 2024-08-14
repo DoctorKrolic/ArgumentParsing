@@ -22,4 +22,10 @@ public static class CommonTestData
         "BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version",
         "(BuiltInCommandHandlers)252",
     ]);
+
+    public static TheoryData<string> SingleNonDefaultBuiltInCommandHandlers => new(
+    [
+        "BuiltInCommandHandlers.Help",
+        "BuiltInCommandHandlers.Version",
+    ]);
 }

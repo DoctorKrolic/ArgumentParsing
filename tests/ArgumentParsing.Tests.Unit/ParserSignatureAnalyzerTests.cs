@@ -1055,8 +1055,7 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
     }
 
     [Theory]
-    [InlineData("BuiltInCommandHandlers.Help")]
-    [InlineData("BuiltInCommandHandlers.Version")]
+    [MemberData(nameof(CommonTestData.SingleNonDefaultBuiltInCommandHandlers), MemberType = typeof(CommonTestData))]
     public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_ValidHandler(string validHandler)
     {
         var source = $$"""
@@ -1150,6 +1149,65 @@ public sealed class ParserSignatureAnalyzerTests : AnalyzerTestBase<ParserSignat
             new DiagnosticResult("ARGP0051", DiagnosticSeverity.Hidden)
                 .WithLocation(0)
                 .WithArguments("BuiltInCommandHandlers.Version")
+        ]);
+    }
+
+    [Theory]
+    [MemberData(nameof(CommonTestData.SingleNonDefaultBuiltInCommandHandlers), MemberType = typeof(CommonTestData))]
+    public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_TwoDuplicates(string handler)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                [{|#0:BuiltInCommandHelpInfo|}({{handler}}, "1")]
+                [{|#1:BuiltInCommandHelpInfo|}({{handler}}, "2")]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0052")
+                .WithLocation(0)
+                .WithArguments(handler),
+            DiagnosticResult
+                .CompilerError("ARGP0052")
+                .WithLocation(1)
+                .WithArguments(handler),
+        ]);
+    }
+
+    [Theory]
+    [MemberData(nameof(CommonTestData.SingleNonDefaultBuiltInCommandHandlers), MemberType = typeof(CommonTestData))]
+    public async Task SpecialCommandHandlers_BuiltInCommandHelpInfo_ThreeDuplicates(string handler)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                [{|#0:BuiltInCommandHelpInfo|}({{handler}}, "1")]
+                [{|#1:BuiltInCommandHelpInfo|}({{handler}}, "2")]
+                [{|#2:BuiltInCommandHelpInfo|}({{handler}}, "3")]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            DiagnosticResult
+                .CompilerError("ARGP0052")
+                .WithLocation(0)
+                .WithArguments(handler),
+            DiagnosticResult
+                .CompilerError("ARGP0052")
+                .WithLocation(1)
+                .WithArguments(handler),
+            DiagnosticResult
+                .CompilerError("ARGP0052")
+                .WithLocation(2)
+                .WithArguments(handler),
         ]);
     }
 }

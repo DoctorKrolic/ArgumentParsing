@@ -430,4 +430,12 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Hidden,
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Unnecessary]);
+
+    public static readonly DiagnosticDescriptor DuplicateBuiltInCommandHelpInfo = new(
+        id: "ARGP0052",
+        title: "Duplicate '[BuiltInCommandHelpInfo]' attribute",
+        messageFormat: "Duplicate '[BuiltInCommandHelpInfo]' attribute for '{0}'",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

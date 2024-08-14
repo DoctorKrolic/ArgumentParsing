@@ -16,3 +16,4 @@ ARGP0048 | ArgumentParsing | Warning |
 ARGP0049 | ArgumentParsing | Error |
 ARGP0050 | ArgumentParsing | Error |
 ARGP0051 | ArgumentParsing | Hidden |
+ARGP0052 | ArgumentParsing | Error |

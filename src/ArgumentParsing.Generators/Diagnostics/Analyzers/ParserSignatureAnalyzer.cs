@@ -24,7 +24,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.OptionsTypeHasHelpTextGeneratorButNoHelpCommandHandlerInParser,
             DiagnosticDescriptors.DuplicateSpecialCommand,
             DiagnosticDescriptors.BuiltInCommandHelpInfoNeedsSpecificHandler,
-            DiagnosticDescriptors.UnnecessaryBuiltInCommandHelpInfo);
+            DiagnosticDescriptors.UnnecessaryBuiltInCommandHelpInfo,
+            DiagnosticDescriptors.DuplicateBuiltInCommandHelpInfo);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -144,6 +145,9 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             }
         }
 
+        var builtInHelpInfoFirstAttributeNodes = new Dictionary<BuiltInCommandHandlers, AttributeSyntax>();
+        var firstBuiltInHelpInfoFirstAttributeReported = new HashSet<BuiltInCommandHandlers>();
+
         foreach (var attribute in attributes)
         {
             if (!SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, knownTypes.BuiltInCommandHelpInfoAttributeType) ||
@@ -166,18 +170,44 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
                         DiagnosticDescriptors.BuiltInCommandHelpInfoNeedsSpecificHandler,
                         diagnosticNode.GetLocation()));
             }
-            else if (!builtInHandlers.HasFlag(firstConstructorVal))
+            else
             {
                 var attributeSyntax = (AttributeSyntax)attribute.ApplicationSyntaxReference!.GetSyntax(context.CancellationToken);
-                SyntaxNode diagnosticNode = attributeSyntax.Parent is AttributeListSyntax { Attributes.Count: 1 } attrList
-                    ? attrList
-                    : attributeSyntax;
 
-                context.ReportDiagnostic(
-                    Diagnostic.Create(
-                        DiagnosticDescriptors.UnnecessaryBuiltInCommandHelpInfo,
-                        diagnosticNode.GetLocation(),
-                        $"BuiltInCommandHandlers.{firstConstructorVal}"));
+                if (!builtInHandlers.HasFlag(firstConstructorVal))
+                {
+                    SyntaxNode diagnosticNode = attributeSyntax.Parent is AttributeListSyntax { Attributes.Count: 1 } attrList
+                        ? attrList
+                        : attributeSyntax;
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.UnnecessaryBuiltInCommandHelpInfo,
+                            diagnosticNode.GetLocation(),
+                            $"BuiltInCommandHandlers.{firstConstructorVal}"));
+                }
+
+                if (builtInHelpInfoFirstAttributeNodes.TryGetValue(firstConstructorVal, out var firstAttributeSyntax))
+                {
+                    if (firstBuiltInHelpInfoFirstAttributeReported.Add(firstConstructorVal))
+                    {
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(
+                                DiagnosticDescriptors.DuplicateBuiltInCommandHelpInfo,
+                                firstAttributeSyntax.Name.GetLocation(),
+                                $"BuiltInCommandHandlers.{firstConstructorVal}"));
+                    }
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.DuplicateBuiltInCommandHelpInfo,
+                            attributeSyntax.Name.GetLocation(),
+                            $"BuiltInCommandHandlers.{firstConstructorVal}"));
+                }
+                else
+                {
+                    builtInHelpInfoFirstAttributeNodes.Add(firstConstructorVal, attributeSyntax);
+                }
             }
         }
 

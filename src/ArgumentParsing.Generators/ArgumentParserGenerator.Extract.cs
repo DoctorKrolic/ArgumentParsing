@@ -118,7 +118,8 @@ public partial class ArgumentParserGenerator
 
             var firstConstructorVal = (BuiltInCommandHandlers)firstCtorArgValByte;
 
-            if (firstConstructorVal is not (BuiltInCommandHandlers.Help or BuiltInCommandHandlers.Version))
+            if (firstConstructorVal is not (BuiltInCommandHandlers.Help or BuiltInCommandHandlers.Version) ||
+                builtInHelpDescriptions.ContainsKey(firstConstructorVal))
             {
                 return null;
             }
