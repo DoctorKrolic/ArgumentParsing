@@ -5,14 +5,18 @@ namespace ArgumentParsing.Results.Errors;
 /// <summary>
 /// Error, which occurred during argument parsing
 /// </summary>
-/// <param name="messageFormat">Template, suitable as a message format for <c>string.Format</c> call</param>
 [DebuggerDisplay("{GetMessage(),nq}")]
-public abstract class ParseError(string messageFormat) : IEquatable<ParseError>
+public abstract class ParseError : IEquatable<ParseError>
 {
     /// <summary>
     /// Template, suitable as a message format for <c>string.Format</c> call
     /// </summary>
-    protected string MessageFormat { get; } = messageFormat;
+    protected string MessageFormat { get; }
+
+    private protected ParseError(string messageFormat)
+    {
+        MessageFormat = messageFormat;
+    }
 
     /// <summary>
     /// Computes final error message with substituted message arguments
