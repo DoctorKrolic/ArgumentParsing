@@ -63,13 +63,13 @@ public sealed class ParseErrorCollection : IReadOnlyCollection<ParseError>
         public bool MoveNext() => _enumerator.MoveNext();
 
         /// <inheritdoc/>
-        public void Dispose() { }
+        public void Dispose() => _enumerator.Dispose();
 
         /// <inheritdoc/>
         object IEnumerator.Current => Current;
 
         /// <inheritdoc/>
-        void IEnumerator.Reset() => ((IEnumerator)_enumerator).Reset();
+        void IEnumerator.Reset() => throw new NotSupportedException();
     }
 
     private class DebugView(ParseErrorCollection errors)
