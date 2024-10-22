@@ -438,4 +438,12 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidErrorMessageFormatProviderTypeSpecifier = new(
+        id: "ARGP0053",
+        title: "Invalid error message format provider type specifier",
+        messageFormat: "'{0}' is an invalid error message format provider specifier",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

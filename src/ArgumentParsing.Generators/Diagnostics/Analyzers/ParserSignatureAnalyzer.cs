@@ -25,7 +25,8 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.DuplicateSpecialCommand,
             DiagnosticDescriptors.BuiltInCommandHelpInfoNeedsSpecificHandler,
             DiagnosticDescriptors.UnnecessaryBuiltInCommandHelpInfo,
-            DiagnosticDescriptors.DuplicateBuiltInCommandHelpInfo);
+            DiagnosticDescriptors.DuplicateBuiltInCommandHelpInfo,
+            DiagnosticDescriptors.InvalidErrorMessageFormatProviderTypeSpecifier);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -64,6 +65,25 @@ public sealed class ParserSignatureAnalyzer : DiagnosticAnalyzer
         var hasHelpCommand = false;
         var registeredCommands = new HashSet<string>();
         var namedArgs = generatedArgParserAttrData.NamedArguments;
+
+        if (namedArgs.FirstOrDefault(static n => n.Key == "ErrorMessageFormatProvider").Value is { Value: { } errorMessageFormatProviderObj })
+        {
+            if (errorMessageFormatProviderObj is ITypeSymbol and not INamedTypeSymbol { SpecialType: SpecialType.None })
+            {
+                var attributeSyntax = (AttributeSyntax?)generatedArgParserAttrData.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
+                var errorMessageFormatProviderExpressionSyntax = attributeSyntax?.ArgumentList?.Arguments.First(static a => a.NameEquals?.Name.Identifier.ValueText == "ErrorMessageFormatProvider").Expression;
+
+                var diagnosticLocationSyntax = errorMessageFormatProviderExpressionSyntax is TypeOfExpressionSyntax typeOfExpression
+                    ? typeOfExpression.Type
+                    : errorMessageFormatProviderExpressionSyntax;
+
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        DiagnosticDescriptors.InvalidErrorMessageFormatProviderTypeSpecifier,
+                        diagnosticLocationSyntax?.GetLocation() ?? attributeSyntax?.GetLocation() ?? method.Locations.First(),
+                        diagnosticLocationSyntax?.ToString() ?? "null"));
+            }
+        }
 
         var builtInHandlers = BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version;
 

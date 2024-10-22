@@ -9,6 +9,13 @@ namespace ArgumentParsing;
 public sealed class GeneratedArgumentParserAttribute : Attribute
 {
     /// <summary>
+    /// Type, which will be used as an error message format provider.
+    /// If <see langword="null"/> is supplied, either explicitly or implicitly,
+    /// default error message formats are used
+    /// </summary>
+    public Type? ErrorMessageFormatProvider { get; set; }
+
+    /// <summary>
     /// Built-in special command handlers of this parser
     /// </summary>
     public BuiltInCommandHandlers BuiltInCommandHandlers { get; set; } = BuiltInCommandHandlers.Help | BuiltInCommandHandlers.Version;
