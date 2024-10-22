@@ -29,7 +29,7 @@ public abstract class ParseError : IEquatable<ParseError>
 
     /// <inheritdoc/>
     public sealed override bool Equals(object? obj)
-        => obj is ParseError error && Equals(error);
+        => Equals(obj as ParseError);
 
     /// <inheritdoc/>
     public abstract override int GetHashCode();
