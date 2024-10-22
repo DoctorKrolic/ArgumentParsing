@@ -28,6 +28,18 @@ public partial class ArgumentParserGenerator
 
         var namedArgs = genArgParserAttrData.NamedArguments;
 
+        string? errorMessageFormatProvider = null;
+        if (namedArgs.FirstOrDefault(static n => n.Key == "ErrorMessageFormatProvider") is { Key: not null, Value: { } errorMessageFormatProviderVal })
+        {
+            if (errorMessageFormatProviderVal.Kind == TypedConstantKind.Error ||
+                !errorMessageFormatProviderVal.IsNull && errorMessageFormatProviderVal.Value is not INamedTypeSymbol { TypeKind: not TypeKind.Error, SpecialType: SpecialType.None })
+            {
+                return null;
+            }
+
+            errorMessageFormatProvider = ((INamedTypeSymbol?)errorMessageFormatProviderVal.Value)?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        }
+
         if (namedArgs.FirstOrDefault(static n => n.Key == "BuiltInCommandHandlers").Value is { Value: byte builtInHandlersByte })
         {
             builtInCommandHandlers = (BuiltInCommandHandlers)builtInHandlersByte;
@@ -202,6 +214,7 @@ public partial class ArgumentParserGenerator
             HierarchyInfo.From(argumentParserMethodSymbol.ContainingType),
             methodInfo,
             optionsInfo,
+            errorMessageFormatProvider,
             builtInCommandInfos.ToImmutable(),
             additionalCommandHandlerInfosBuilder.ToImmutable());
 

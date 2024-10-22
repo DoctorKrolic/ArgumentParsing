@@ -2223,6 +2223,79 @@ public sealed partial class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
+    [Theory]
+    [InlineData("null")]
+    [InlineData("default")]
+    [InlineData("default(System.Type)")]
+    public async Task ErrorMessageFormatProvider_TypeSpecifier_Default(string defaultSyntax)
+    {
+        var source = $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser(ErrorMessageFormatProvider = {{defaultSyntax}})]
+                public static partial ParseResult<EmptyOptions> ParseArguments(string[] args);
+            }
+            """;
+
+        await VerifyGeneratorAsync(source, ("EmptyOptions.g.cs", GetMainCodeGenForEmptyOptions("string[]", "args")), ("HelpCommandHandler.EmptyOptions.g.cs", HelpCodeGenForEmptyOptions), ("VersionCommandHandler.TestProject.g.cs", VersionCommandHander));
+    }
+
+    [Fact]
+    public async Task ErrorMessageFormatProvider_TypeSpecifier_InvalidValue()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(ErrorMessageFormatProvider = {|CS0029:5|})]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task ErrorMessageFormatProvider_TypeSpecifier_ErrorType()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(ErrorMessageFormatProvider = typeof({|CS0246:ErrorType|}))]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task ErrorMessageFormatProvider_TypeSpecifier_Invalid_NotNamedType()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(ErrorMessageFormatProvider = typeof({|#0:C[]|}))]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
+    [Fact]
+    public async Task ErrorMessageFormatProvider_TypeSpecifier_Invalid_SpecialType()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser(ErrorMessageFormatProvider = typeof({|#0:int|}))]
+                public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+            """;
+
+        await VerifyGeneratorAsync(source);
+    }
+
     private static async Task VerifyGeneratorAsync(string source, params (string Hint, string Content)[] generatedDocuments)
     {
         var test = new CSharpSourceGeneratorTest<ArgumentParserGenerator>()

@@ -16,7 +16,7 @@ public partial class ArgumentParserGenerator
 
         var cancellationToken = context.CancellationToken;
 
-        var (hierarchy, method, optionsInfo, builtInCommandInfos, additionalCommandHandlers) = parserInfo;
+        var (hierarchy, method, optionsInfo, errorMessageFormatProvider, builtInCommandInfos, additionalCommandHandlers) = parserInfo;
         var (qualifiedName, hasAtLeastInternalAccessibility, optionInfos, parameterInfos, remainingParametersInfo, helpTextGeneratorInfo) = optionsInfo;
 
         var writer = new CodeWriter();
@@ -215,7 +215,12 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("if (state > 0 && startsOption)");
             writer.OpenBlock();
             writer.WriteLine("errors ??= new();");
-            writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));");
+            writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(");
+            if (errorMessageFormatProvider is not null)
+            {
+                writer.Write($"{errorMessageFormatProvider}.OptionValueIsNotProvidedError, ");
+            }
+            writer.WriteLine("previousArgument));");
             writer.WriteLine("state = 0;");
             writer.CloseBlock();
             writer.WriteLine();
@@ -255,7 +260,12 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("else");
         writer.OpenBlock();
         writer.WriteLine("errors ??= new();");
-        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+        writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(");
+        if (errorMessageFormatProvider is not null)
+        {
+            writer.Write($"{errorMessageFormatProvider}.UnrecognizedArgumentError, ");
+        }
+        writer.WriteLine("arg));");
         writer.CloseBlock();
         writer.WriteLine("continue;");
         writer.Ident--;
@@ -278,7 +288,12 @@ public partial class ArgumentParserGenerator
             writer.WriteLine($"if ((seenOptions & 0b{usageCode.ToString()}) > 0)");
             writer.OpenBlock();
             writer.WriteLine("errors ??= new();");
-            writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError(\"{info.LongName}\"));");
+            writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError(");
+            if (errorMessageFormatProvider is not null)
+            {
+                writer.Write($"{errorMessageFormatProvider}.DuplicateOptionError, ");
+            }
+            writer.WriteLine($"\"{info.LongName}\"));");
             writer.CloseBlock();
             if (info.ParseStrategy == ParseStrategy.Flag)
             {
@@ -297,7 +312,12 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("default:");
         writer.Ident++;
         writer.WriteLine("errors ??= new();");
-        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, arg));");
+        writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(");
+        if (errorMessageFormatProvider is not null)
+        {
+            writer.Write($"{errorMessageFormatProvider}.UnknownOptionError, ");
+        }
+        writer.WriteLine($"latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, arg));");
         writer.WriteLine("if (written == 1)");
         writer.OpenBlock();
         writer.WriteLine("state = -1;");
@@ -359,7 +379,12 @@ public partial class ArgumentParserGenerator
             writer.WriteLine($"if ((seenOptions & 0b{usageCode.ToString()}) > 0)");
             writer.OpenBlock();
             writer.WriteLine("errors ??= new();");
-            writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError(\"{info.ShortName}\"));");
+            writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.DuplicateOptionError(");
+            if (errorMessageFormatProvider is not null)
+            {
+                writer.Write($"{errorMessageFormatProvider}.DuplicateOptionError, ");
+            }
+            writer.WriteLine($"\"{info.ShortName}\"));");
             writer.CloseBlock();
             if (info.ParseStrategy == ParseStrategy.Flag)
             {
@@ -381,16 +406,18 @@ public partial class ArgumentParserGenerator
         {
             writer.WriteLine($"if (state <= -10)");
             writer.OpenBlock();
-            if (hasAnyParameters || optionInfos.Any(static i => i.NullableUnderlyingType is not null || i.SequenceType != SequenceType.None))
-            {
-                writer.WriteLine($"val = slice.{(canUseOptimalSpanBasedAlgorithm ? "Slice" : "Substring")}(i);");
-            }
+            writer.WriteLine($"val = slice.{(canUseOptimalSpanBasedAlgorithm ? "Slice" : "Substring")}(i);");
             writer.WriteLine($"latestOptionName = {(canUseOptimalSpanBasedAlgorithm ? "new global::System.ReadOnlySpan<char>(in slice[i - 1])" : "slice[i - 1].ToString()")};");
             writer.WriteLine("goto decodeValue;");
             writer.CloseBlock();
         }
         writer.WriteLine("errors ??= new();");
-        writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(shortOptionName.ToString(), arg));");
+        writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.UnknownOptionError(");
+        if (errorMessageFormatProvider is not null)
+        {
+            writer.Write($"{errorMessageFormatProvider}.UnknownOptionError, ");
+        }
+        writer.WriteLine("shortOptionName.ToString(), arg));");
         writer.WriteLine("state = -1;");
         writer.WriteLine("goto continueMainLoop;");
         writer.Ident--;
@@ -413,12 +440,17 @@ public partial class ArgumentParserGenerator
         writer.WriteLine("decodeValue:", identDelta: -1);
         writer.WriteLine("switch (state)");
         writer.OpenBlock();
-        if (!hasAnyParameters && optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag && i.NullableUnderlyingType is null))
+        if (!hasAnyParameters && optionInfos.Any(static i => i is { ParseStrategy: ParseStrategy.Flag, NullableUnderlyingType: null }))
         {
             writer.WriteLine("case -10:");
             writer.Ident++;
             writer.WriteLine("errors ??= new();");
-            writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
+            writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(");
+            if (errorMessageFormatProvider is not null)
+            {
+                writer.Write($"{errorMessageFormatProvider}.FlagOptionValueError, ");
+            }
+            writer.WriteLine($"latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
             writer.WriteLine("break;");
             writer.Ident--;
         }
@@ -464,7 +496,12 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
-                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
+                    writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(");
+                    if (errorMessageFormatProvider is not null)
+                    {
+                        writer.Write($"{errorMessageFormatProvider}.BadOptionValueFormatError, ");
+                    }
+                    writer.WriteLine($"val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     if (nullableUnderlyingType is not null)
                     {
@@ -476,7 +513,12 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine($"if (!bool.TryParse(val, out {propertyName}_underlying))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
-                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
+                    writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(");
+                    if (errorMessageFormatProvider is not null)
+                    {
+                        writer.Write($"{errorMessageFormatProvider}.BadOptionValueFormatError, ");
+                    }
+                    writer.WriteLine($"val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     writer.WriteLine($"{propertyName}_val = {propertyName}_underlying;");
                     break;
@@ -488,7 +530,12 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine($"if (!global::System.Enum.TryParse<{nullableUnderlyingType ?? info.Type}>(val, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
-                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
+                    writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(");
+                    if (errorMessageFormatProvider is not null)
+                    {
+                        writer.Write($"{errorMessageFormatProvider}.BadOptionValueFormatError, ");
+                    }
+                    writer.WriteLine($"val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     if (nullableUnderlyingType is not null)
                     {
@@ -503,7 +550,12 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine("else");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
-                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
+                    writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(");
+                    if (errorMessageFormatProvider is not null)
+                    {
+                        writer.Write($"{errorMessageFormatProvider}.BadOptionValueFormatError, ");
+                    }
+                    writer.WriteLine($"val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     break;
                 case ParseStrategy.DateTimeRelated:
@@ -514,7 +566,12 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, global::System.Globalization.DateTimeStyles.None, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
-                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
+                    writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(");
+                    if (errorMessageFormatProvider is not null)
+                    {
+                        writer.Write($"{errorMessageFormatProvider}.BadOptionValueFormatError, ");
+                    }
+                    writer.WriteLine($"val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     if (nullableUnderlyingType is not null)
                     {
@@ -529,7 +586,12 @@ public partial class ArgumentParserGenerator
                     writer.WriteLine($"if (!global::System.TimeSpan.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
-                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
+                    writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(");
+                    if (errorMessageFormatProvider is not null)
+                    {
+                        writer.Write($"{errorMessageFormatProvider}.BadOptionValueFormatError, ");
+                    }
+                    writer.WriteLine($"val{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}, latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     if (nullableUnderlyingType is not null)
                     {
@@ -584,7 +646,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
+                        writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadParameterValueFormatError, ");
+                        }
+                        writer.WriteLine($"arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         if (nullableUnderlyingType is not null)
                         {
@@ -599,7 +666,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!bool.TryParse(arg, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
+                        writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadParameterValueFormatError, ");
+                        }
+                        writer.WriteLine($"arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         if (nullableUnderlyingType is not null)
                         {
@@ -614,7 +686,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!global::System.Enum.TryParse<{nullableUnderlyingType ?? info.Type}>(arg, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
+                        writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadParameterValueFormatError, ");
+                        }
+                        writer.WriteLine($"arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         if (nullableUnderlyingType is not null)
                         {
@@ -629,7 +706,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine("else");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
+                        writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadParameterValueFormatError, ");
+                        }
+                        writer.WriteLine($"arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         break;
                     case ParseStrategy.DateTimeRelated:
@@ -640,7 +722,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, global::System.Globalization.DateTimeStyles.None, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
+                        writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadParameterValueFormatError, ");
+                        }
+                        writer.WriteLine($"arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         if (nullableUnderlyingType is not null)
                         {
@@ -655,7 +742,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!global::System.TimeSpan.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(arg, \"{info.Name}\", parameterIndex - 1));");
+                        writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadParameterValueFormatError, ");
+                        }
+                        writer.WriteLine($"arg, \"{info.Name}\", parameterIndex - 1));");
                         writer.CloseBlock();
                         if (nullableUnderlyingType is not null)
                         {
@@ -670,22 +762,37 @@ public partial class ArgumentParserGenerator
             writer.Ident++;
             if (remainingParametersInfo is null)
             {
-                if (optionInfos.Any(static i => i.ParseStrategy == ParseStrategy.Flag && i.NullableUnderlyingType is null))
+                writer.WriteLine("errors ??= new();");
+
+                if (optionInfos.Any(static i => i is { ParseStrategy: ParseStrategy.Flag, NullableUnderlyingType: null }))
                 {
-                    writer.WriteLine("errors ??= new();");
                     writer.WriteLine("if (state == -10)");
                     writer.OpenBlock();
-                    writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
+                    writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.FlagOptionValueError(");
+                    if (errorMessageFormatProvider is not null)
+                    {
+                        writer.Write($"{errorMessageFormatProvider}.FlagOptionValueError, ");
+                    }
+                    writer.WriteLine($"latestOptionName{(canUseOptimalSpanBasedAlgorithm ? ".ToString()" : string.Empty)}));");
                     writer.CloseBlock();
                     writer.WriteLine("else");
                     writer.OpenBlock();
-                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+                    writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(");
+                    if (errorMessageFormatProvider is not null)
+                    {
+                        writer.Write($"{errorMessageFormatProvider}.UnrecognizedArgumentError, ");
+                    }
+                    writer.WriteLine("arg));");
                     writer.CloseBlock();
                 }
                 else
                 {
-                    writer.WriteLine("errors ??= new();");
-                    writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+                    writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(");
+                    if (errorMessageFormatProvider is not null)
+                    {
+                        writer.Write($"{errorMessageFormatProvider}.UnrecognizedArgumentError, ");
+                    }
+                    writer.WriteLine("arg));");
                 }
             }
             else
@@ -706,7 +813,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!{type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}_val))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadRemainingParameterValueFormatError, ");
+                        }
+                        writer.WriteLine("arg, parameterIndex - 1));");
                         writer.CloseBlock();
                         writer.WriteLine($"remainingParametersBuilder.Add({propertyName}_val);");
                         break;
@@ -715,7 +827,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!bool.TryParse(arg, out {propertyName}_val))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadRemainingParameterValueFormatError, ");
+                        }
+                        writer.WriteLine("arg, parameterIndex - 1));");
                         writer.CloseBlock();
                         writer.WriteLine($"remainingParametersBuilder.Add({propertyName}_val);");
                         break;
@@ -724,7 +841,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!global::System.Enum.TryParse<{type}>(arg, out {propertyName}_val))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadRemainingParameterValueFormatError, ");
+                        }
+                        writer.WriteLine("arg, parameterIndex - 1));");
                         writer.CloseBlock();
                         writer.WriteLine($"remainingParametersBuilder.Add({propertyName}_val);");
                         break;
@@ -736,7 +858,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine("else");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadRemainingParameterValueFormatError, ");
+                        }
+                        writer.WriteLine("arg, parameterIndex - 1));");
                         writer.CloseBlock();
                         break;
                     case ParseStrategy.DateTimeRelated:
@@ -744,7 +871,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!{type}.TryParse(arg, global::System.Globalization.CultureInfo.InvariantCulture, global::System.Globalization.DateTimeStyles.None, out {propertyName}_val))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadRemainingParameterValueFormatError, ");
+                        }
+                        writer.WriteLine("arg, parameterIndex - 1));");
                         writer.CloseBlock();
                         writer.WriteLine($"remainingParametersBuilder.Add({propertyName}_val);");
                         break;
@@ -753,7 +885,12 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"if (!global::System.TimeSpan.TryParse(arg, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}_val))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
-                        writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(arg, parameterIndex - 1));");
+                        writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(");
+                        if (errorMessageFormatProvider is not null)
+                        {
+                            writer.Write($"{errorMessageFormatProvider}.BadRemainingParameterValueFormatError, ");
+                        }
+                        writer.WriteLine("arg, parameterIndex - 1));");
                         writer.CloseBlock();
                         writer.WriteLine($"remainingParametersBuilder.Add({propertyName}_val);");
                         break;
@@ -766,7 +903,12 @@ public partial class ArgumentParserGenerator
         else
         {
             writer.WriteLine("errors ??= new();");
-            writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(arg));");
+            writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.UnrecognizedArgumentError(");
+            if (errorMessageFormatProvider is not null)
+            {
+                writer.Write($"{errorMessageFormatProvider}.UnrecognizedArgumentError, ");
+            }
+            writer.WriteLine("arg));");
         }
         writer.WriteLine("break;");
         writer.Ident--;
@@ -794,7 +936,12 @@ public partial class ArgumentParserGenerator
             writer.WriteLine("if (state > 0)");
             writer.OpenBlock();
             writer.WriteLine("errors ??= new();");
-            writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(previousArgument));");
+            writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.OptionValueIsNotProvidedError(");
+            if (errorMessageFormatProvider is not null)
+            {
+                writer.Write($"{errorMessageFormatProvider}.OptionValueIsNotProvidedError, ");
+            }
+            writer.WriteLine("previousArgument));");
             writer.CloseBlock();
         }
 
@@ -810,11 +957,15 @@ public partial class ArgumentParserGenerator
                 writer.WriteLine($"if ((seenOptions & 0b{usageCode.ToString()}) == 0)");
                 writer.OpenBlock();
                 writer.WriteLine("errors ??= new();");
-                writer.WriteLine((info.ShortName, info.LongName) switch
+                writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError(");
+                writer.WriteLine((info.ShortName, info.LongName, errorMessageFormatProvider is null) switch
                 {
-                    (not null, null) => $"errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError('{info.ShortName.Value}'));",
-                    (null, not null) => $"errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError(\"{info.LongName}\"));",
-                    (not null, not null) => $"errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredOptionError('{info.ShortName.Value}', \"{info.LongName}\"));",
+                    (not null, null, true) => $"'{info.ShortName.Value}'));",
+                    (null, not null, true) => $"\"{info.LongName}\"));",
+                    (not null, not null, true) => $"'{info.ShortName.Value}', \"{info.LongName}\"));",
+                    (not null, null, false) => $"{errorMessageFormatProvider}.MissingRequiredOptionError_OnlyShortOptionName, '{info.ShortName.Value}', null));",
+                    (null, not null, false) => $"{errorMessageFormatProvider}.MissingRequiredOptionError_OnlyLongOptionName, null, \"{info.LongName}\"));",
+                    (not null, not null, false) => $"{errorMessageFormatProvider}.MissingRequiredOptionError_BothOptionNames, '{info.ShortName.Value}', \"{info.LongName}\"));",
                     _ => throw new InvalidOperationException("Unreachable"),
                 });
                 writer.CloseBlock();
@@ -831,7 +982,12 @@ public partial class ArgumentParserGenerator
                 writer.WriteLine($"if (parameterIndex <= {i})");
                 writer.OpenBlock();
                 writer.WriteLine("errors ??= new();");
-                writer.WriteLine($"errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredParameterError(\"{info.Name}\", {i}));");
+                writer.WriteLine("errors.Add(new global::ArgumentParsing.Results.Errors.MissingRequiredParameterError(");
+                if (errorMessageFormatProvider is not null)
+                {
+                    writer.Write($"{errorMessageFormatProvider}.MissingRequiredParameterError, ");
+                }
+                writer.WriteLine($"\"{info.Name}\", {i}));");
                 writer.CloseBlock();
             }
         }
