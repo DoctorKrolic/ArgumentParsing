@@ -38,7 +38,8 @@ partial class Program
 
     private static void ExecuteMainApp(Options options)
     {
-        // At this point all errors and special cases are handled, so we get valid options object we can work with
+        // At this point all errors and special cases are handled,
+        // so we get valid options object we can work with
         var sum = options.FirstRequiredParameter + options.SecondRequiredParameter;
         if (options.Verbose)
         {
