@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+This release brings customizability to special commands and other miscellaneous improvements.
+
+- It is now possible to add additional special commands to the parser
+- It is now possible to disable/replace built-in special commands
+- Default help screen can now be changed to a custom one
+- Parse error messages can now be localized/changed
+- `DateTime`, `DateOnly`, `TimeSpan` and `TimeOnly` are now valid types for options type members
+
 ## 0.2.0
 
 This release focuses on addressing technical dept and improving developer experience. It doesn't include any additional library features besides an important breaking change.

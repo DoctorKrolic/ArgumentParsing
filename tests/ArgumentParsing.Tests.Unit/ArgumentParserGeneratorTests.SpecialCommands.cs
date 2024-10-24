@@ -648,7 +648,7 @@ public partial class ArgumentParserGeneratorTests
                     /// </summary>
                     /// <param name="result">Parse result</param>
                     /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
-                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", "0.2.0.0")]
+                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                     public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
                     {
@@ -673,7 +673,7 @@ public partial class ArgumentParserGeneratorTests
 
             partial class C
             {
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", "0.2.0.0")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 public static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
@@ -815,7 +815,7 @@ public partial class ArgumentParserGeneratorTests
                 /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
                 /// </summary>
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", "0.2.0.0")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
@@ -872,7 +872,7 @@ public partial class ArgumentParserGeneratorTests
                     /// </summary>
                     /// <param name="result">Parse result</param>
                     /// <param name="action">Action, which will be invoked if options type is correctly parsed</param>
-                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", "0.2.0.0")]
+                    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                     public static void ExecuteDefaults(this global::ArgumentParsing.Results.ParseResult<global::MyOptions> result, global::System.Action<global::MyOptions> action)
                     {
@@ -897,7 +897,7 @@ public partial class ArgumentParserGeneratorTests
 
             partial class C
             {
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", "0.2.0.0")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 public static partial global::ArgumentParsing.Results.ParseResult<global::MyOptions> ParseArguments(string[] args)
                 {
@@ -1039,7 +1039,7 @@ public partial class ArgumentParserGeneratorTests
                 /// Default implementation of <c>--help</c> command for <see cref="global::MyOptions"/> type
                 /// </summary>
                 [global::ArgumentParsing.SpecialCommands.SpecialCommandAliasesAttribute("--help")]
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", "0.2.0.0")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ArgumentParsing.Generators.ArgumentParserGenerator", <GENERATOR_ASSEMBLY_VERSION>)]
                 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
                 internal sealed class HelpCommandHandler_MyOptions : global::ArgumentParsing.SpecialCommands.ISpecialCommandHandler
                 {
