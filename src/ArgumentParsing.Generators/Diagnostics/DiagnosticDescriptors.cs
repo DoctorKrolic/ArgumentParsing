@@ -446,4 +446,12 @@ public static class DiagnosticDescriptors
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor ImplementISpanParsable = new(
+        id: "ARGP0054",
+        title: "Implement 'ISpanParsable' interface to improve performance",
+        messageFormat: "For better performance in parsing member '{0}' of options type '{1}', implement the 'ISpanParsable' interface on '{2}'",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true);
 }

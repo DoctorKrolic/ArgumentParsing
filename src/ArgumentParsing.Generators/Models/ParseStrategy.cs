@@ -10,5 +10,7 @@ internal enum ParseStrategy : byte
     Enum,
     Char,
     DateTimeRelated,
-    TimeSpan
+    TimeSpan,
+    GenericSpanParsable,
+    GenericParsable
 }

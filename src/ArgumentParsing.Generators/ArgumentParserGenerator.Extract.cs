@@ -597,7 +597,7 @@ public partial class ArgumentParserGenerator
                 }
             }
 
-            var parseStrategy = type.GetPrimaryParseStrategy();
+            var parseStrategy = type.GetPrimaryParseStrategy(compilation);
             return (parseStrategy, nullableUnderlyingType, sequenceType, sequenceUnderlyingType);
         }
     }

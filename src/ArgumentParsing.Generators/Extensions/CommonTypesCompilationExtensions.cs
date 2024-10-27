@@ -31,4 +31,8 @@ public static class CommonTypesCompilationExtensions
     public static INamedTypeSymbol? BuiltInCommandHelpInfoAttributeType(this Compilation compilation) => compilation.GetTypeByMetadataName("ArgumentParsing.SpecialCommands.Help.BuiltInCommandHelpInfoAttribute");
 
     public static INamedTypeSymbol? ParseErrorCollectionType(this Compilation compilation) => compilation.GetTypeByMetadataName("ArgumentParsing.Results.Errors.ParseErrorCollection");
+
+    public static INamedTypeSymbol? ISpanParsableOfTType(this Compilation compilation) => compilation.GetTypeByMetadataName("System.ISpanParsable`1");
+
+    public static INamedTypeSymbol? IParsableOfTType(this Compilation compilation) => compilation.GetTypeByMetadataName("System.IParsable`1");
 }

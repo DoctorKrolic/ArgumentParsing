@@ -44,7 +44,8 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.PropertyCannotHaveMultipleParserRoles,
             DiagnosticDescriptors.InvalidHelpTextGeneratorTypeSpecifier,
             DiagnosticDescriptors.InvalidIdentifierName,
-            DiagnosticDescriptors.CannotFindHelpTextGeneratorMethod);
+            DiagnosticDescriptors.CannotFindHelpTextGeneratorMethod,
+            DiagnosticDescriptors.ImplementISpanParsable);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -69,6 +70,8 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 ImmutableArrayOfTType = comp.ImmutableArrayOfTType(),
                 HelpTextGeneratorAttributeType = comp.HelpTextGeneratorAttributeType(),
                 ParseErrorCollectionType = comp.ParseErrorCollectionType(),
+                ISpanParsableOfTType = comp.ISpanParsableOfTType(),
+                IParsableOfTType = comp.IParsableOfTType(),
             };
 
             var languageVersion = ((CSharpCompilation)comp).LanguageVersion;
@@ -436,7 +439,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                     }
                 }
 
-                var (parseStrategy, isNullable, sequenceType) = GetParseStrategy(propertyType, knownTypes);
+                var (parseStrategy, isNullable, sequenceType, underlyingType) = GetParseStrategy(propertyType, knownTypes);
                 var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
                 var locationForTypeRelatedDiagnostics = propertySyntax?.Type.GetLocation() ?? propertyLocation;
 
@@ -473,6 +476,17 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                     context.ReportDiagnostic(
                         Diagnostic.Create(
                             DiagnosticDescriptors.PreferImmutableArrayAsSequenceType, locationForTypeRelatedDiagnostics));
+                }
+
+                if (knownTypes.ISpanParsableOfTType is not null &&
+                    parseStrategy == ParseStrategy.GenericParsable &&
+                    underlyingType?.Locations.First() is { IsInSource: true } propertyTypeSourceLocation)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.ImplementISpanParsable,
+                            propertyTypeSourceLocation,
+                            property.Name, optionsType, underlyingType));
                 }
             }
             else if (isParameter)
@@ -521,7 +535,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.InvalidParameterName, propertyLocation, parameterName));
                 }
 
-                var (parseStrategy, isNullable, sequenceType) = GetParseStrategy(propertyType, knownTypes);
+                var (parseStrategy, isNullable, sequenceType, _) = GetParseStrategy(propertyType, knownTypes);
                 if ((parseStrategy == ParseStrategy.None || sequenceType != SequenceType.None) && propertyType.TypeKind != TypeKind.Error)
                 {
                     var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
@@ -531,6 +545,17 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.InvalidParameterPropertyType,
                             propertySyntax?.Type.GetLocation() ?? propertyLocation,
                             propertyType));
+                }
+
+                if (knownTypes.ISpanParsableOfTType is not null &&
+                    parseStrategy == ParseStrategy.GenericParsable &&
+                    propertyType.Locations.First() is { IsInSource: true } propertyTypeSourceLocation)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.ImplementISpanParsable,
+                            propertyTypeSourceLocation,
+                            property.Name, optionsType, propertyType));
                 }
 
                 if (!hasParameter)
@@ -565,7 +590,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
 
                 declaredRemainingParameters = true;
 
-                var (parseStrategy, isNullable, sequenceType) = GetParseStrategy(propertyType, knownTypes);
+                var (parseStrategy, isNullable, sequenceType, underlyingType) = GetParseStrategy(propertyType, knownTypes);
                 var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
                 var locationForTypeRelatedDiagnostics = propertySyntax?.Type.GetLocation() ?? propertyLocation;
 
@@ -583,6 +608,17 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                     context.ReportDiagnostic(
                         Diagnostic.Create(
                             DiagnosticDescriptors.PreferImmutableArrayAsSequenceType, locationForTypeRelatedDiagnostics));
+                }
+
+                if (knownTypes.ISpanParsableOfTType is not null &&
+                    parseStrategy == ParseStrategy.GenericParsable &&
+                    underlyingType?.Locations.First() is { IsInSource: true } propertyTypeSourceLocation)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.ImplementISpanParsable,
+                            propertyTypeSourceLocation,
+                            property.Name, optionsType, underlyingType));
                 }
 
                 if (requiredAttributeReference is not null)
@@ -666,7 +702,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        static (ParseStrategy, bool IsNullable, SequenceType) GetParseStrategy(ITypeSymbol type, KnownTypes knownTypes)
+        static (ParseStrategy, bool IsNullable, SequenceType, ITypeSymbol? UnderlyingType) GetParseStrategy(ITypeSymbol type, KnownTypes knownTypes)
         {
             if (type is not INamedTypeSymbol namedType)
             {
@@ -712,7 +748,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 }
             }
 
-            return (namedType.GetPrimaryParseStrategy(), isNullable, sequenceType);
+            return (namedType.GetPrimaryParseStrategy(knownTypes.ISpanParsableOfTType, knownTypes.IParsableOfTType), isNullable, sequenceType, namedType);
         }
     }
 
@@ -743,5 +779,9 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
         public required INamedTypeSymbol? HelpTextGeneratorAttributeType { get; init; }
 
         public required INamedTypeSymbol? ParseErrorCollectionType { get; init; }
+
+        public required INamedTypeSymbol? ISpanParsableOfTType { get; init; }
+
+        public required INamedTypeSymbol? IParsableOfTType { get; init; }
     }
 }

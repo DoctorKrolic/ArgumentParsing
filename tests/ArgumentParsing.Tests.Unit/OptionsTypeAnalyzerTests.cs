@@ -1,6 +1,7 @@
 using ArgumentParsing.CodeFixes;
 using ArgumentParsing.Generators.Diagnostics.Analyzers;
 using ArgumentParsing.Tests.Unit.Utilities;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 
@@ -1961,5 +1962,57 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             """;
 
         await VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task ImplementISpanParsable()
+    {
+        var source = """
+            using System.Collections.Immutable;
+            using System.Diagnostics.CodeAnalysis;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public MyParsable Option { get; init; }
+
+                [Option]
+                public ImmutableArray<MyParsable> SequenceOption { get; init; }
+
+                [Parameter(0)]
+                public MyParsable Parameter { get; init; }
+
+                [RemainingParameters]
+                public ImmutableArray<MyParsable> RemainingParameters { get; init; }
+            }
+
+            class {|#0:MyParsable|} : IParsable<MyParsable>
+            {
+                public static MyParsable Parse(string s, IFormatProvider? provider) => default;
+
+                public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out MyParsable result)
+                {
+                    result = default;
+                    return false;
+                }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source,
+        [
+            new DiagnosticResult("ARGP0054", DiagnosticSeverity.Info)
+                .WithLocation(0)
+                .WithArguments("Option", "MyOptions", "MyParsable"),
+            new DiagnosticResult("ARGP0054", DiagnosticSeverity.Info)
+                .WithLocation(0)
+                .WithArguments("SequenceOption", "MyOptions", "MyParsable"),
+            new DiagnosticResult("ARGP0054", DiagnosticSeverity.Info)
+                .WithLocation(0)
+                .WithArguments("Parameter", "MyOptions", "MyParsable"),
+            new DiagnosticResult("ARGP0054", DiagnosticSeverity.Info)
+                .WithLocation(0)
+                .WithArguments("RemainingParameters", "MyOptions", "MyParsable")
+        ], referenceAssemblies: ReferenceAssemblies.Net.Net80);
     }
 }

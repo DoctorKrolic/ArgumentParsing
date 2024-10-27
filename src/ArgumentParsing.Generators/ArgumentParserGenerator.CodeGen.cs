@@ -467,6 +467,7 @@ public partial class ArgumentParserGenerator
 
             var propertyName = info.PropertyName;
             var parseStrategy = info.ParseStrategy;
+            var type = info.Type;
             var nullableUnderlyingType = info.NullableUnderlyingType;
             var sequenceType = info.SequenceType;
 
@@ -479,7 +480,7 @@ public partial class ArgumentParserGenerator
             writer.Ident++;
             if (sequenceType != SequenceType.None)
             {
-                writer.WriteLine($"{info.Type} {propertyName}_val = default({info.Type});");
+                writer.WriteLine($"{type} {propertyName}_val = default({type});");
             }
             switch (parseStrategy)
             {
@@ -493,7 +494,7 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
                     }
                     var numberStyles = parseStrategy == ParseStrategy.Integer ? "global::System.Globalization.NumberStyles.Integer" : "global::System.Globalization.NumberStyles.Float | global::System.Globalization.NumberStyles.AllowThousands";
-                    writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                    writer.WriteLine($"if (!{nullableUnderlyingType ?? type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(");
@@ -527,7 +528,7 @@ public partial class ArgumentParserGenerator
                     {
                         writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
                     }
-                    writer.WriteLine($"if (!global::System.Enum.TryParse<{nullableUnderlyingType ?? info.Type}>(val, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                    writer.WriteLine($"if (!global::System.Enum.TryParse<{nullableUnderlyingType ?? type}>(val, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(");
@@ -563,7 +564,7 @@ public partial class ArgumentParserGenerator
                     {
                         writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
                     }
-                    writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, global::System.Globalization.DateTimeStyles.None, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                    writer.WriteLine($"if (!{nullableUnderlyingType ?? type}.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, global::System.Globalization.DateTimeStyles.None, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(");
@@ -579,11 +580,13 @@ public partial class ArgumentParserGenerator
                     }
                     break;
                 case ParseStrategy.TimeSpan:
+                case ParseStrategy.GenericSpanParsable:
+                case ParseStrategy.GenericParsable:
                     if (nullableUnderlyingType is not null)
                     {
                         writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
                     }
-                    writer.WriteLine($"if (!global::System.TimeSpan.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                    writer.WriteLine($"if (!{nullableUnderlyingType ?? type}.TryParse(val{(canUseOptimalSpanBasedAlgorithm && parseStrategy == ParseStrategy.GenericParsable ? ".ToString()" : string.Empty)}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                     writer.OpenBlock();
                     writer.WriteLine("errors ??= new();");
                     writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadOptionValueFormatError(");
@@ -627,6 +630,7 @@ public partial class ArgumentParserGenerator
                 var propertyName = info.PropertyName;
                 var parseStrategy = info.ParseStrategy;
                 Debug.Assert(parseStrategy != ParseStrategy.None);
+                var type = info.Type;
                 var nullableUnderlyingType = info.NullableUnderlyingType;
 
                 writer.WriteLine($"case {i}:");
@@ -643,7 +647,7 @@ public partial class ArgumentParserGenerator
                             writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
                         }
                         var numberStyles = parseStrategy == ParseStrategy.Integer ? "global::System.Globalization.NumberStyles.Integer" : "global::System.Globalization.NumberStyles.Float | global::System.Globalization.NumberStyles.AllowThousands";
-                        writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                        writer.WriteLine($"if (!{nullableUnderlyingType ?? type}.TryParse(val, {numberStyles}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
                         writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(");
@@ -683,7 +687,7 @@ public partial class ArgumentParserGenerator
                         {
                             writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
                         }
-                        writer.WriteLine($"if (!global::System.Enum.TryParse<{nullableUnderlyingType ?? info.Type}>(arg, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                        writer.WriteLine($"if (!global::System.Enum.TryParse<{nullableUnderlyingType ?? type}>(arg, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
                         writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(");
@@ -719,7 +723,7 @@ public partial class ArgumentParserGenerator
                         {
                             writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
                         }
-                        writer.WriteLine($"if (!{nullableUnderlyingType ?? info.Type}.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, global::System.Globalization.DateTimeStyles.None, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                        writer.WriteLine($"if (!{nullableUnderlyingType ?? type}.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, global::System.Globalization.DateTimeStyles.None, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
                         writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(");
@@ -735,11 +739,13 @@ public partial class ArgumentParserGenerator
                         }
                         break;
                     case ParseStrategy.TimeSpan:
+                    case ParseStrategy.GenericSpanParsable:
+                    case ParseStrategy.GenericParsable:
                         if (nullableUnderlyingType is not null)
                         {
                             writer.WriteLine($"{nullableUnderlyingType} {propertyName}_underlying = default({nullableUnderlyingType});");
                         }
-                        writer.WriteLine($"if (!global::System.TimeSpan.TryParse(val, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
+                        writer.WriteLine($"if (!{nullableUnderlyingType ?? type}.TryParse(val{(canUseOptimalSpanBasedAlgorithm && parseStrategy == ParseStrategy.GenericParsable ? ".ToString()" : string.Empty)}, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}{(nullableUnderlyingType is not null ? "_underlying" : "_val")}))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
                         writer.Write($"errors.Add(new global::ArgumentParsing.Results.Errors.BadParameterValueFormatError(");
@@ -881,8 +887,10 @@ public partial class ArgumentParserGenerator
                         writer.WriteLine($"remainingParametersBuilder.Add({propertyName}_val);");
                         break;
                     case ParseStrategy.TimeSpan:
-                        writer.WriteLine($"global::System.TimeSpan {propertyName}_val = default(global::System.TimeSpan);");
-                        writer.WriteLine($"if (!global::System.TimeSpan.TryParse(arg, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}_val))");
+                    case ParseStrategy.GenericSpanParsable:
+                    case ParseStrategy.GenericParsable:
+                        writer.WriteLine($"{type} {propertyName}_val = default({type});");
+                        writer.WriteLine($"if (!{type}.TryParse(arg, global::System.Globalization.CultureInfo.InvariantCulture, out {propertyName}_val))");
                         writer.OpenBlock();
                         writer.WriteLine("errors ??= new();");
                         writer.Write("errors.Add(new global::ArgumentParsing.Results.Errors.BadRemainingParameterValueFormatError(");

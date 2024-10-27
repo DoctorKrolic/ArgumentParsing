@@ -40,7 +40,71 @@ internal static class TypeSymbolExtensions
         return false;
     }
 
-    public static ParseStrategy GetPrimaryParseStrategy(this ITypeSymbol type) => type switch
+    public static ParseStrategy GetPrimaryParseStrategy(this ITypeSymbol type, Compilation compilation)
+    {
+        var knownTypeStrategy = GetPrimaryParseStrategyForKnownType(type);
+        if (knownTypeStrategy != ParseStrategy.None)
+        {
+            return knownTypeStrategy;
+        }
+
+        var iSpanParsableOfT = compilation.ISpanParsableOfTType();
+        if (iSpanParsableOfT is not null)
+        {
+            var iSpanParsableOfType = iSpanParsableOfT.Construct(type);
+
+            if (type.AllInterfaces.Any(i => i.Equals(iSpanParsableOfType, SymbolEqualityComparer.Default)))
+            {
+                return ParseStrategy.GenericSpanParsable;
+            }
+        }
+
+        var iParsableOfTType = compilation.IParsableOfTType();
+        if (iParsableOfTType is not null)
+        {
+            var iParsableOfTargetType = iParsableOfTType.Construct(type);
+
+            if (type.AllInterfaces.Any(i => i.Equals(iParsableOfTargetType, SymbolEqualityComparer.Default)))
+            {
+                return ParseStrategy.GenericParsable;
+            }
+        }
+
+        return ParseStrategy.None;
+    }
+
+    public static ParseStrategy GetPrimaryParseStrategy(this ITypeSymbol type, INamedTypeSymbol? iSpanParsableOfTType, INamedTypeSymbol? iParsableOfTType)
+    {
+        var knownTypeStrategy = GetPrimaryParseStrategyForKnownType(type);
+        if (knownTypeStrategy != ParseStrategy.None)
+        {
+            return knownTypeStrategy;
+        }
+
+        if (iSpanParsableOfTType is not null)
+        {
+            var iSpanParsableOfTargetType = iSpanParsableOfTType.Construct(type);
+
+            if (type.AllInterfaces.Any(i => i.Equals(iSpanParsableOfTargetType, SymbolEqualityComparer.Default)))
+            {
+                return ParseStrategy.GenericSpanParsable;
+            }
+        }
+
+        if (iParsableOfTType is not null)
+        {
+            var iParsableOfTargetType = iParsableOfTType.Construct(type);
+
+            if (type.AllInterfaces.Any(i => i.Equals(iParsableOfTargetType, SymbolEqualityComparer.Default)))
+            {
+                return ParseStrategy.GenericParsable;
+            }
+        }
+
+        return ParseStrategy.None;
+    }
+
+    private static ParseStrategy GetPrimaryParseStrategyForKnownType(ITypeSymbol type) => type switch
     {
         { TypeKind: TypeKind.Enum } => ParseStrategy.Enum,
         { SpecialType: SpecialType.System_String } => ParseStrategy.String,
