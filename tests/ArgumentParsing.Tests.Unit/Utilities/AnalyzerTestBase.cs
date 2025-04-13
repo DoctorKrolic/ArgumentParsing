@@ -88,7 +88,7 @@ public abstract class AnalyzerTestBase<TAnalyzer>
             CodeActionIndex = codeActionIndex,
             CompilerDiagnostics = compilerDiagnostics,
             LanguageVersion = languageVersion,
-            ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net80,
+            ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net90,
         };
 
         if (addCommonUsings && languageVersion >= LanguageVersion.CSharp10)
