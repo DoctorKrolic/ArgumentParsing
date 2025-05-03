@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -9,15 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
-    <PackageReference Include="xunit" Version="$(XUnitVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudioVersion)">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorVersion)">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="xunit.v3" Version="$(XUnitV3Version)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudioVersion)" />
   </ItemGroup>
 
   <ItemGroup>
