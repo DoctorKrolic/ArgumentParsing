@@ -35,4 +35,6 @@ public static class CommonTypesCompilationExtensions
     public static INamedTypeSymbol? ISpanParsableOfTType(this Compilation compilation) => compilation.GetTypeByMetadataName("System.ISpanParsable`1");
 
     public static INamedTypeSymbol? IParsableOfTType(this Compilation compilation) => compilation.GetTypeByMetadataName("System.IParsable`1");
+
+    public static INamedTypeSymbol? UnsafeAccessorAttributeType(this Compilation compilation) => compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.UnsafeAccessorAttribute");
 }

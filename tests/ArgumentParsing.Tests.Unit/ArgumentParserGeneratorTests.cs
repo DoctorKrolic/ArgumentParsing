@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using ArgumentParsing.Generators;
 using ArgumentParsing.Tests.Unit.Utilities;
 using Microsoft.CodeAnalysis;
@@ -2274,7 +2275,7 @@ public sealed partial class ArgumentParserGeneratorTests
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(ErrorMessageFormatProvider = typeof({|#0:C[]|}))]
+                [GeneratedArgumentParser(ErrorMessageFormatProvider = typeof(C[]))]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -2288,7 +2289,7 @@ public sealed partial class ArgumentParserGeneratorTests
         var source = """
             partial class C
             {
-                [GeneratedArgumentParser(ErrorMessageFormatProvider = typeof({|#0:int|}))]
+                [GeneratedArgumentParser(ErrorMessageFormatProvider = typeof(int))]
                 public static partial ParseResult<EmptyOptions> {|CS8795:ParseArguments|}(string[] args);
             }
             """;
@@ -2296,7 +2297,47 @@ public sealed partial class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
-    private static async Task VerifyGeneratorAsync(string source, params (string Hint, string Content)[] generatedDocuments)
+    [Fact]
+    public async Task DefaultValues_NoCodeGenForInitOnlyMemberWhenRuntimeDoesNotSupportUnsafeAccessor_Option()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public int InitOnlyOption { get; init; } = 3;
+            }
+
+            namespace System.Runtime.CompilerServices
+            {
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+                internal static class IsExternalInit
+                {
+                }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source, ReferenceAssemblies.NetStandard.NetStandard20, []);
+    }
+
+    private static async Task VerifyGeneratorAsync(
+        [StringSyntax("C#-Test")] string source,
+        params (string Hint, string Content)[] generatedDocuments)
+    {
+        await VerifyGeneratorAsync(source, ReferenceAssemblies.Net.Net90, generatedDocuments);
+    }
+
+    private static async Task VerifyGeneratorAsync(
+        [StringSyntax("C#-Test")] string source,
+        ReferenceAssemblies referenceAssemblies,
+        (string Hint, string Content)[] generatedDocuments)
     {
         var test = new CSharpSourceGeneratorTest<ArgumentParserGenerator>()
         {
@@ -2323,7 +2364,7 @@ public sealed partial class ArgumentParserGeneratorTests
                 }
             },
             LanguageVersion = LanguageVersion.Latest,
-            ReferenceAssemblies = ReferenceAssemblies.Net.Net80
+            ReferenceAssemblies = referenceAssemblies,
         };
 
         foreach (var (hint, content) in generatedDocuments)

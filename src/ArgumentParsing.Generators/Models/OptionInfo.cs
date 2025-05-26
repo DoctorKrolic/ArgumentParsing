@@ -9,4 +9,5 @@ internal sealed record OptionInfo(
     bool IsRequired,
     bool IsNullable,
     SequenceType SequenceType,
+    DefaultValueStrategy DefaultValueStrategy,
     string? HelpDescription);

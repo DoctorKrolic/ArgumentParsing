@@ -3,6 +3,7 @@ using System.Diagnostics;
 using ArgumentParsing.Generators.Extensions;
 using ArgumentParsing.Generators.Models;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ArgumentParsing.Generators;
@@ -403,6 +404,30 @@ public partial class ArgumentParserGenerator
             var propertyName = property.Name;
             var propertyType = property.Type;
             var isRequired = hasRequiredAttribute || property.IsRequired;
+            var defaultValueStrategy = DefaultValueStrategy.None;
+
+            if (property.Locations.First() is { IsInSource: true } propertySourceLocation)
+            {
+                var compUnit = propertySourceLocation.SourceTree.GetCompilationUnitRoot(cancellationToken);
+                var propertyDeclarationSyntax = (PropertyDeclarationSyntax)compUnit.FindNode(propertySourceLocation.SourceSpan);
+
+                if (propertyDeclarationSyntax.Initializer is not null)
+                {
+                    if (property.SetMethod.IsInitOnly)
+                    {
+                        if (comp.UnsafeAccessorAttributeType() is null)
+                        {
+                            return null;
+                        }
+
+                        defaultValueStrategy = DefaultValueStrategy.UnsafeAccessor;
+                    }
+                    else
+                    {
+                        defaultValueStrategy = DefaultValueStrategy.Setter;
+                    }
+                }
+            }
 
             if (isOption)
             {
@@ -455,6 +480,7 @@ public partial class ArgumentParserGenerator
                     isRequired,
                     isNullable,
                     sequenceType,
+                    defaultValueStrategy,
                     helpDescription));
             }
             else if (isParameter)
