@@ -7,4 +7,5 @@ internal sealed record ParameterInfo(
     ParseStrategy ParseStrategy,
     bool IsRequired,
     bool IsNullable,
+    DefaultValueStrategy DefaultValueStrategy,
     string? HelpDescription);

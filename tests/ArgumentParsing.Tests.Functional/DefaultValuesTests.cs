@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Globalization;
 using ArgumentParsing.Results;
 
 namespace ArgumentParsing.Tests.Functional;
@@ -24,6 +25,19 @@ public sealed partial class DefaultValuesTests
 
         [Option('c')]
         public ImmutableArray<int> CollectionOption { get; set; } = [1, 2, 3];
+
+        [Parameter(0)]
+        public TimeSpan Param1 { get; set; } = TimeSpan.FromSeconds(1);
+
+#if NET8_0_OR_GREATER
+        [Parameter(1)]
+        public DateOnly Param2 { get; init; } = DateOnly.MinValue;
+
+        [Parameter(2)]
+#else
+        [Parameter(1)]
+#endif
+        public DayOfWeek Param3 { get; set; } = DayOfWeek.Monday;
     }
 
     [GeneratedArgumentParser]
@@ -51,6 +65,14 @@ public sealed partial class DefaultValuesTests
             static e1 => Assert.Equal(1, e1),
             static e2 => Assert.Equal(2, e2),
             static e3 => Assert.Equal(3, e3));
+
+        Assert.Equal(TimeSpan.FromSeconds(1), options.Param1);
+
+#if NET8_0_OR_GREATER
+        Assert.Equal(DateOnly.MinValue, options.Param2);
+#endif
+
+        Assert.Equal(DayOfWeek.Monday, options.Param3);
     }
 
     [Fact]
@@ -61,6 +83,15 @@ public sealed partial class DefaultValuesTests
         args.Add("-l");
         args.Add("200");
 #endif
+
+        args.Add("--");
+        args.Add("00:10:00");
+
+#if NET8_0_OR_GREATER
+        args.Add("10.10.1995");
+#endif
+
+        args.Add("Friday");
 
         var result = ParseArguments(args);
 
@@ -80,5 +111,13 @@ public sealed partial class DefaultValuesTests
             static e1 => Assert.Equal(3, e1),
             static e2 => Assert.Equal(8, e2),
             static e3 => Assert.Equal(9, e3));
+
+        Assert.Equal(TimeSpan.Parse("00:10:00", CultureInfo.InvariantCulture), options.Param1);
+
+#if NET8_0_OR_GREATER
+        Assert.Equal(DateOnly.Parse("10.10.1995", CultureInfo.InvariantCulture), options.Param2);
+#endif
+
+        Assert.Equal(DayOfWeek.Friday, options.Param3);
     }
 }

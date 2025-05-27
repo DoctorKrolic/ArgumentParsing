@@ -1028,7 +1028,10 @@ public partial class ArgumentParserGenerator
 
         foreach (var info in parameterInfos)
         {
-            writer.WriteLine($"{info.PropertyName} = {info.PropertyName}_val,");
+            if (info.DefaultValueStrategy == DefaultValueStrategy.None)
+            {
+                writer.WriteLine($"{info.PropertyName} = {info.PropertyName}_val,");
+            }
         }
 
         if (remainingParametersInfo is not null)
@@ -1043,7 +1046,6 @@ public partial class ArgumentParserGenerator
 
         writer.Ident--;
         writer.WriteLine("};");
-        writer.WriteLine();
 
         for (var i = 0; i < optionInfos.Length; i++)
         {
@@ -1054,6 +1056,7 @@ public partial class ArgumentParserGenerator
                 continue;
             }
 
+            writer.WriteLine();
             usageCode.Fill('0');
             usageCode[^(i + 1)] = '1';
             writer.WriteLine($"if ((seenOptions & 0b{usageCode.ToString()}) > 0)");
@@ -1070,31 +1073,70 @@ public partial class ArgumentParserGenerator
             }
 
             writer.CloseBlock();
-            writer.WriteLine();
         }
 
+        var bracesToClose = 0;
+        for (var i = 0; i < parameterInfos.Length; i++)
+        {
+            var info = parameterInfos[i];
+
+            if (info.DefaultValueStrategy == DefaultValueStrategy.None)
+            {
+                continue;
+            }
+
+            bracesToClose++;
+            writer.WriteLine();
+            writer.WriteLine($"if (parameterIndex > {i})");
+            writer.OpenBlock();
+
+            switch (info.DefaultValueStrategy)
+            {
+                case DefaultValueStrategy.Setter:
+                    writer.WriteLine($"options.{info.PropertyName} = {info.PropertyName}_val;");
+                    break;
+                case DefaultValueStrategy.UnsafeAccessor:
+                    writer.WriteLine($"Set{info.PropertyName}(options, {info.PropertyName}_val);");
+                    break;
+            }
+        }
+
+        for (var i = 0; i < bracesToClose; i++)
+        {
+            writer.CloseBlock();
+        }
+
+        writer.WriteLine();
         writer.WriteLine($"return new {method.ReturnType}(options);");
 
-        if (optionInfos.Any(static i => i.DefaultValueStrategy == DefaultValueStrategy.UnsafeAccessor))
+        foreach (var info in optionInfos)
         {
-            writer.WriteLine();
-
-            foreach (var info in optionInfos)
+            if (info.DefaultValueStrategy != DefaultValueStrategy.UnsafeAccessor)
             {
-                if (info.DefaultValueStrategy != DefaultValueStrategy.UnsafeAccessor)
-                {
-                    continue;
-                }
-
-                writer.WriteLine($"[global::System.Runtime.CompilerServices.UnsafeAccessorAttribute(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = $\"set_{{nameof({optionsType}.{info.PropertyName})}}\")]");
-                writer.WriteLine($"static extern void Set{info.PropertyName}({optionsType} @this, {info.SequenceType switch
-                {
-                    SequenceType.None => info.BaseType,
-                    SequenceType.List => $"global::System.Collections.Generic.List<{info.BaseType}>",
-                    SequenceType.ImmutableArray => $"global::System.Collections.Immutable.ImmutableArray<{info.BaseType}>",
-                    _ => throw new InvalidOperationException("Unreachable"),
-                }} value);");
+                continue;
             }
+
+            writer.WriteLine();
+            writer.WriteLine($"[global::System.Runtime.CompilerServices.UnsafeAccessorAttribute(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = $\"set_{{nameof({optionsType}.{info.PropertyName})}}\")]");
+            writer.WriteLine($"static extern void Set{info.PropertyName}({optionsType} @this, {info.SequenceType switch
+            {
+                SequenceType.None => $"{info.BaseType}{(info.IsNullable ? "?" : string.Empty)}",
+                SequenceType.List => $"global::System.Collections.Generic.List<{info.BaseType}>",
+                SequenceType.ImmutableArray => $"global::System.Collections.Immutable.ImmutableArray<{info.BaseType}>",
+                _ => throw new InvalidOperationException("Unreachable"),
+            }} value);");
+        }
+
+        foreach (var info in parameterInfos)
+        {
+            if (info.DefaultValueStrategy != DefaultValueStrategy.UnsafeAccessor)
+            {
+                continue;
+            }
+
+            writer.WriteLine();
+            writer.WriteLine($"[global::System.Runtime.CompilerServices.UnsafeAccessorAttribute(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = $\"set_{{nameof({optionsType}.{info.PropertyName})}}\")]");
+            writer.WriteLine($"static extern void Set{info.PropertyName}({optionsType} @this, {info.BaseType}{(info.IsNullable ? "?" : string.Empty)} value);");
         }
 
         writer.CloseRemainingBlocks();

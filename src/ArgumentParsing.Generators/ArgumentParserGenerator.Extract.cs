@@ -514,6 +514,7 @@ public partial class ArgumentParserGenerator
                         parseStrategy,
                         isRequired,
                         isNullable,
+                        defaultValueStrategy,
                         helpDescription);
 
                     parameterMap.Add(parameterIndex, parameterInfo);
