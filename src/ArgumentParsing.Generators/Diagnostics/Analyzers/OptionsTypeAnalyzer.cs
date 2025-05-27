@@ -72,6 +72,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 ParseErrorCollectionType = comp.ParseErrorCollectionType(),
                 ISpanParsableOfTType = comp.ISpanParsableOfTType(),
                 IParsableOfTType = comp.IParsableOfTType(),
+                UnsafeAccessorAttributeType = comp.UnsafeAccessorAttributeType(),
             };
 
             var languageVersion = ((CSharpCompilation)comp).LanguageVersion;
@@ -287,6 +288,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
+            var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
             if (property.DeclaredAccessibility < Accessibility.Internal)
             {
                 context.ReportDiagnostic(
@@ -304,9 +306,13 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 languageVersion >= LanguageVersion.CSharp9 &&
                 knownTypes.IsExternalInitType is not null)
             {
-                context.ReportDiagnostic(
-                    Diagnostic.Create(
-                        DiagnosticDescriptors.PreferInitPropertyAccessor, setMethod.Locations.First()));
+                if (propertySyntax is not PropertyDeclarationSyntax { Initializer: not null } ||
+                    knownTypes.UnsafeAccessorAttributeType is not null)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.PreferInitPropertyAccessor, setMethod.Locations.First()));
+                }
             }
 
             if (countOfParserRelatedAttributes > 1)
@@ -440,7 +446,6 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 }
 
                 var (parseStrategy, isNullable, sequenceType, baseType) = GetParseStrategy(propertyType, knownTypes);
-                var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
                 var locationForTypeRelatedDiagnostics = propertySyntax?.Type.GetLocation() ?? propertyLocation;
 
                 if (parseStrategy == ParseStrategy.None)
@@ -538,8 +543,6 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 var (parseStrategy, isNullable, sequenceType, _) = GetParseStrategy(propertyType, knownTypes);
                 if ((parseStrategy == ParseStrategy.None || sequenceType != SequenceType.None) && propertyType.TypeKind != TypeKind.Error)
                 {
-                    var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
-
                     context.ReportDiagnostic(
                         Diagnostic.Create(
                             DiagnosticDescriptors.InvalidParameterPropertyType,
@@ -591,7 +594,6 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                 declaredRemainingParameters = true;
 
                 var (parseStrategy, isNullable, sequenceType, baseType) = GetParseStrategy(propertyType, knownTypes);
-                var propertySyntax = (BasePropertyDeclarationSyntax?)property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken);
                 var locationForTypeRelatedDiagnostics = propertySyntax?.Type.GetLocation() ?? propertyLocation;
 
                 if (parseStrategy == ParseStrategy.None || isNullable || sequenceType == SequenceType.None)
@@ -783,5 +785,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
         public required INamedTypeSymbol? ISpanParsableOfTType { get; init; }
 
         public required INamedTypeSymbol? IParsableOfTType { get; init; }
+
+        public required INamedTypeSymbol? UnsafeAccessorAttributeType { get; init; }
     }
 }

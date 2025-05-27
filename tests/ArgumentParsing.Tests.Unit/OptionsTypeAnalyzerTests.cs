@@ -343,6 +343,32 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
     }
 
     [Fact]
+    public async Task DoNotSuggestInitAccessorForParserPropertyWithDefaultValueWhenRuntimeDoesNotSupportUnsafeAccessor()
+    {
+        var source = """
+            using ArgumentParsing;
+
+            [OptionsType]
+            class MyOptions
+            {
+                [Option]
+                public string A { get; set; } = "Default";
+            }
+
+            namespace System.Runtime.CompilerServices
+            {
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+                internal static class IsExternalInit
+                {
+                }
+            }
+            """;
+
+        await VerifyAnalyzerAsync(source, LanguageVersion.Latest, ReferenceAssemblies.NetStandard.NetStandard20);
+    }
+
+    [Fact]
     public async Task InvalidShortName()
     {
         var source = """
