@@ -2357,6 +2357,36 @@ public sealed partial class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source, ReferenceAssemblies.NetStandard.NetStandard20, []);
     }
 
+    [Fact]
+    public async Task DefaultValues_NoCodeGenForInitOnlyMemberWhenRuntimeDoesNotSupportUnsafeAccessor_RemainingParameters()
+    {
+        var source = """
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+                [RemainingParameters]
+                public System.Collections.Generic.IReadOnlyList<int> RemainingParams { get; init; } = [1, 2, 3];
+            }
+
+            namespace System.Runtime.CompilerServices
+            {
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+                internal static class IsExternalInit
+                {
+                }
+            }
+            """;
+
+        await VerifyGeneratorAsync(source, ReferenceAssemblies.NetStandard.NetStandard20, []);
+    }
+
     private static async Task VerifyGeneratorAsync(
         [StringSyntax("C#-Test")] string source,
         params (string Hint, string Content)[] generatedDocuments)

@@ -38,6 +38,17 @@ public sealed partial class DefaultValuesTests
         [Parameter(1)]
 #endif
         public DayOfWeek Param3 { get; set; } = DayOfWeek.Monday;
+
+        [RemainingParameters]
+        public ImmutableArray<string> RemainingParameters
+        {
+            get;
+#if NET8_0_OR_GREATER
+            init;
+#else
+            set;
+#endif
+        } = ["one", "two", "three"];
     }
 
     [GeneratedArgumentParser]
@@ -73,6 +84,11 @@ public sealed partial class DefaultValuesTests
 #endif
 
         Assert.Equal(DayOfWeek.Monday, options.Param3);
+
+        Assert.Collection(options.RemainingParameters,
+            static e1 => Assert.Equal("one", e1),
+            static e2 => Assert.Equal("two", e2),
+            static e3 => Assert.Equal("three", e3));
     }
 
     [Fact]
@@ -92,6 +108,10 @@ public sealed partial class DefaultValuesTests
 #endif
 
         args.Add("Friday");
+
+        args.Add("new");
+        args.Add("remaining");
+        args.Add("parameters");
 
         var result = ParseArguments(args);
 
@@ -119,5 +139,10 @@ public sealed partial class DefaultValuesTests
 #endif
 
         Assert.Equal(DayOfWeek.Friday, options.Param3);
+
+        Assert.Collection(options.RemainingParameters,
+            static e1 => Assert.Equal("new", e1),
+            static e2 => Assert.Equal("remaining", e2),
+            static e3 => Assert.Equal("parameters", e3));
     }
 }

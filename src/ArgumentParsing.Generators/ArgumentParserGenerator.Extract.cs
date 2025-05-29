@@ -540,8 +540,10 @@ public partial class ArgumentParserGenerator
                 remainingParametersInfo = new(
                     propertyName,
                     baseType,
+                    propertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                     parseStrategy,
                     sequenceType,
+                    defaultValueStrategy,
                     helpDescription);
             }
         }

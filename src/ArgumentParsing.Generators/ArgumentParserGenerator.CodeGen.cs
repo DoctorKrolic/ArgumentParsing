@@ -1034,7 +1034,7 @@ public partial class ArgumentParserGenerator
             }
         }
 
-        if (remainingParametersInfo is not null)
+        if (remainingParametersInfo is { DefaultValueStrategy: DefaultValueStrategy.None })
         {
             writer.WriteLine($"{remainingParametersInfo.PropertyName} = {remainingParametersInfo.SequenceType switch
             {
@@ -1106,6 +1106,35 @@ public partial class ArgumentParserGenerator
             writer.CloseBlock();
         }
 
+        if (remainingParametersInfo is { DefaultValueStrategy: not DefaultValueStrategy.None })
+        {
+            writer.WriteLine();
+            writer.WriteLine("if (remainingParametersBuilder.Count > 0)");
+            writer.OpenBlock();
+
+            switch (remainingParametersInfo.DefaultValueStrategy)
+            {
+                case DefaultValueStrategy.Setter:
+                    writer.WriteLine($"options.{remainingParametersInfo.PropertyName} = {remainingParametersInfo.SequenceType switch
+                    {
+                        SequenceType.List => "remainingParametersBuilder",
+                        SequenceType.ImmutableArray => "remainingParametersBuilder.ToImmutable()",
+                        _ => throw new InvalidOperationException("Unreachable"),
+                    }};");
+                    break;
+                case DefaultValueStrategy.UnsafeAccessor:
+                    writer.WriteLine($"Set{remainingParametersInfo.PropertyName}(options, {remainingParametersInfo.SequenceType switch
+                    {
+                        SequenceType.List => "remainingParametersBuilder",
+                        SequenceType.ImmutableArray => "remainingParametersBuilder.ToImmutable()",
+                        _ => throw new InvalidOperationException("Unreachable"),
+                    }});");
+                    break;
+            }
+
+            writer.CloseBlock();
+        }
+
         writer.WriteLine();
         writer.WriteLine($"return new {method.ReturnType}(options);");
 
@@ -1137,6 +1166,13 @@ public partial class ArgumentParserGenerator
             writer.WriteLine();
             writer.WriteLine($"[global::System.Runtime.CompilerServices.UnsafeAccessorAttribute(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = $\"set_{{nameof({optionsType}.{info.PropertyName})}}\")]");
             writer.WriteLine($"static extern void Set{info.PropertyName}({optionsType} @this, {info.BaseType}{(info.IsNullable ? "?" : string.Empty)} value);");
+        }
+
+        if (remainingParametersInfo is { DefaultValueStrategy: DefaultValueStrategy.UnsafeAccessor })
+        {
+            writer.WriteLine();
+            writer.WriteLine($"[global::System.Runtime.CompilerServices.UnsafeAccessorAttribute(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = $\"set_{{nameof({optionsType}.{remainingParametersInfo.PropertyName})}}\")]");
+            writer.WriteLine($"static extern void Set{remainingParametersInfo.PropertyName}({optionsType} @this, {remainingParametersInfo.FullType} value);");
         }
 
         writer.CloseRemainingBlocks();
