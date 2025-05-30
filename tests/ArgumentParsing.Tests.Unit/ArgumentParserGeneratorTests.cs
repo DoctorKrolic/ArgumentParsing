@@ -2297,10 +2297,13 @@ public sealed partial class ArgumentParserGeneratorTests
         await VerifyGeneratorAsync(source);
     }
 
-    [Fact]
-    public async Task DefaultValues_NoCodeGenForInitOnlyMemberWhenRuntimeDoesNotSupportUnsafeAccessor_Option()
+    [Theory]
+    [InlineData("Option", "int", "3")]
+    [InlineData("Parameter(0)", "string", "\"Test\"")]
+    [InlineData("RemainingParameters", "System.Collections.Generic.IReadOnlyList<int>", "[1, 2, 3]")]
+    public async Task DefaultValues_NoCodeGenForInitOnlyMemberWhenRuntimeDoesNotSupportUnsafeAccessor(string attributeContent, string propertyType, string initializerSyntax)
     {
-        var source = """
+        var source = $$"""
             partial class C
             {
                 [GeneratedArgumentParser]
@@ -2310,68 +2313,8 @@ public sealed partial class ArgumentParserGeneratorTests
             [OptionsType]
             class MyOptions
             {
-                [Option]
-                public int InitOnlyOption { get; init; } = 3;
-            }
-
-            namespace System.Runtime.CompilerServices
-            {
-                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-                internal static class IsExternalInit
-                {
-                }
-            }
-            """;
-
-        await VerifyGeneratorAsync(source, ReferenceAssemblies.NetStandard.NetStandard20, []);
-    }
-
-    [Fact]
-    public async Task DefaultValues_NoCodeGenForInitOnlyMemberWhenRuntimeDoesNotSupportUnsafeAccessor_Parameter()
-    {
-        var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
-            [OptionsType]
-            class MyOptions
-            {
-                [Parameter(0)]
-                public string InitOnlyParam { get; init; } = "Test";
-            }
-
-            namespace System.Runtime.CompilerServices
-            {
-                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-                internal static class IsExternalInit
-                {
-                }
-            }
-            """;
-
-        await VerifyGeneratorAsync(source, ReferenceAssemblies.NetStandard.NetStandard20, []);
-    }
-
-    [Fact]
-    public async Task DefaultValues_NoCodeGenForInitOnlyMemberWhenRuntimeDoesNotSupportUnsafeAccessor_RemainingParameters()
-    {
-        var source = """
-            partial class C
-            {
-                [GeneratedArgumentParser]
-                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
-            }
-
-            [OptionsType]
-            class MyOptions
-            {
-                [RemainingParameters]
-                public System.Collections.Generic.IReadOnlyList<int> RemainingParams { get; init; } = [1, 2, 3];
+                [{{attributeContent}}]
+                public {{propertyType}} ParserProp { get; init; } = {{initializerSyntax}};
             }
 
             namespace System.Runtime.CompilerServices

@@ -90,7 +90,7 @@ public static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor PreferInitPropertyAccessor = new(
         id: "ARGP0011",
         title: "Prefer 'init' property accessor",
-        messageFormat: "Prefer 'init' property accessor for parser-related properties",
+        messageFormat: "Prefer 'init' accessor for parser-related property '{0}'",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true);
@@ -453,5 +453,14 @@ public static class DiagnosticDescriptors
         messageFormat: "For better performance in parsing member '{0}' of options type '{1}', implement the 'ISpanParsable' interface on '{2}'",
         category: ArgumentParsingCategoryName,
         defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor CannotHaveInitAccessorWithADefaultValue = new(
+        id: "ARGP0055",
+        title: "'init' accessor cannot be used here",
+        messageFormat: "'init' accessor cannot be used for parser-related property '{0}', use 'set' accessor instead",
+        description: "Parser uses unsafe accessors to conditionally assign an init-only property with a default value. Current runtime doesn't support unsafe accessors therefore 'init' cannot be used.",
+        category: ArgumentParsingCategoryName,
+        defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 }

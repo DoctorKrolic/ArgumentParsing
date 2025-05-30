@@ -305,7 +305,7 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
             }
             """;
 
-        await VerifyAnalyzerWithCodeFixAsync<ChangeToInitAccessorCodeFixProvider>(source, fixedSource);
+        await VerifyAnalyzerWithCodeFixAsync<ChangeAccessorKindCodeFixProvider>(source, fixedSource);
     }
 
     [Fact]
@@ -2040,5 +2040,58 @@ public sealed class OptionsTypeAnalyzerTests : AnalyzerTestBase<OptionsTypeAnaly
                 .WithLocation(0)
                 .WithArguments("RemainingParameters", "MyOptions", "MyParsable")
         ], referenceAssemblies: ReferenceAssemblies.Net.Net80);
+    }
+
+    [Theory]
+    [InlineData("Option", "int", "3")]
+    [InlineData("Parameter(0)", "string", "\"Test\"")]
+    [InlineData("RemainingParameters", "System.Collections.Generic.IReadOnlyList<int>", "[1, 2, 3]")]
+    public async Task DefaultValues_InitOnlyMemberWhenRuntimeDoesNotSupportUnsafeAccessor(string attributeContent, string propertyType, string initializerSyntax)
+    {
+        await VerifyAnalyzerWithCodeFixAsync<ChangeAccessorKindCodeFixProvider>($$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+                [{{attributeContent}}]
+                public {{propertyType}} ParserProp { get; {|ARGP0055:init|}; } = {{initializerSyntax}};
+            }
+
+            namespace System.Runtime.CompilerServices
+            {
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+                internal static class IsExternalInit
+                {
+                }
+            }
+            """, $$"""
+            partial class C
+            {
+                [GeneratedArgumentParser]
+                public static partial ParseResult<MyOptions> {|CS8795:ParseArguments|}(string[] args);
+            }
+
+            [OptionsType]
+            class MyOptions
+            {
+                [{{attributeContent}}]
+                public {{propertyType}} ParserProp { get; set; } = {{initializerSyntax}};
+            }
+
+            namespace System.Runtime.CompilerServices
+            {
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+                internal static class IsExternalInit
+                {
+                }
+            }
+            """, referenceAssemblies: ReferenceAssemblies.NetStandard.NetStandard20);
     }
 }

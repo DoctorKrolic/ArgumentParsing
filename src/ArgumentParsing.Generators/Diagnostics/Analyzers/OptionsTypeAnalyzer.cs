@@ -45,7 +45,8 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.InvalidHelpTextGeneratorTypeSpecifier,
             DiagnosticDescriptors.InvalidIdentifierName,
             DiagnosticDescriptors.CannotFindHelpTextGeneratorMethod,
-            DiagnosticDescriptors.ImplementISpanParsable);
+            DiagnosticDescriptors.ImplementISpanParsable,
+            DiagnosticDescriptors.CannotHaveInitAccessorWithADefaultValue);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -302,16 +303,34 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                         DiagnosticDescriptors.PropertyMustHaveAccessibleSetter,
                         property.SetMethod?.Locations.First() ?? propertyLocation));
             }
-            else if (property is { SetMethod: { IsInitOnly: false } setMethod } &&
-                languageVersion >= LanguageVersion.CSharp9 &&
-                knownTypes.IsExternalInitType is not null)
+            else
             {
-                if (propertySyntax is not PropertyDeclarationSyntax { Initializer: not null } ||
-                    knownTypes.UnsafeAccessorAttributeType is not null)
+                var setMethod = property.SetMethod;
+
+                if (setMethod.IsInitOnly)
                 {
-                    context.ReportDiagnostic(
-                        Diagnostic.Create(
-                            DiagnosticDescriptors.PreferInitPropertyAccessor, setMethod.Locations.First()));
+                    if (propertySyntax is PropertyDeclarationSyntax { Initializer: not null } &&
+                        knownTypes.UnsafeAccessorAttributeType is null)
+                    {
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(
+                                DiagnosticDescriptors.CannotHaveInitAccessorWithADefaultValue, setMethod.Locations.First(),
+                                property.Name));
+                    }
+                }
+                else
+                {
+                    if (knownTypes.IsExternalInitType is not null && languageVersion >= LanguageVersion.CSharp9)
+                    {
+                        if (propertySyntax is not PropertyDeclarationSyntax { Initializer: not null } ||
+                            knownTypes.UnsafeAccessorAttributeType is not null)
+                        {
+                            context.ReportDiagnostic(
+                                Diagnostic.Create(
+                                    DiagnosticDescriptors.PreferInitPropertyAccessor, setMethod.Locations.First(),
+                                    property.Name));
+                        }
+                    }
                 }
             }
 
@@ -605,7 +624,7 @@ public sealed class OptionsTypeAnalyzer : DiagnosticAnalyzer
                                 DiagnosticDescriptors.InvalidRemainingParametersPropertyType, locationForTypeRelatedDiagnostics));
                     }
                 }
-                else if (sequenceType != SequenceType.ImmutableArray)
+                else if (sequenceType != SequenceType.ImmutableArray && knownTypes.ImmutableArrayOfTType is not null)
                 {
                     context.ReportDiagnostic(
                         Diagnostic.Create(
